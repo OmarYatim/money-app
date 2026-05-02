@@ -15,6 +15,7 @@ public class BankConnectionService {
 
   private final PowensAuthService powensAuthService;
   private final BankConnectionStateService bankConnectionStateService;
+  private final UserConnectionService userConnectionService;
   private final PowensWebviewService powensWebviewService;
 
   public BankConnectResponse createConnectLink(String email) {
@@ -42,10 +43,13 @@ public class BankConnectionService {
           .build();
     }
 
+    List<Long> parsedConnectionIds = parseConnectionIds(connectionIds);
+    userConnectionService.upsertActiveConnections(appUser.getId(), parsedConnectionIds);
+
     return BankConnectionCallbackResponse.builder()
         .status("connected")
         .message("Bank connection completed.")
-        .connectionIds(parseConnectionIds(connectionIds))
+        .connectionIds(parsedConnectionIds)
         .build();
   }
 
