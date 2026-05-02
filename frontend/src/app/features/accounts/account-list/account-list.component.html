@@ -6,4 +6,50 @@
     </div>
     <app-account-connect (connected)="reloadAccounts()" />
   </header>
+
+  @if (actionConnections().length > 0) {
+    <button type="button" class="account-list__warning" (click)="reconnect()">
+      <mat-icon aria-hidden="true">warning</mat-icon>
+      <span>One of your bank connections needs attention.</span>
+    </button>
+  }
+
+  @if (state().loading) {
+    <div class="account-list__loading" aria-live="polite">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (state().error) {
+    <mat-card appearance="outlined" class="account-list__notice">
+      <mat-card-content>{{ state().error }}</mat-card-content>
+      <mat-card-actions>
+        <button mat-button type="button" (click)="reloadAccounts()">Retry</button>
+      </mat-card-actions>
+    </mat-card>
+  } @else if (state().accounts.length === 0) {
+    <mat-card appearance="outlined" class="account-list__notice">
+      <mat-card-content>No connected accounts yet.</mat-card-content>
+    </mat-card>
+  } @else {
+    <div class="account-list__grid">
+      @for (account of state().accounts; track account.id) {
+        <mat-card appearance="outlined" class="account-list__card">
+          <mat-card-header>
+            <mat-icon mat-card-avatar aria-hidden="true">account_balance</mat-icon>
+            <mat-card-title>{{ account.institutionName ?? account.name }}</mat-card-title>
+            <mat-card-subtitle>
+              {{ account.type ?? 'account' }}
+              @if (account.accountNumberLastFour) {
+                <span>ending {{ account.accountNumberLastFour }}</span>
+              }
+            </mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <p class="account-list__balance">
+              {{ account.balance | currency: account.currency : 'symbol' : '1.2-2' }}
+            </p>
+          </mat-card-content>
+        </mat-card>
+      }
+    </div>
+  }
 </section>
