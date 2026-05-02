@@ -10,4 +10,6 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
   Optional<UserConnection> findByUserIdAndConnectionId(Long userId, Long connectionId);
 
   List<UserConnection> findByUserId(Long userId);
+
+  List<UserConnection> findByUserIdAndStatus(Long userId, String status);
 }

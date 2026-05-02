@@ -1,7 +1,9 @@
 package com.moneyapp.backend.banking.mapper;
 
 import com.moneyapp.backend.banking.dto.AccountResponse;
+import com.moneyapp.backend.banking.dto.ConnectionRequiringActionResponse;
 import com.moneyapp.backend.banking.entity.Account;
+import com.moneyapp.backend.banking.entity.UserConnection;
 
 public final class AccountMapper {
 
@@ -20,6 +22,14 @@ public final class AccountMapper {
         .currency(account.getCurrency())
         .lastUpdate(account.getLastUpdate())
         .disabled(account.isDisabled())
+        .build();
+  }
+
+  public static ConnectionRequiringActionResponse toConnectionRequiringActionResponse(
+      UserConnection userConnection) {
+    return ConnectionRequiringActionResponse.builder()
+        .connectionId(userConnection.getConnectionId())
+        .state(userConnection.getState())
         .build();
   }
 }

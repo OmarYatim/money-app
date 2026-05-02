@@ -7,6 +7,7 @@ import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
+import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.dto.PowensUserResponse;
 import org.junit.jupiter.api.Test;
@@ -34,7 +35,7 @@ class PowensAuthServiceTest {
             new PowensAccessTokenResponse("permanent-token", new PowensUserResponse("powens-123")));
     PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
 
-    AppUser appUser = service.ensurePowensUser("person@example.com");
+    AppUser appUser = service.ensurePowensUser("auth-person@example.com");
 
     assertThat(appUser.getPowensToken()).isEqualTo("permanent-token");
     assertThat(appUser.getPowensUserId()).isEqualTo("powens-123");
@@ -153,6 +154,11 @@ class PowensAuthServiceTest {
 
     @Override
     public PowensAccountsResponse fetchAccounts(String permanentAccessToken) {
+      throw new UnsupportedOperationException("Not needed in this test");
+    }
+
+    @Override
+    public PowensConnectionsResponse fetchConnections(String permanentAccessToken) {
       throw new UnsupportedOperationException("Not needed in this test");
     }
   }

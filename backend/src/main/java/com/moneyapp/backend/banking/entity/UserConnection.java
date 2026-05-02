@@ -29,6 +29,7 @@ import lombok.NoArgsConstructor;
 public class UserConnection {
 
   public static final String STATUS_ACTIVE = "active";
+  public static final String STATUS_REQUIRING_ACTION = "requiring_action";
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -43,6 +44,9 @@ public class UserConnection {
   @Column(nullable = false, length = 50)
   @Builder.Default
   private String status = STATUS_ACTIVE;
+
+  @Column(length = 100)
+  private String state;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;

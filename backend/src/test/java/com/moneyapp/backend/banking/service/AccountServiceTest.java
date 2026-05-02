@@ -9,6 +9,7 @@ import com.moneyapp.backend.banking.dto.AccountResponse;
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
+import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.repository.AccountRepository;
@@ -140,6 +141,11 @@ class AccountServiceTest {
     @Override
     public PowensAccountsResponse fetchAccounts(String permanentAccessToken) {
       return response;
+    }
+
+    @Override
+    public PowensConnectionsResponse fetchConnections(String permanentAccessToken) {
+      throw new UnsupportedOperationException("Not needed in this test");
     }
   }
 }

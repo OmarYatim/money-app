@@ -20,6 +20,33 @@ public class UserConnectionService {
         .toList();
   }
 
+  @Transactional
+  public UserConnection updateConnectionState(Long userId, Long connectionId, String state) {
+    UserConnection userConnection =
+        userConnectionRepository
+            .findByUserIdAndConnectionId(userId, connectionId)
+            .orElseGet(
+                () ->
+                    UserConnection.builder()
+                        .userId(userId)
+                        .connectionId(connectionId)
+                        .status(UserConnection.STATUS_ACTIVE)
+                        .build());
+
+    userConnection.setState(state);
+    userConnection.setStatus(
+        requiresAction(state)
+            ? UserConnection.STATUS_REQUIRING_ACTION
+            : UserConnection.STATUS_ACTIVE);
+    return userConnectionRepository.save(userConnection);
+  }
+
+  @Transactional(readOnly = true)
+  public List<UserConnection> findConnectionsRequiringAction(Long userId) {
+    return userConnectionRepository.findByUserIdAndStatus(
+        userId, UserConnection.STATUS_REQUIRING_ACTION);
+  }
+
   private UserConnection upsertActiveConnection(Long userId, Long connectionId) {
     UserConnection userConnection =
         userConnectionRepository
@@ -33,6 +60,16 @@ public class UserConnectionService {
                         .build());
 
     userConnection.setStatus(UserConnection.STATUS_ACTIVE);
+    userConnection.setState(null);
     return userConnectionRepository.save(userConnection);
+  }
+
+  private boolean requiresAction(String state) {
+    if (state == null || state.isBlank()) {
+      return false;
+    }
+
+    return List.of("SCARequired", "webauthRequired", "additionalInformationNeeded", "wrongpass")
+        .contains(state);
   }
 }

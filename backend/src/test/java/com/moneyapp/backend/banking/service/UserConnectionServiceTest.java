@@ -49,4 +49,22 @@ class UserConnectionServiceTest {
 
     assertThat(userConnectionRepository.findByUserId(1L)).hasSize(1);
   }
+
+  @Test
+  void updateConnectionStateMarksActionableState() {
+    userConnectionService.updateConnectionState(1L, 123L, "wrongpass");
+
+    List<UserConnection> userConnections = userConnectionService.findConnectionsRequiringAction(1L);
+    assertThat(userConnections).hasSize(1);
+    assertThat(userConnections.get(0).getConnectionId()).isEqualTo(123L);
+    assertThat(userConnections.get(0).getState()).isEqualTo("wrongpass");
+  }
+
+  @Test
+  void updateConnectionStateClearsActionWhenStateIsHealthy() {
+    userConnectionService.updateConnectionState(1L, 123L, "wrongpass");
+    userConnectionService.updateConnectionState(1L, 123L, null);
+
+    assertThat(userConnectionService.findConnectionsRequiringAction(1L)).isEmpty();
+  }
 }
