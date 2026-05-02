@@ -29,14 +29,12 @@ public class PowensAuthService {
 
     PowensAccessTokenResponse response =
         Objects.requireNonNull(powensClient.createUserAccessToken(), "Powens response is required");
-    if (isBlank(response.accessToken())
-        || response.user() == null
-        || isBlank(response.user().id())) {
+    if (isBlank(response.accessToken()) || isBlank(response.userId())) {
       throw new IllegalStateException("Powens user creation returned an incomplete response");
     }
 
     appUser.setPowensToken(response.accessToken());
-    appUser.setPowensUserId(response.user().id());
+    appUser.setPowensUserId(response.userId());
     return appUserRepository.save(appUser);
   }
 

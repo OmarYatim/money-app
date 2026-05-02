@@ -22,9 +22,12 @@ class WebClientPowensClient implements PowensClient {
   public PowensAccessTokenResponse createUserAccessToken() {
     return powensWebClient
         .post()
-        .uri("/auth/token/access")
+        .uri("/auth/init")
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + powensProperties.manageToken())
-        .bodyValue(Map.of("client_id", powensProperties.clientId()))
+        .bodyValue(
+            Map.of(
+                "client_id", powensProperties.clientId(),
+                "client_secret", powensProperties.clientSecret()))
         .retrieve()
         .bodyToMono(PowensAccessTokenResponse.class)
         .block();
@@ -33,10 +36,9 @@ class WebClientPowensClient implements PowensClient {
   @Override
   public PowensTokenCodeResponse createTemporaryCode(String permanentAccessToken) {
     return powensWebClient
-        .post()
+        .get()
         .uri("/auth/token/code")
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + permanentAccessToken)
-        .bodyValue(Map.of("client_id", powensProperties.clientId()))
         .retrieve()
         .bodyToMono(PowensTokenCodeResponse.class)
         .block();

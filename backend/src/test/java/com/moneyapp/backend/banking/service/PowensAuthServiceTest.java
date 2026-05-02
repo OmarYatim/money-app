@@ -9,7 +9,6 @@ import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
-import com.moneyapp.backend.banking.dto.PowensUserResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
       "powens.client-id=test-client-id",
       "powens.client-secret=test-client-secret",
       "powens.manage-token=test-manage-token",
-      "powens.redirect-url=https://local.moneyapp.me/api/bank/callback"
+      "powens.redirect-url=https://local.nexioo.me/api/bank/callback"
     })
 @ActiveProfiles("test")
 class PowensAuthServiceTest {
@@ -32,7 +31,7 @@ class PowensAuthServiceTest {
   void ensurePowensUserCreatesAndPersistsPowensIdentity() {
     StubPowensClient powensClient =
         StubPowensClient.withAccessToken(
-            new PowensAccessTokenResponse("permanent-token", new PowensUserResponse("powens-123")));
+            new PowensAccessTokenResponse("permanent-token", "powens-123"));
     PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
 
     AppUser appUser = service.ensurePowensUser("auth-person@example.com");
@@ -52,7 +51,7 @@ class PowensAuthServiceTest {
             .build());
     StubPowensClient powensClient =
         StubPowensClient.withAccessToken(
-            new PowensAccessTokenResponse("new-token", new PowensUserResponse("new-id")));
+            new PowensAccessTokenResponse("new-token", "new-id"));
     PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
 
     AppUser appUser = service.ensurePowensUser("existing@example.com");
