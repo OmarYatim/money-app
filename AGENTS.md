@@ -80,18 +80,27 @@ docker build ...              # builds an image
 
 ---
 
-## Ask Before Any Git Branch Operation
+## Git Workflow
 
-Before running any of the following, explain what you intend and wait for approval:
+When starting a new task, prepare a clean task branch without asking for separate approval:
 
+```bash
+git checkout main
+git fetch
+git pull
+git checkout -b feature/US-XX-short-description
 ```
-git checkout ...
-git switch ...
-git checkout -b ...
-git branch ...
-```
 
-**Never push to GitHub.** The human reviews all changes and pushes. You commit locally only.
+Use the Trello card or task name to choose the branch name. If no user story exists, use a short descriptive branch name such as `chore/update-agent-rules`.
+
+After finishing the task:
+
+1. Run the relevant checks.
+2. Review `git status` and stage only task-relevant files.
+3. Create a local Conventional Commit.
+4. Report the commit hash and wait for human approval.
+
+**Never push to GitHub.** This is the only hard Git prevention. The human reviews and pushes all changes.
 
 ---
 

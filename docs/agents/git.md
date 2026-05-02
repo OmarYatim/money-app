@@ -8,7 +8,8 @@ Read this file when committing, branching, or preparing a PR.
 
 - **Never push to GitHub** — the human reviews all changes and pushes
 - **Never commit directly to `main`** — always use a feature branch
-- **Ask before creating or switching branches** — explain what you intend first
+- **Create and switch branches as part of the normal task workflow**
+- **Commit locally after finishing a task, then wait for human approval**
 
 ---
 
@@ -24,18 +25,18 @@ No `develop` branch. This is a solo project.
 
 ---
 
-## Before Creating a Branch — Ask First
+## Starting a New Task
 
-State your intent and wait for approval:
-
-> "I'm about to create branch `feature/US-04-transaction-list` from `main`. Should I proceed?"
-
-Then run (after approval):
+At the start of every new task, update `main` and create a fresh task branch:
 
 ```bash
-git checkout main && git pull
+git checkout main
+git fetch
+git pull
 git checkout -b feature/US-04-transaction-list
 ```
+
+Use the Trello card or task name to choose the branch name. If the task is not tied to a user story, use a short descriptive branch name such as `chore/update-agent-rules`.
 
 ---
 
@@ -64,6 +65,18 @@ cd frontend && npx tsc --noEmit        # type-check
 ```
 
 > Ask before running `mvn clean verify`, `ng build`, or `ng test`.
+
+## After Finishing a Task
+
+Review the worktree, stage only files relevant to the task, and create a local Conventional Commit:
+
+```bash
+git status
+git add <task-relevant-files>
+git commit -m "type(scope): short description"
+```
+
+Then report the commit hash and wait for human approval. Do not push.
 
 ---
 
@@ -101,7 +114,9 @@ Run `git status` and review staged files before committing.
 The human handles merging and pushing. Once they confirm the merge:
 
 ```bash
-git checkout main && git pull
+git checkout main
+git fetch
+git pull
 git branch -d feature/US-XX-description
 ```
 
@@ -113,6 +128,5 @@ Do not delete the remote branch — GitHub does that automatically if configured
 
 - Push to GitHub — human pushes
 - Commit directly to `main`
-- Create or switch branches without asking first
 - Use vague commit messages (`fix`, `update`, `wip`)
 - Commit secrets or credentials
