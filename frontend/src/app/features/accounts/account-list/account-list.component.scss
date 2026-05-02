@@ -1,0 +1,29 @@
+.account-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.account-list__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.account-list__title {
+  margin: 0;
+  font: var(--mat-sys-headline-medium);
+}
+
+.account-list__subtitle {
+  margin: 0.25rem 0 0;
+  color: var(--mat-sys-on-surface-variant);
+  font: var(--mat-sys-body-medium);
+}
+
+@media (max-width: 48rem) {
+  .account-list__header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

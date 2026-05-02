@@ -1,0 +1,22 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+}
+
+.app-shell__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.app-shell__brand {
+  font: var(--mat-sys-title-large);
+}
+
+.app-shell__main {
+  width: min(100%, 72rem);
+  margin-inline: auto;
+  padding: 1.5rem;
+}

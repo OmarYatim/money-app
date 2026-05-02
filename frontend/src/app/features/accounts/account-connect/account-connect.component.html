@@ -1,0 +1,10 @@
+<button
+  mat-flat-button
+  type="button"
+  class="account-connect__button"
+  [disabled]="loading()"
+  (click)="connect()"
+>
+  <mat-icon aria-hidden="true">add_card</mat-icon>
+  <span>Connect a bank</span>
+</button>
