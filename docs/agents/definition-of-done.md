@@ -72,6 +72,8 @@ cd frontend && ng build --configuration=production   # ask first — compiles fu
 - [ ] Commit message follows Conventional Commits format
 - [ ] `application-dev.yml` is NOT staged (`git status` confirms)
 - [ ] Only files relevant to this task are staged
+- [ ] Changes have been committed locally
+- [ ] Commit hash has been reported to the human
 - [ ] Code has NOT been pushed — human pushes
 
 ### Feature
