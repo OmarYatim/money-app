@@ -24,7 +24,7 @@ import org.springframework.test.context.ActiveProfiles;
       "powens.client-id=test-client-id",
       "powens.client-secret=test-client-secret",
       "powens.manage-token=test-manage-token",
-      "powens.redirect-url=https://local.moneyapp.me/api/bank/callback"
+      "powens.redirect-url=https://local.nexioo.me/api/bank/callback"
     })
 @ActiveProfiles("test")
 class ConnectionStatusServiceTest {

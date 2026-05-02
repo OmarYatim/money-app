@@ -252,7 +252,7 @@ Never show a blank screen. Always show one of: spinner, error banner, empty stat
 
 ## Routing
 
-- Never hardcode `https://api.moneyapp.me` in services — use `environment.apiBaseUrl`
+- Never hardcode `https://api.nexioo.me` in services — use `environment.apiBaseUrl`
 - Use Angular `Router` for internal navigation
 - Use `window.location.href` only for the Powens Webview external redirect
 
@@ -287,6 +287,6 @@ Never show a blank screen. Always show one of: spinner, error banner, empty stat
 | `src/app/core/auth/auth.interceptor.ts` | Attaches JWT to every request, handles 401 refresh |
 | `src/app/core/auth/auth.guard.ts` | Blocks unauthenticated routes |
 | `src/environments/environment.ts` | Dev config (`apiBaseUrl: ''`) |
-| `src/environments/environment.production.ts` | Prod config (`apiBaseUrl: 'https://api.moneyapp.me'`) |
+| `src/environments/environment.production.ts` | Prod config (`apiBaseUrl: 'https://api.nexioo.me'`) |
 | `proxy.conf.json` | Dev proxy — `/api/*` → `localhost:8080` |
 | `angular.json` | Build config, proxy reference |
