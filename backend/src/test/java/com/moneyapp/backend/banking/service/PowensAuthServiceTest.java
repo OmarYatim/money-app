@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
+import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.dto.PowensUserResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ class PowensAuthServiceTest {
   @Test
   void ensurePowensUserCreatesAndPersistsPowensIdentity() {
     StubPowensClient powensClient =
-        new StubPowensClient(
+        StubPowensClient.withAccessToken(
             new PowensAccessTokenResponse("permanent-token", new PowensUserResponse("powens-123")));
     PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
 
@@ -36,7 +37,7 @@ class PowensAuthServiceTest {
 
     assertThat(appUser.getPowensToken()).isEqualTo("permanent-token");
     assertThat(appUser.getPowensUserId()).isEqualTo("powens-123");
-    assertThat(powensClient.calls).isEqualTo(1);
+    assertThat(powensClient.accessTokenCalls).isEqualTo(1);
   }
 
   @Test
@@ -48,7 +49,7 @@ class PowensAuthServiceTest {
             .powensUserId("existing-powens-id")
             .build());
     StubPowensClient powensClient =
-        new StubPowensClient(
+        StubPowensClient.withAccessToken(
             new PowensAccessTokenResponse("new-token", new PowensUserResponse("new-id")));
     PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
 
@@ -56,33 +57,97 @@ class PowensAuthServiceTest {
 
     assertThat(appUser.getPowensToken()).isEqualTo("existing-token");
     assertThat(appUser.getPowensUserId()).isEqualTo("existing-powens-id");
-    assertThat(powensClient.calls).isZero();
+    assertThat(powensClient.accessTokenCalls).isZero();
   }
 
   @Test
   void ensurePowensUserRejectsIncompletePowensResponse() {
     PowensAuthService service =
         new PowensAuthService(
-            appUserRepository, new StubPowensClient(new PowensAccessTokenResponse(null, null)));
+            appUserRepository,
+            StubPowensClient.withAccessToken(new PowensAccessTokenResponse(null, null)));
 
     assertThatThrownBy(() -> service.ensurePowensUser("bad-response@example.com"))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Powens user creation returned an incomplete response");
   }
 
+  @Test
+  void createTemporaryWebviewCodeReturnsShortLivedCode() {
+    StubPowensClient powensClient =
+        StubPowensClient.withTemporaryCode(new PowensTokenCodeResponse("short-lived-code"));
+    PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
+
+    String code =
+        service.createTemporaryWebviewCode(
+            AppUser.builder().email("person@example.com").powensToken("permanent-token").build());
+
+    assertThat(code).isEqualTo("short-lived-code");
+    assertThat(powensClient.temporaryCodeCalls).isEqualTo(1);
+    assertThat(powensClient.lastPermanentAccessToken).isEqualTo("permanent-token");
+  }
+
+  @Test
+  void createTemporaryWebviewCodeRejectsMissingPermanentToken() {
+    PowensAuthService service =
+        new PowensAuthService(
+            appUserRepository,
+            StubPowensClient.withTemporaryCode(new PowensTokenCodeResponse("short-lived-code")));
+
+    assertThatThrownBy(
+            () ->
+                service.createTemporaryWebviewCode(
+                    AppUser.builder().email("person@example.com").build()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Powens permanent token is required");
+  }
+
+  @Test
+  void createTemporaryWebviewCodeRejectsIncompletePowensResponse() {
+    PowensAuthService service =
+        new PowensAuthService(
+            appUserRepository,
+            StubPowensClient.withTemporaryCode(new PowensTokenCodeResponse(" ")));
+
+    assertThatThrownBy(
+            () ->
+                service.createTemporaryWebviewCode(
+                    AppUser.builder().email("person@example.com").powensToken("token").build()))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("Powens temporary code response was incomplete");
+  }
+
   private static class StubPowensClient implements PowensClient {
 
-    private final PowensAccessTokenResponse response;
-    private int calls;
+    private PowensAccessTokenResponse accessTokenResponse;
+    private PowensTokenCodeResponse temporaryCodeResponse;
+    private int accessTokenCalls;
+    private int temporaryCodeCalls;
+    private String lastPermanentAccessToken;
 
-    private StubPowensClient(PowensAccessTokenResponse response) {
-      this.response = response;
+    private static StubPowensClient withAccessToken(PowensAccessTokenResponse response) {
+      StubPowensClient client = new StubPowensClient();
+      client.accessTokenResponse = response;
+      return client;
+    }
+
+    private static StubPowensClient withTemporaryCode(PowensTokenCodeResponse response) {
+      StubPowensClient client = new StubPowensClient();
+      client.temporaryCodeResponse = response;
+      return client;
     }
 
     @Override
     public PowensAccessTokenResponse createUserAccessToken() {
-      calls++;
-      return response;
+      accessTokenCalls++;
+      return accessTokenResponse;
+    }
+
+    @Override
+    public PowensTokenCodeResponse createTemporaryCode(String permanentAccessToken) {
+      temporaryCodeCalls++;
+      lastPermanentAccessToken = permanentAccessToken;
+      return temporaryCodeResponse;
     }
   }
 }

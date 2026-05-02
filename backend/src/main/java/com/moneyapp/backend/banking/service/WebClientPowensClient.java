@@ -1,6 +1,7 @@
 package com.moneyapp.backend.banking.service;
 
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
+import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.config.PowensProperties;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,18 @@ class WebClientPowensClient implements PowensClient {
         .bodyValue(Map.of("client_id", powensProperties.clientId()))
         .retrieve()
         .bodyToMono(PowensAccessTokenResponse.class)
+        .block();
+  }
+
+  @Override
+  public PowensTokenCodeResponse createTemporaryCode(String permanentAccessToken) {
+    return powensWebClient
+        .post()
+        .uri("/auth/token/code")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + permanentAccessToken)
+        .bodyValue(Map.of("client_id", powensProperties.clientId()))
+        .retrieve()
+        .bodyToMono(PowensTokenCodeResponse.class)
         .block();
   }
 }
