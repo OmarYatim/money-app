@@ -1,6 +1,7 @@
 package com.moneyapp.backend.banking.controller;
 
 import com.moneyapp.backend.banking.dto.BankConnectResponse;
+import com.moneyapp.backend.banking.dto.BankConnectionCallbackResponse;
 import com.moneyapp.backend.banking.service.BankConnectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -8,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -25,5 +27,20 @@ public class BankConnectionController {
     }
 
     return ResponseEntity.ok(bankConnectionService.createConnectLink(authentication.getName()));
+  }
+
+  @GetMapping("/callback")
+  public ResponseEntity<BankConnectionCallbackResponse> callback(
+      @RequestParam(required = false, name = "connection_ids") String connectionIds,
+      @RequestParam(required = false) String error,
+      @RequestParam(required = false) String state,
+      Authentication authentication) {
+    if (authentication == null || !authentication.isAuthenticated()) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    }
+
+    return ResponseEntity.ok(
+        bankConnectionService.handleCallback(
+            authentication.getName(), connectionIds, error, state));
   }
 }
