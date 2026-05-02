@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
+import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.dto.PowensUserResponse;
 import org.junit.jupiter.api.Test;
@@ -148,6 +149,11 @@ class PowensAuthServiceTest {
       temporaryCodeCalls++;
       lastPermanentAccessToken = permanentAccessToken;
       return temporaryCodeResponse;
+    }
+
+    @Override
+    public PowensAccountsResponse fetchAccounts(String permanentAccessToken) {
+      throw new UnsupportedOperationException("Not needed in this test");
     }
   }
 }

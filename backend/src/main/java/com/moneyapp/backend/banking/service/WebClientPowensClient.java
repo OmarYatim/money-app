@@ -1,6 +1,7 @@
 package com.moneyapp.backend.banking.service;
 
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
+import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.config.PowensProperties;
 import java.util.Map;
@@ -37,6 +38,17 @@ class WebClientPowensClient implements PowensClient {
         .bodyValue(Map.of("client_id", powensProperties.clientId()))
         .retrieve()
         .bodyToMono(PowensTokenCodeResponse.class)
+        .block();
+  }
+
+  @Override
+  public PowensAccountsResponse fetchAccounts(String permanentAccessToken) {
+    return powensWebClient
+        .get()
+        .uri("/users/me/accounts")
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + permanentAccessToken)
+        .retrieve()
+        .bodyToMono(PowensAccountsResponse.class)
         .block();
   }
 }
