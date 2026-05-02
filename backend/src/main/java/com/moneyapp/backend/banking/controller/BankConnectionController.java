@@ -3,6 +3,8 @@ package com.moneyapp.backend.banking.controller;
 import com.moneyapp.backend.banking.dto.BankConnectResponse;
 import com.moneyapp.backend.banking.dto.BankConnectionCallbackResponse;
 import com.moneyapp.backend.banking.service.BankConnectionService;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,6 +34,7 @@ public class BankConnectionController {
   @GetMapping("/callback")
   public ResponseEntity<BankConnectionCallbackResponse> callback(
       @RequestParam(required = false, name = "connection_ids") String connectionIds,
+      @RequestParam(required = false, name = "connection_id") String connectionId,
       @RequestParam(required = false) String error,
       @RequestParam(required = false) String state,
       Authentication authentication) {
@@ -39,8 +42,13 @@ public class BankConnectionController {
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
     }
 
+    String mergedIds =
+        Stream.of(connectionIds, connectionId)
+            .filter(value -> value != null && !value.isBlank())
+            .collect(Collectors.joining(","));
+
     return ResponseEntity.ok(
         bankConnectionService.handleCallback(
-            authentication.getName(), connectionIds, error, state));
+            authentication.getName(), mergedIds.isEmpty() ? null : mergedIds, error, state));
   }
 }

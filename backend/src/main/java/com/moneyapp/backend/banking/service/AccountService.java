@@ -68,7 +68,7 @@ public class AccountService {
     account.setComing(defaultMoney(powensAccount.coming()));
     account.setCurrency(defaultCurrency(powensAccount.currency()));
     account.setLastUpdate(powensAccount.lastUpdate());
-    account.setDisabled(powensAccount.disabled());
+    account.setDisabled(Boolean.TRUE.equals(powensAccount.disabled()));
     return accountRepository.save(account);
   }
 
