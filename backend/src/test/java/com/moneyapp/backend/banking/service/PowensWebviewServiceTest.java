@@ -16,14 +16,15 @@ class PowensWebviewServiceTest {
                 "client-123",
                 "secret",
                 "manage-token",
-                "https://local.moneyapp.me/api/bank/callback"));
+                "https://local.nexioo.me/api/bank/callback"));
 
     String url = service.buildConnectUrl("temporary-code", "csrf-state");
 
-    assertThat(url).startsWith("https://sandbox.powens.test/auth/webview/connect?");
+    assertThat(url).startsWith("https://webview.powens.com/en/connect?");
+    assertThat(url).contains("domain=sandbox.powens.test");
     assertThat(url).contains("client_id=client-123");
     assertThat(url)
-        .contains("redirect_uri=https%3A%2F%2Flocal.moneyapp.me%2Fapi%2Fbank%2Fcallback");
+        .contains("redirect_uri=https%3A%2F%2Flocal.nexioo.me%2Fapi%2Fbank%2Fcallback");
     assertThat(url).contains("code=temporary-code");
     assertThat(url).contains("state=csrf-state");
   }

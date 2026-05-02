@@ -14,8 +14,8 @@ public class PowensWebviewService {
   private final PowensProperties powensProperties;
 
   public String buildConnectUrl(String temporaryCode, String state) {
-    return UriComponentsBuilder.fromUriString(
-            "https://" + powensProperties.domain() + "/auth/webview/connect")
+    return UriComponentsBuilder.fromUriString("https://webview.powens.com/en/connect")
+        .queryParam("domain", encode(powensProperties.domain()))
         .queryParam("client_id", encode(powensProperties.clientId()))
         .queryParam("redirect_uri", encode(powensProperties.redirectUrl()))
         .queryParam("code", encode(temporaryCode))
