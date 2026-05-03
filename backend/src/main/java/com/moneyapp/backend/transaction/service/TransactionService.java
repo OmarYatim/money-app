@@ -96,8 +96,7 @@ public class TransactionService {
     transaction.setValue(defaultMoney(powensTransaction.value()));
 
     if (!transaction.isCategoryOverridden()) {
-      transaction.setCategory(
-          categoryMappingService.map(powensTransaction.idCategory()).name());
+      transaction.setCategory(categoryMappingService.map(powensTransaction.idCategory()).name());
     }
 
     return transactionRepository.save(transaction);

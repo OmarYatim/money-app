@@ -155,7 +155,8 @@ class TransactionServiceTest {
                         "Market",
                         "Supermarket card payment",
                         BigDecimal.valueOf(-42.50),
-                        2)))); // id_category=2 → GROCERIES, but categoryOverridden=true so stays DINING
+                        2)))); // id_category=2 → GROCERIES, but categoryOverridden=true so stays
+    // DINING
 
     Transaction transaction = service.syncTransactions(appUser).get(0);
 
