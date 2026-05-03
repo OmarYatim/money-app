@@ -5,7 +5,10 @@ import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.dashboard.dto.DashboardSummaryResponse;
+import com.moneyapp.backend.transaction.entity.Transaction;
+import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
@@ -22,12 +25,14 @@ public class DashboardSummaryService {
 
   private final CurrentAppUserService currentAppUserService;
   private final AccountRepository accountRepository;
+  private final TransactionRepository transactionRepository;
 
   @Transactional(readOnly = true)
   public DashboardSummaryResponse compute(String email) {
     AppUser appUser = currentAppUserService.resolveExisting(email);
     List<Account> accounts =
         accountRepository.findByUserIdAndDisabledFalseOrderByNameAsc(appUser.getId());
+    List<Transaction> monthlyTransactions = findCurrentMonthTransactions(appUser.getId());
 
     BigDecimal totalAssets = sumAssets(accounts);
     BigDecimal totalLiabilities = sumLiabilities(accounts);
@@ -37,10 +42,15 @@ public class DashboardSummaryService {
         totalAssets,
         totalLiabilities,
         sumFutureBalance(accounts),
-        BigDecimal.ZERO,
-        BigDecimal.ZERO,
+        sumMonthlyIncome(monthlyTransactions),
+        sumMonthlyExpenses(monthlyTransactions),
         BigDecimal.ZERO,
         lastSyncedAt(accounts));
+  }
+
+  private List<Transaction> findCurrentMonthTransactions(Long userId) {
+    LocalDate today = LocalDate.now();
+    return transactionRepository.findByUserIdAndDateBetween(userId, today.withDayOfMonth(1), today);
   }
 
   private BigDecimal sumAssets(List<Account> accounts) {
@@ -61,6 +71,21 @@ public class DashboardSummaryService {
   private BigDecimal sumFutureBalance(List<Account> accounts) {
     return accounts.stream()
         .map(account -> account.getBalance().add(account.getComing()))
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  private BigDecimal sumMonthlyIncome(List<Transaction> transactions) {
+    return transactions.stream()
+        .map(Transaction::getValue)
+        .filter(value -> value.compareTo(BigDecimal.ZERO) > 0)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  private BigDecimal sumMonthlyExpenses(List<Transaction> transactions) {
+    return transactions.stream()
+        .map(Transaction::getValue)
+        .filter(value -> value.compareTo(BigDecimal.ZERO) < 0)
+        .map(BigDecimal::abs)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 

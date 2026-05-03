@@ -7,8 +7,10 @@ import com.moneyapp.backend.auth.repository.AppUserRepository;
 import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.dashboard.dto.DashboardSummaryResponse;
+import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -66,6 +68,23 @@ class DashboardSummaryServiceTest {
     assertThat(summary.lastSyncedAt()).isEqualTo(newestSync);
   }
 
+  @Test
+  void computeCalculatesMonthlyIncomeAndExpensesForCurrentMonth() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    LocalDate today = LocalDate.now();
+    transactionRepository.save(transaction(appUser.getId(), 1L, today, "Salary", "2000"));
+    transactionRepository.save(transaction(appUser.getId(), 2L, today, "Groceries", "-50"));
+    transactionRepository.save(
+        transaction(appUser.getId(), 3L, today.withDayOfMonth(1), "Rent", "-1000"));
+    transactionRepository.save(
+        transaction(appUser.getId(), 4L, today.minusMonths(1), "Old rent", "-900"));
+
+    DashboardSummaryResponse summary = dashboardSummaryService.compute(appUser.getEmail());
+
+    assertThat(summary.monthlyIncome()).isEqualByComparingTo("2000");
+    assertThat(summary.monthlyExpenses()).isEqualByComparingTo("1050");
+  }
+
   private Account account(
       Long userId,
       Long externalAccountId,
@@ -94,6 +113,18 @@ class DashboardSummaryServiceTest {
         .currency("EUR")
         .lastUpdate(lastUpdate)
         .disabled(disabled)
+        .build();
+  }
+
+  private Transaction transaction(
+      Long userId, Long externalTransactionId, LocalDate date, String label, String value) {
+    return Transaction.builder()
+        .userId(userId)
+        .externalTransactionId(externalTransactionId)
+        .date(date)
+        .label(label)
+        .value(new BigDecimal(value))
+        .category("OTHER")
         .build();
   }
 }
