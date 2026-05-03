@@ -22,6 +22,8 @@ public class DashboardSummaryService {
 
   private static final Set<String> ASSET_TYPES = Set.of("checking", "savings");
   private static final Set<String> LIABILITY_TYPES = Set.of("credit", "loan");
+  private static final int EXPENSE_LOOKBACK_DAYS = 30;
+  private static final int DAILY_SPENDING_OFFSET_DAYS = 3;
 
   private final CurrentAppUserService currentAppUserService;
   private final AccountRepository accountRepository;
@@ -33,9 +35,10 @@ public class DashboardSummaryService {
     List<Account> accounts =
         accountRepository.findByUserIdAndDisabledFalseOrderByNameAsc(appUser.getId());
     LocalDate today = LocalDate.now();
-    List<Transaction> monthlyTransactions = findCurrentMonthTransactions(appUser.getId());
+    List<Transaction> monthlyTransactions = findRecentExpenseWindowTransactions(appUser.getId());
     List<Transaction> dailyTransactions =
-        transactionRepository.findByUserIdAndDate(appUser.getId(), today);
+        transactionRepository.findByUserIdAndDate(
+            appUser.getId(), today.minusDays(DAILY_SPENDING_OFFSET_DAYS));
 
     BigDecimal totalAssets = sumAssets(accounts);
     BigDecimal totalLiabilities = sumLiabilities(accounts);
@@ -51,9 +54,10 @@ public class DashboardSummaryService {
         lastSyncedAt(accounts));
   }
 
-  private List<Transaction> findCurrentMonthTransactions(Long userId) {
+  private List<Transaction> findRecentExpenseWindowTransactions(Long userId) {
     LocalDate today = LocalDate.now();
-    return transactionRepository.findByUserIdAndDateBetween(userId, today.withDayOfMonth(1), today);
+    return transactionRepository.findByUserIdAndDateBetween(
+        userId, today.minusDays(EXPENSE_LOOKBACK_DAYS - 1L), today);
   }
 
   private BigDecimal sumAssets(List<Account> accounts) {

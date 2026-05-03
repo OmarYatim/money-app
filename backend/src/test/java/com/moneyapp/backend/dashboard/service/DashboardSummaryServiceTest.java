@@ -69,15 +69,15 @@ class DashboardSummaryServiceTest {
   }
 
   @Test
-  void computeCalculatesMonthlyIncomeAndExpensesForCurrentMonth() {
+  void computeCalculatesIncomeAndExpensesForLastThirtyDays() {
     AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
     LocalDate today = LocalDate.now();
     transactionRepository.save(transaction(appUser.getId(), 1L, today, "Salary", "2000"));
     transactionRepository.save(transaction(appUser.getId(), 2L, today, "Groceries", "-50"));
     transactionRepository.save(
-        transaction(appUser.getId(), 3L, today.withDayOfMonth(1), "Rent", "-1000"));
+        transaction(appUser.getId(), 3L, today.minusDays(29), "Rent", "-1000"));
     transactionRepository.save(
-        transaction(appUser.getId(), 4L, today.minusMonths(1), "Old rent", "-900"));
+        transaction(appUser.getId(), 4L, today.minusDays(30), "Old rent", "-900"));
 
     DashboardSummaryResponse summary = dashboardSummaryService.compute(appUser.getEmail());
 
@@ -86,14 +86,16 @@ class DashboardSummaryServiceTest {
   }
 
   @Test
-  void computeCalculatesDailySpendingFromTodaysExpensesOnly() {
+  void computeCalculatesDailySpendingFromThreeDaysAgoExpensesOnly() {
     AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
     LocalDate today = LocalDate.now();
-    transactionRepository.save(transaction(appUser.getId(), 1L, today, "Coffee", "-12"));
-    transactionRepository.save(transaction(appUser.getId(), 2L, today, "Lunch", "-45"));
-    transactionRepository.save(transaction(appUser.getId(), 3L, today, "Refund", "20"));
+    LocalDate spendingDate = today.minusDays(3);
+    transactionRepository.save(transaction(appUser.getId(), 1L, spendingDate, "Coffee", "-12"));
+    transactionRepository.save(transaction(appUser.getId(), 2L, spendingDate, "Lunch", "-45"));
+    transactionRepository.save(transaction(appUser.getId(), 3L, spendingDate, "Refund", "20"));
+    transactionRepository.save(transaction(appUser.getId(), 4L, today, "Today groceries", "-100"));
     transactionRepository.save(
-        transaction(appUser.getId(), 4L, today.minusDays(1), "Groceries", "-100"));
+        transaction(appUser.getId(), 5L, spendingDate.minusDays(1), "Old groceries", "-100"));
 
     DashboardSummaryResponse summary = dashboardSummaryService.compute(appUser.getEmail());
 
