@@ -10,7 +10,7 @@
     </button>
   </header>
 
-  @if (state().loading) {
+  @if (state().loadingInitial) {
     <div class="transaction-list__loading" aria-live="polite">
       <mat-spinner diameter="36" />
     </div>
@@ -30,10 +30,24 @@
       @for (transaction of state().transactions; track transaction.id) {
         <a class="transaction-row" [routerLink]="['/transactions', transaction.id]">
           <div class="transaction-row__meta">
-            <time class="transaction-row__date" [attr.datetime]="transaction.date">
-              {{ transaction.date | date: 'dd MMM yyyy' }}
-            </time>
-            <h2 class="transaction-row__label">{{ transaction.label }}</h2>
+            <div class="transaction-row__eyebrow">
+              <time class="transaction-row__date" [attr.datetime]="transaction.date">
+                {{ transaction.date | date: 'dd MMM yyyy' }}
+              </time>
+              @if (transaction.accountName) {
+                <span class="transaction-row__account">{{ transaction.accountName }}</span>
+              }
+            </div>
+            <h2 class="transaction-row__label">
+              <mat-icon
+                class="transaction-row__reviewed-icon"
+                [class.transaction-row__reviewed-icon--active]="transaction.reviewed"
+                [attr.aria-label]="transaction.reviewed ? 'Reviewed' : 'Not reviewed'"
+              >
+                {{ transaction.reviewed ? 'task_alt' : 'radio_button_unchecked' }}
+              </mat-icon>
+              {{ transaction.label }}
+            </h2>
             @if (transaction.wording) {
               <p class="transaction-row__wording">{{ transaction.wording }}</p>
             }
@@ -57,5 +71,17 @@
         </a>
       }
     </div>
+
+    <div #loadMoreSentinel class="transaction-list__sentinel" aria-hidden="true"></div>
+
+    @if (state().loadingMore) {
+      <div class="transaction-list__loading-more" aria-live="polite">
+        <mat-spinner diameter="28" />
+      </div>
+    } @else if (state().page + 1 < state().totalPages) {
+      <button mat-button type="button" class="transaction-list__load-more" (click)="loadNextPage()">
+        Load more
+      </button>
+    }
   }
 </section>
