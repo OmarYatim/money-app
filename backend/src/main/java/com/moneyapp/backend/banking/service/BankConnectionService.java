@@ -3,6 +3,7 @@ package com.moneyapp.backend.banking.service;
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.banking.dto.BankConnectResponse;
 import com.moneyapp.backend.banking.dto.BankConnectionCallbackResponse;
+import com.moneyapp.backend.transaction.service.TransactionService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -17,6 +18,7 @@ public class BankConnectionService {
   private final BankConnectionStateService bankConnectionStateService;
   private final UserConnectionService userConnectionService;
   private final AccountService accountService;
+  private final TransactionService transactionService;
   private final ConnectionStatusService connectionStatusService;
   private final PowensWebviewService powensWebviewService;
 
@@ -48,6 +50,7 @@ public class BankConnectionService {
     List<Long> parsedConnectionIds = parseConnectionIds(connectionIds);
     userConnectionService.upsertActiveConnections(appUser.getId(), parsedConnectionIds);
     accountService.syncAccounts(appUser);
+    transactionService.syncTransactions(appUser);
     connectionStatusService.getStatus(email);
 
     return BankConnectionCallbackResponse.builder()
