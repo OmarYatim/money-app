@@ -197,6 +197,8 @@ Only the domain and credentials differ. No code changes needed to switch environ
 - **Nullable "primitives":** Fields that look booleans/numbers (e.g. `disabled`) can come back as JSON `null`. Declare them as boxed types (`Boolean`, `Long`) in DTOs and coalesce to a default at the mapper boundary, not as Java primitives — Jackson will throw `Cannot map null into type boolean` otherwise.
 - **Object-shaped "scalars":** Some fields that *look* scalar are actually nested objects. `currency` is the prime example — Powens returns `{"id":"EUR","symbol":"€",…}`, not the bare `"EUR"`. Model them as a small nested record on the Powens DTO and project to a flat field in the entity at the mapper boundary.
 - **Aliased ID fields:** Powens uses `id_user` in some responses, `user_id` in others. Use `@JsonProperty` + `@JsonAlias` to accept both.
+- **Category is an integer ID, not a string:** Transaction `categories` (string array) does not exist in the Powens response. The real field is `id_category` (integer). The sandbox uses a single dummy ID (`9998`) for all transactions, so category mapping cannot be tested against sandbox data.
+- **WebClient buffer limit:** The default WebClient in-memory buffer is 256 KB, which is too small for a full transaction page (500 transactions ≈ several MB). The `WebClientConfig` bean raises this to 5 MB — do not remove that setting.
 
 ---
 
