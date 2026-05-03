@@ -23,8 +23,7 @@ class PowensWebviewServiceTest {
     assertThat(url).startsWith("https://webview.powens.com/en/connect?");
     assertThat(url).contains("domain=sandbox.powens.test");
     assertThat(url).contains("client_id=client-123");
-    assertThat(url)
-        .contains("redirect_uri=https%3A%2F%2Flocal.nexioo.me%2Fapi%2Fbank%2Fcallback");
+    assertThat(url).contains("redirect_uri=https%3A%2F%2Flocal.nexioo.me%2Fapi%2Fbank%2Fcallback");
     assertThat(url).contains("code=temporary-code");
     assertThat(url).contains("state=csrf-state");
   }

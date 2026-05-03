@@ -50,8 +50,7 @@ class PowensAuthServiceTest {
             .powensUserId("existing-powens-id")
             .build());
     StubPowensClient powensClient =
-        StubPowensClient.withAccessToken(
-            new PowensAccessTokenResponse("new-token", "new-id"));
+        StubPowensClient.withAccessToken(new PowensAccessTokenResponse("new-token", "new-id"));
     PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
 
     AppUser appUser = service.ensurePowensUser("existing@example.com");

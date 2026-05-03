@@ -16,7 +16,8 @@ public record PowensAccountResponse(
     BigDecimal balance,
     BigDecimal coming,
     PowensCurrency currency,
-    @JsonProperty("last_update") @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime lastUpdate,
+    @JsonProperty("last_update") @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+        LocalDateTime lastUpdate,
     Boolean disabled) {
 
   public record PowensCurrency(String id, String symbol) {}
