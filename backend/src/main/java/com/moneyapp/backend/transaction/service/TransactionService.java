@@ -1,7 +1,7 @@
 package com.moneyapp.backend.transaction.service;
 
 import com.moneyapp.backend.auth.entity.AppUser;
-import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.banking.service.PowensClient;
@@ -27,18 +27,14 @@ public class TransactionService {
 
   private final TransactionRepository transactionRepository;
   private final AccountRepository accountRepository;
-  private final AppUserRepository appUserRepository;
+  private final CurrentAppUserService currentAppUserService;
   private final PowensClient powensClient;
   private final CategoryMappingService categoryMappingService;
 
   @Transactional(readOnly = true)
   public List<TransactionResponse> findTransactions(String email) {
-    return appUserRepository
-        .findByEmail(email)
-        .map(AppUser::getId)
-        .map(transactionRepository::findByUserIdOrderByDateDescIdDesc)
-        .orElse(List.of())
-        .stream()
+    AppUser appUser = currentAppUserService.resolveExisting(email);
+    return transactionRepository.findByUserIdOrderByDateDescIdDesc(appUser.getId()).stream()
         .map(TransactionMapper::toResponse)
         .toList();
   }
@@ -108,10 +104,7 @@ public class TransactionService {
   }
 
   private Long requireUserId(String email) {
-    return appUserRepository
-        .findByEmail(email)
-        .map(AppUser::getId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+    return currentAppUserService.resolveExisting(email).getId();
   }
 
   private Transaction requireTransaction(Long transactionId) {

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.dto.AccountResponse;
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountResponse;
@@ -37,6 +38,8 @@ class AccountServiceTest {
 
   @Autowired private AccountRepository accountRepository;
 
+  @Autowired private CurrentAppUserService currentAppUserService;
+
   @BeforeEach
   void setUp() {
     accountRepository.deleteAll();
@@ -54,7 +57,7 @@ class AccountServiceTest {
                 .build());
     AccountService service =
         new AccountService(
-            appUserRepository,
+            currentAppUserService,
             accountRepository,
             new StubPowensClient(
                 new PowensAccountsResponse(
@@ -102,7 +105,7 @@ class AccountServiceTest {
             .build());
     AccountService service =
         new AccountService(
-            appUserRepository,
+            currentAppUserService,
             accountRepository,
             new StubPowensClient(new PowensAccountsResponse(List.of())));
 
@@ -117,13 +120,41 @@ class AccountServiceTest {
   void syncAccountsRequiresPowensIdentity() {
     AccountService service =
         new AccountService(
-            appUserRepository,
+            currentAppUserService,
             accountRepository,
             new StubPowensClient(new PowensAccountsResponse(List.of())));
 
     assertThatThrownBy(() -> service.syncAccounts(AppUser.builder().id(1L).build()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Powens user identity is required before syncing accounts");
+  }
+
+  @Test
+  void findAccountsFallsBackToOnlyExistingUserWhenPrincipalDoesNotMatchEmail() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("dev@nexioo.me").build());
+    accountRepository.save(
+        Account.builder()
+            .userId(appUser.getId())
+            .externalAccountId(123L)
+            .connectionId(456L)
+            .institutionName("Test Bank")
+            .name("Main checking")
+            .type("checking")
+            .accountNumberLastFour("1234")
+            .balance(BigDecimal.TEN)
+            .coming(BigDecimal.ZERO)
+            .currency("EUR")
+            .build());
+    AccountService service =
+        new AccountService(
+            currentAppUserService,
+            accountRepository,
+            new StubPowensClient(new PowensAccountsResponse(List.of())));
+
+    List<AccountResponse> accounts = service.findAccounts("user");
+
+    assertThat(accounts).hasSize(1);
+    assertThat(accounts.get(0).name()).isEqualTo("Main checking");
   }
 
   private record StubPowensClient(PowensAccountsResponse response) implements PowensClient {

@@ -8,6 +8,9 @@ spring:
   jpa:
     show-sql: ${DEV_JPA_SHOW_SQL:true}
 
+app:
+  auth-enabled: ${APP_AUTH_ENABLED:false}
+
 powens:
   domain: ${POWENS_DOMAIN}
   client-id: ${POWENS_CLIENT_ID}

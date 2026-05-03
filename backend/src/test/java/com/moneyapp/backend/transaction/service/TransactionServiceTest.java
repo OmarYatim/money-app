@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
@@ -43,6 +44,8 @@ class TransactionServiceTest {
   @Autowired private AccountRepository accountRepository;
 
   @Autowired private TransactionRepository transactionRepository;
+
+  @Autowired private CurrentAppUserService currentAppUserService;
 
   @BeforeEach
   void setUp() {
@@ -252,7 +255,7 @@ class TransactionServiceTest {
     return new TransactionService(
         transactionRepository,
         accountRepository,
-        appUserRepository,
+        currentAppUserService,
         new StubPowensClient(response),
         new CategoryMappingService());
   }
