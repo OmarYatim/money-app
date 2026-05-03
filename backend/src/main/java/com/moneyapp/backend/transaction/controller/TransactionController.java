@@ -2,6 +2,7 @@ package com.moneyapp.backend.transaction.controller;
 
 import com.moneyapp.backend.transaction.dto.TransactionResponse;
 import com.moneyapp.backend.transaction.dto.UpdateTransactionCategoryRequest;
+import com.moneyapp.backend.transaction.dto.UpdateTransactionInternalTransferRequest;
 import com.moneyapp.backend.transaction.service.TransactionService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -45,6 +46,16 @@ public class TransactionController {
     return ResponseEntity.ok(
         transactionService.updateCategory(
             authenticatedEmail(authentication), id, request.category()));
+  }
+
+  @PatchMapping("/{id}/internal-transfer")
+  public ResponseEntity<TransactionResponse> updateInternalTransfer(
+      @PathVariable Long id,
+      @RequestBody UpdateTransactionInternalTransferRequest request,
+      Authentication authentication) {
+    return ResponseEntity.ok(
+        transactionService.updateInternalTransfer(
+            authenticatedEmail(authentication), id, request.internalTransfer()));
   }
 
   private String authenticatedEmail(Authentication authentication) {

@@ -51,8 +51,8 @@ public class BankConnectionService {
 
     List<Long> parsedConnectionIds = parseConnectionIds(connectionIds);
     userConnectionService.upsertActiveConnections(appUser.getId(), parsedConnectionIds);
-    accountService.syncAccounts(appUser);
-    transactionService.syncTransactions(appUser);
+    AccountService.AccountSyncResult syncResult = accountService.syncAccounts(appUser);
+    transactionService.syncTransactions(appUser, syncResult.ibans());
     connectionStatusService.getStatus(appUser.getEmail());
 
     return BankConnectionCallbackResponse.builder()
