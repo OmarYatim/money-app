@@ -34,15 +34,17 @@ public class AccountService {
         .toList();
   }
 
+  public record AccountSyncResult(List<Account> accounts, Set<String> ibans) {}
+
   @Transactional
-  public List<Account> syncAccounts(AppUser appUser) {
+  public AccountSyncResult syncAccounts(AppUser appUser) {
     if (appUser == null || appUser.getId() == null || isBlank(appUser.getPowensToken())) {
       throw new IllegalStateException("Powens user identity is required before syncing accounts");
     }
 
     PowensAccountsResponse response = powensClient.fetchAccounts(appUser.getPowensToken());
     if (response == null || response.accounts() == null) {
-      return List.of();
+      return new AccountSyncResult(List.of(), Set.of());
     }
 
     List<Account> syncedAccounts =
@@ -51,7 +53,14 @@ public class AccountService {
             .map(account -> upsertAccount(appUser.getId(), account))
             .toList();
     disableDuplicateVisibleAccounts(appUser.getId(), syncedAccounts);
-    return syncedAccounts;
+
+    Set<String> ibans =
+        response.accounts().stream()
+            .map(PowensAccountResponse::iban)
+            .filter(iban -> iban != null && !iban.isBlank())
+            .collect(Collectors.toSet());
+
+    return new AccountSyncResult(syncedAccounts, ibans);
   }
 
   private Account upsertAccount(Long userId, PowensAccountResponse powensAccount) {
