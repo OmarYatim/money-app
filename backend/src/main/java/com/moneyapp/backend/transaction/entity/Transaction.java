@@ -54,6 +54,12 @@ public class Transaction {
 
   @Column private String wording;
 
+  @Column(name = "original_wording")
+  private String originalWording;
+
+  @Column(name = "application_date")
+  private LocalDate applicationDate;
+
   @Column(name = "transaction_value", nullable = false, precision = 19, scale = 4)
   @Builder.Default
   private BigDecimal value = BigDecimal.ZERO;
@@ -75,6 +81,16 @@ public class Transaction {
   @Column(name = "internal_transfer_overridden", nullable = false)
   @Builder.Default
   private boolean internalTransferOverridden = false;
+
+  @Column(nullable = false)
+  @Builder.Default
+  private boolean reviewed = false;
+
+  @Column(name = "reviewed_at")
+  private LocalDateTime reviewedAt;
+
+  @Column(name = "counterparty_label")
+  private String counterpartyLabel;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;

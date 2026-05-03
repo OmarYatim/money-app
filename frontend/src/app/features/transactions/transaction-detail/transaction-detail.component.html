@@ -20,6 +20,21 @@
       </mat-card-header>
 
       <mat-card-content class="transaction-detail__content">
+        <div class="transaction-detail__status">
+          <mat-slide-toggle
+            [checked]="transaction.reviewed"
+            [disabled]="state().saving"
+            (change)="toggleReviewed()"
+          >
+            Reviewed
+          </mat-slide-toggle>
+          @if (transaction.reviewedAt) {
+            <span class="transaction-detail__status-note">
+              {{ transaction.reviewedAt | date: 'dd MMM yyyy, HH:mm' }}
+            </span>
+          }
+        </div>
+
         <p
           class="transaction-detail__amount"
           [class.transaction-detail__amount--positive]="transaction.value > 0"
@@ -31,6 +46,39 @@
         @if (transaction.wording) {
           <p class="transaction-detail__wording">{{ transaction.wording }}</p>
         }
+
+        <dl class="transaction-detail__facts">
+          @if (transaction.accountName) {
+            <div class="transaction-detail__fact">
+              <dt>Account</dt>
+              <dd>{{ transaction.accountName }}</dd>
+            </div>
+          }
+          @if (transaction.type) {
+            <div class="transaction-detail__fact">
+              <dt>Type</dt>
+              <dd>{{ transaction.type }}</dd>
+            </div>
+          }
+          @if (transaction.applicationDate) {
+            <div class="transaction-detail__fact">
+              <dt>Application date</dt>
+              <dd>{{ transaction.applicationDate | date: 'dd MMM yyyy' }}</dd>
+            </div>
+          }
+          @if (transaction.counterpartyLabel) {
+            <div class="transaction-detail__fact">
+              <dt>Counterparty</dt>
+              <dd>{{ transaction.counterpartyLabel }}</dd>
+            </div>
+          }
+          @if (transaction.originalWording) {
+            <div class="transaction-detail__fact transaction-detail__fact--wide">
+              <dt>Original wording</dt>
+              <dd>{{ transaction.originalWording }}</dd>
+            </div>
+          }
+        </dl>
 
         <div class="transaction-detail__category">
           <span [class]="transaction.category | categoryColor">
