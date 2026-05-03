@@ -90,6 +90,58 @@ class AccountServiceTest {
   }
 
   @Test
+  void syncAccountsReusesMatchingVisibleAccountWhenExternalIdChanges() {
+    AppUser appUser =
+        appUserRepository.save(
+            AppUser.builder()
+                .email("person@example.com")
+                .powensToken("permanent-token")
+                .powensUserId("powens-user-id")
+                .build());
+    accountRepository.save(
+        Account.builder()
+            .userId(appUser.getId())
+            .externalAccountId(111L)
+            .connectionId(456L)
+            .institutionName("Test Bank")
+            .name("Main checking")
+            .type("checking")
+            .accountNumberLastFour("1234")
+            .balance(BigDecimal.valueOf(100))
+            .coming(BigDecimal.ZERO)
+            .currency("EUR")
+            .build());
+    AccountService service =
+        new AccountService(
+            currentAppUserService,
+            accountRepository,
+            new StubPowensClient(
+                new PowensAccountsResponse(
+                    List.of(
+                        new PowensAccountResponse(
+                            222L,
+                            789L,
+                            "Test Bank",
+                            "Main checking",
+                            "checking",
+                            "FR7612345678901234",
+                            BigDecimal.valueOf(1200),
+                            BigDecimal.ZERO,
+                            new PowensAccountResponse.PowensCurrency("EUR", "€"),
+                            LocalDateTime.of(2026, 5, 2, 12, 0),
+                            false)))));
+
+    List<Account> accounts = service.syncAccounts(appUser);
+
+    assertThat(accounts).hasSize(1);
+    assertThat(accountRepository.findAll()).hasSize(1);
+    Account account = accountRepository.findAll().get(0);
+    assertThat(account.getExternalAccountId()).isEqualTo(222L);
+    assertThat(account.getConnectionId()).isEqualTo(789L);
+    assertThat(account.getBalance()).isEqualByComparingTo("1200");
+  }
+
+  @Test
   void findAccountsReturnsDtosForExistingUser() {
     AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
     accountRepository.save(
