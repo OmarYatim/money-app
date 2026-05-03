@@ -66,7 +66,7 @@ public class AccountService {
     account.setAccountNumberLastFour(lastFour(powensAccount.iban()));
     account.setBalance(defaultMoney(powensAccount.balance()));
     account.setComing(defaultMoney(powensAccount.coming()));
-    account.setCurrency(defaultCurrency(powensAccount.currency()));
+    account.setCurrency(defaultCurrency(currencyCode(powensAccount.currency())));
     account.setLastUpdate(powensAccount.lastUpdate());
     account.setDisabled(Boolean.TRUE.equals(powensAccount.disabled()));
     return accountRepository.save(account);
@@ -87,6 +87,10 @@ public class AccountService {
 
   private String defaultCurrency(String currency) {
     return isBlank(currency) ? "EUR" : currency;
+  }
+
+  private String currencyCode(PowensAccountResponse.PowensCurrency currency) {
+    return currency == null ? null : currency.id();
   }
 
   private boolean isBlank(String value) {

@@ -68,7 +68,7 @@ class AccountServiceTest {
                             "FR7612345678901234",
                             BigDecimal.valueOf(1200),
                             BigDecimal.valueOf(25),
-                            "EUR",
+                            new PowensAccountResponse.PowensCurrency("EUR", "€"),
                             LocalDateTime.of(2026, 5, 2, 12, 0),
                             false)))));
 

@@ -195,6 +195,7 @@ Only the domain and credentials differ. No code changes needed to switch environ
 
 - **Timestamps:** Powens returns `last_update` (and similar fields) as `"2026-05-03 01:10:14"` — space separator, no `T`. Jackson's default ISO-8601 parser rejects it. Annotate `LocalDateTime` fields with `@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")`.
 - **Nullable "primitives":** Fields that look booleans/numbers (e.g. `disabled`) can come back as JSON `null`. Declare them as boxed types (`Boolean`, `Long`) in DTOs and coalesce to a default at the mapper boundary, not as Java primitives — Jackson will throw `Cannot map null into type boolean` otherwise.
+- **Object-shaped "scalars":** Some fields that *look* scalar are actually nested objects. `currency` is the prime example — Powens returns `{"id":"EUR","symbol":"€",…}`, not the bare `"EUR"`. Model them as a small nested record on the Powens DTO and project to a flat field in the entity at the mapper boundary.
 - **Aliased ID fields:** Powens uses `id_user` in some responses, `user_id` in others. Use `@JsonProperty` + `@JsonAlias` to accept both.
 
 ---
