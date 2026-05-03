@@ -25,10 +25,27 @@ public class BankConnectionStateService {
       throw new InvalidBankConnectionStateException();
     }
 
-    BankConnectionState bankConnectionState =
+    consume(
         bankConnectionStateRepository
             .findByUserIdAndStateAndConsumedFalse(userId, state)
+            .orElseThrow(InvalidBankConnectionStateException::new));
+  }
+
+  @Transactional
+  public Long consume(String state) {
+    if (state == null || state.isBlank()) {
+      throw new InvalidBankConnectionStateException();
+    }
+
+    BankConnectionState bankConnectionState =
+        bankConnectionStateRepository
+            .findByStateAndConsumedFalse(state)
             .orElseThrow(InvalidBankConnectionStateException::new);
+    consume(bankConnectionState);
+    return bankConnectionState.getUserId();
+  }
+
+  private void consume(BankConnectionState bankConnectionState) {
     bankConnectionState.setConsumed(true);
     bankConnectionStateRepository.save(bankConnectionState);
   }

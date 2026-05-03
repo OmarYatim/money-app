@@ -1,6 +1,7 @@
 package com.moneyapp.backend.banking.service;
 
 import com.moneyapp.backend.auth.entity.AppUser;
+import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.dto.BankConnectResponse;
 import com.moneyapp.backend.banking.dto.BankConnectionCallbackResponse;
 import com.moneyapp.backend.transaction.service.TransactionService;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class BankConnectionService {
 
   private final PowensAuthService powensAuthService;
+  private final CurrentAppUserService currentAppUserService;
   private final BankConnectionStateService bankConnectionStateService;
   private final UserConnectionService userConnectionService;
   private final AccountService accountService;
@@ -35,9 +37,9 @@ public class BankConnectionService {
   }
 
   public BankConnectionCallbackResponse handleCallback(
-      String email, String connectionIds, String error, String state) {
-    AppUser appUser = powensAuthService.ensurePowensUser(email);
-    bankConnectionStateService.consume(appUser.getId(), state);
+      String connectionIds, String error, String state) {
+    Long userId = bankConnectionStateService.consume(state);
+    AppUser appUser = currentAppUserService.resolveExisting(userId);
 
     if (error != null && !error.isBlank()) {
       return BankConnectionCallbackResponse.builder()
@@ -51,7 +53,7 @@ public class BankConnectionService {
     userConnectionService.upsertActiveConnections(appUser.getId(), parsedConnectionIds);
     accountService.syncAccounts(appUser);
     transactionService.syncTransactions(appUser);
-    connectionStatusService.getStatus(email);
+    connectionStatusService.getStatus(appUser.getEmail());
 
     return BankConnectionCallbackResponse.builder()
         .status("connected")
