@@ -10,6 +10,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -19,7 +20,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { RouterLink } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 
 import type { Account } from '../../../shared/models/account.model';
 import { CATEGORY_TYPES, type CategoryType } from '../../../shared/models/category.model';
@@ -103,6 +104,12 @@ export class TransactionListComponent {
   });
 
   constructor() {
+    this.filterForm.controls.keyword.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
+      .subscribe(() => {
+        void this.reloadTransactions();
+      });
+
     void this.loadAccounts();
     void this.reloadTransactions();
 
@@ -156,15 +163,18 @@ export class TransactionListComponent {
   }
 
   protected async clearFilters(): Promise<void> {
-    this.filterForm.reset({
-      keyword: '',
-      accountId: null,
-      category: '',
-      minDate: '',
-      maxDate: '',
-      minAmount: '',
-      maxAmount: '',
-    });
+    this.filterForm.reset(
+      {
+        keyword: '',
+        accountId: null,
+        category: '',
+        minDate: '',
+        maxDate: '',
+        minAmount: '',
+        maxAmount: '',
+      },
+      { emitEvent: false },
+    );
     await this.reloadTransactions();
   }
 
