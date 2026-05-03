@@ -85,6 +85,21 @@ class DashboardSummaryServiceTest {
     assertThat(summary.monthlyExpenses()).isEqualByComparingTo("1050");
   }
 
+  @Test
+  void computeCalculatesDailySpendingFromTodaysExpensesOnly() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    LocalDate today = LocalDate.now();
+    transactionRepository.save(transaction(appUser.getId(), 1L, today, "Coffee", "-12"));
+    transactionRepository.save(transaction(appUser.getId(), 2L, today, "Lunch", "-45"));
+    transactionRepository.save(transaction(appUser.getId(), 3L, today, "Refund", "20"));
+    transactionRepository.save(
+        transaction(appUser.getId(), 4L, today.minusDays(1), "Groceries", "-100"));
+
+    DashboardSummaryResponse summary = dashboardSummaryService.compute(appUser.getEmail());
+
+    assertThat(summary.dailySpending()).isEqualByComparingTo("57");
+  }
+
   private Account account(
       Long userId,
       Long externalAccountId,

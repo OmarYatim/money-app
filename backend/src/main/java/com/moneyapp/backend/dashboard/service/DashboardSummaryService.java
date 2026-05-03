@@ -32,7 +32,10 @@ public class DashboardSummaryService {
     AppUser appUser = currentAppUserService.resolveExisting(email);
     List<Account> accounts =
         accountRepository.findByUserIdAndDisabledFalseOrderByNameAsc(appUser.getId());
+    LocalDate today = LocalDate.now();
     List<Transaction> monthlyTransactions = findCurrentMonthTransactions(appUser.getId());
+    List<Transaction> dailyTransactions =
+        transactionRepository.findByUserIdAndDate(appUser.getId(), today);
 
     BigDecimal totalAssets = sumAssets(accounts);
     BigDecimal totalLiabilities = sumLiabilities(accounts);
@@ -44,7 +47,7 @@ public class DashboardSummaryService {
         sumFutureBalance(accounts),
         sumMonthlyIncome(monthlyTransactions),
         sumMonthlyExpenses(monthlyTransactions),
-        BigDecimal.ZERO,
+        sumDailySpending(dailyTransactions),
         lastSyncedAt(accounts));
   }
 
@@ -82,6 +85,14 @@ public class DashboardSummaryService {
   }
 
   private BigDecimal sumMonthlyExpenses(List<Transaction> transactions) {
+    return transactions.stream()
+        .map(Transaction::getValue)
+        .filter(value -> value.compareTo(BigDecimal.ZERO) < 0)
+        .map(BigDecimal::abs)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  private BigDecimal sumDailySpending(List<Transaction> transactions) {
     return transactions.stream()
         .map(Transaction::getValue)
         .filter(value -> value.compareTo(BigDecimal.ZERO) < 0)
