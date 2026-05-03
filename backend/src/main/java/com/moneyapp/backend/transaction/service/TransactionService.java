@@ -16,6 +16,7 @@ import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import com.moneyapp.backend.transaction.spec.TransactionSpecification;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -117,6 +118,17 @@ public class TransactionService {
 
     transaction.setInternalTransfer(internalTransfer);
     transaction.setInternalTransferOverridden(true);
+    return TransactionMapper.toResponse(transactionRepository.save(transaction));
+  }
+
+  @Transactional
+  public TransactionResponse updateReviewed(String email, Long transactionId, boolean reviewed) {
+    Long userId = requireUserId(email);
+    Transaction transaction = requireTransaction(transactionId);
+    verifyOwner(transaction, userId);
+
+    transaction.setReviewed(reviewed);
+    transaction.setReviewedAt(reviewed ? LocalDateTime.now() : null);
     return TransactionMapper.toResponse(transactionRepository.save(transaction));
   }
 

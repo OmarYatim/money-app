@@ -472,6 +472,79 @@ class TransactionServiceTest {
   }
 
   @Test
+  void updateReviewedSetsReviewedAtWhenReviewed() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Transaction transaction =
+        transactionRepository.save(
+            Transaction.builder()
+                .userId(appUser.getId())
+                .externalTransactionId(123L)
+                .date(LocalDate.of(2026, 5, 2))
+                .label("Market")
+                .value(BigDecimal.valueOf(-25))
+                .category("GROCERIES")
+                .build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    TransactionResponse response =
+        service.updateReviewed("person@example.com", transaction.getId(), true);
+
+    assertThat(response.reviewed()).isTrue();
+    assertThat(response.reviewedAt()).isNotNull();
+    Transaction saved = transactionRepository.findById(transaction.getId()).orElseThrow();
+    assertThat(saved.isReviewed()).isTrue();
+    assertThat(saved.getReviewedAt()).isNotNull();
+  }
+
+  @Test
+  void updateReviewedClearsReviewedAtWhenUnreviewed() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Transaction transaction =
+        transactionRepository.save(
+            Transaction.builder()
+                .userId(appUser.getId())
+                .externalTransactionId(123L)
+                .date(LocalDate.of(2026, 5, 2))
+                .label("Market")
+                .value(BigDecimal.valueOf(-25))
+                .category("GROCERIES")
+                .reviewed(true)
+                .reviewedAt(LocalDateTime.of(2026, 5, 2, 10, 0))
+                .build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    TransactionResponse response =
+        service.updateReviewed("person@example.com", transaction.getId(), false);
+
+    assertThat(response.reviewed()).isFalse();
+    assertThat(response.reviewedAt()).isNull();
+    Transaction saved = transactionRepository.findById(transaction.getId()).orElseThrow();
+    assertThat(saved.isReviewed()).isFalse();
+    assertThat(saved.getReviewedAt()).isNull();
+  }
+
+  @Test
+  void updateReviewedRejectsOtherUsersTransaction() {
+    AppUser owner = appUserRepository.save(AppUser.builder().email("owner@example.com").build());
+    appUserRepository.save(AppUser.builder().email("other@example.com").build());
+    Transaction transaction =
+        transactionRepository.save(
+            Transaction.builder()
+                .userId(owner.getId())
+                .externalTransactionId(123L)
+                .date(LocalDate.of(2026, 5, 2))
+                .label("Market")
+                .value(BigDecimal.valueOf(-25))
+                .category("GROCERIES")
+                .build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    assertThatThrownBy(() -> service.updateReviewed("other@example.com", transaction.getId(), true))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("403 FORBIDDEN");
+  }
+
+  @Test
   void syncTransactionsMarksMatchingTransfersBetweenRegisteredAccountsAsInternal() {
     AppUser appUser =
         appUserRepository.save(

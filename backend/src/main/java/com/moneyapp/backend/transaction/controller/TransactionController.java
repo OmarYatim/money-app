@@ -4,6 +4,7 @@ import com.moneyapp.backend.transaction.dto.TransactionFilter;
 import com.moneyapp.backend.transaction.dto.TransactionResponse;
 import com.moneyapp.backend.transaction.dto.UpdateTransactionCategoryRequest;
 import com.moneyapp.backend.transaction.dto.UpdateTransactionInternalTransferRequest;
+import com.moneyapp.backend.transaction.dto.UpdateTransactionReviewedRequest;
 import com.moneyapp.backend.transaction.service.TransactionService;
 import jakarta.validation.Valid;
 import java.math.BigDecimal;
@@ -81,6 +82,16 @@ public class TransactionController {
     return ResponseEntity.ok(
         transactionService.updateInternalTransfer(
             authenticatedEmail(authentication), id, request.internalTransfer()));
+  }
+
+  @PatchMapping("/{id}/reviewed")
+  public ResponseEntity<TransactionResponse> updateReviewed(
+      @PathVariable Long id,
+      @Valid @RequestBody UpdateTransactionReviewedRequest request,
+      Authentication authentication) {
+    return ResponseEntity.ok(
+        transactionService.updateReviewed(
+            authenticatedEmail(authentication), id, request.reviewed()));
   }
 
   private String authenticatedEmail(Authentication authentication) {
