@@ -10,4 +10,6 @@ public record TransactionResponse(
     String wording,
     BigDecimal value,
     String category,
-    boolean categoryOverridden) {}
+    boolean categoryOverridden,
+    boolean internalTransfer,
+    boolean internalTransferOverridden) {}

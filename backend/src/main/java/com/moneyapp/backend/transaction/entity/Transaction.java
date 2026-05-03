@@ -72,6 +72,10 @@ public class Transaction {
   @Builder.Default
   private boolean internalTransfer = false;
 
+  @Column(name = "internal_transfer_overridden", nullable = false)
+  @Builder.Default
+  private boolean internalTransferOverridden = false;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 
