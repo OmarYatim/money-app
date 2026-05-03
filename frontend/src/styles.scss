@@ -1,1 +1,19 @@
-/* You can add global styles to this file, and also import other style files */
+html {
+  min-height: 100%;
+  color-scheme: light;
+}
+
+body {
+  min-height: 100%;
+  margin: 0;
+  background: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}

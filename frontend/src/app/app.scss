@@ -1,0 +1,31 @@
+:host {
+  display: block;
+  min-height: 100dvh;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--mat-sys-primary-container) 28%, transparent),
+      transparent 18rem
+    ),
+    var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+}
+
+.app-shell__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-block-end: 1px solid var(--mat-sys-outline-variant);
+  background: color-mix(in srgb, var(--mat-sys-surface) 92%, transparent);
+  color: var(--mat-sys-on-surface);
+}
+
+.app-shell__brand {
+  font: var(--mat-sys-title-large);
+}
+
+.app-shell__main {
+  width: min(100%, 72rem);
+  margin-inline: auto;
+  padding: 2rem 1.5rem;
+}
