@@ -10,23 +10,23 @@ class CategoryMappingServiceTest {
   private final CategoryMappingService categoryMappingService = new CategoryMappingService();
 
   @Test
-  void shouldMapSupermarketsToGroceries() {
-    assertThat(categoryMappingService.map("Supermarkets")).isEqualTo(CategoryType.GROCERIES);
+  void shouldMapFeedToGroceries() {
+    assertThat(categoryMappingService.map(2)).isEqualTo(CategoryType.GROCERIES);
   }
 
   @Test
-  void shouldMapRestaurantsToDining() {
-    assertThat(categoryMappingService.map("Restaurants")).isEqualTo(CategoryType.DINING);
+  void shouldMapTransportToTransport() {
+    assertThat(categoryMappingService.map(11)).isEqualTo(CategoryType.TRANSPORT);
   }
 
   @Test
-  void shouldMapPublicTransportToTransport() {
-    assertThat(categoryMappingService.map("Public Transport")).isEqualTo(CategoryType.TRANSPORT);
+  void shouldMapInsuranceToHealth() {
+    assertThat(categoryMappingService.map(3)).isEqualTo(CategoryType.HEALTH);
   }
 
   @Test
-  void shouldReturnOtherForEmptyCategory() {
-    assertThat(categoryMappingService.map("")).isEqualTo(CategoryType.OTHER);
+  void shouldReturnOtherForIndefini() {
+    assertThat(categoryMappingService.map(9998)).isEqualTo(CategoryType.OTHER);
   }
 
   @Test
@@ -35,8 +35,7 @@ class CategoryMappingServiceTest {
   }
 
   @Test
-  void shouldReturnOtherForUnknownCategory() {
-    assertThat(categoryMappingService.map("SomethingWeNeverSawBefore"))
-        .isEqualTo(CategoryType.OTHER);
+  void shouldReturnOtherForUnknownId() {
+    assertThat(categoryMappingService.map(99999)).isEqualTo(CategoryType.OTHER);
   }
 }

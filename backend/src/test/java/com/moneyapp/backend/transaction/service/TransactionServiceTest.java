@@ -84,7 +84,7 @@ class TransactionServiceTest {
                         "Market",
                         "Supermarket card payment",
                         BigDecimal.valueOf(-42.50),
-                        List.of("Supermarkets")))));
+                        2)))); // id_category=2 → GROCERIES
 
     List<Transaction> transactions = service.syncTransactions(appUser);
 
@@ -118,7 +118,7 @@ class TransactionServiceTest {
                         "Unknown",
                         null,
                         BigDecimal.TEN,
-                        List.of()))));
+                        9998)))); // id_category=9998 (Indéfini) → OTHER
 
     Transaction transaction = service.syncTransactions(appUser).get(0);
 
@@ -155,7 +155,7 @@ class TransactionServiceTest {
                         "Market",
                         "Supermarket card payment",
                         BigDecimal.valueOf(-42.50),
-                        List.of("Supermarkets")))));
+                        2)))); // id_category=2 → GROCERIES, but categoryOverridden=true so stays DINING
 
     Transaction transaction = service.syncTransactions(appUser).get(0);
 

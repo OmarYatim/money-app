@@ -3,7 +3,6 @@ package com.moneyapp.backend.transaction.dto;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 public record PowensTransactionResponse(
     Long id,
@@ -12,4 +11,4 @@ public record PowensTransactionResponse(
     String label,
     String wording,
     BigDecimal value,
-    List<String> categories) {}
+    @JsonProperty("id_category") Integer idCategory) {}

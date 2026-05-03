@@ -97,7 +97,7 @@ public class TransactionService {
 
     if (!transaction.isCategoryOverridden()) {
       transaction.setCategory(
-          categoryMappingService.map(firstCategory(powensTransaction.categories())).name());
+          categoryMappingService.map(powensTransaction.idCategory()).name());
     }
 
     return transactionRepository.save(transaction);
@@ -142,14 +142,6 @@ public class TransactionService {
         .findByUserIdAndExternalAccountId(userId, externalAccountId)
         .map(Account::getId)
         .orElse(null);
-  }
-
-  private String firstCategory(List<String> categories) {
-    if (categories == null || categories.isEmpty()) {
-      return null;
-    }
-
-    return categories.get(0);
   }
 
   private LocalDate defaultDate(LocalDate date) {
