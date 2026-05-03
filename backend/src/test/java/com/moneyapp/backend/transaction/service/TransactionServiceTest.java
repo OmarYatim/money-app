@@ -86,7 +86,8 @@ class TransactionServiceTest {
                         "Market",
                         "Supermarket card payment",
                         BigDecimal.valueOf(-42.50),
-                        2)))); // id_category=2 → GROCERIES
+                        2,
+                        "card")))); // id_category=2 → GROCERIES
 
     List<Transaction> transactions = service.syncTransactions(appUser);
 
@@ -120,7 +121,8 @@ class TransactionServiceTest {
                         "Unknown",
                         null,
                         BigDecimal.TEN,
-                        9998)))); // id_category=9998 (Indéfini) → OTHER
+                        9998,
+                        null)))); // id_category=9998 (Indéfini) → OTHER
 
     Transaction transaction = service.syncTransactions(appUser).get(0);
 
@@ -157,7 +159,8 @@ class TransactionServiceTest {
                         "Market",
                         "Supermarket card payment",
                         BigDecimal.valueOf(-42.50),
-                        2)))); // id_category=2 → GROCERIES, but categoryOverridden=true so stays
+                        2,
+                        null)))); // id_category=2 → GROCERIES, but categoryOverridden=true so stays
     // DINING
 
     Transaction transaction = service.syncTransactions(appUser).get(0);
@@ -252,6 +255,89 @@ class TransactionServiceTest {
             () -> service.updateCategory("other@example.com", transaction.getId(), "DINING"))
         .isInstanceOf(ResponseStatusException.class)
         .hasMessageContaining("403 FORBIDDEN");
+  }
+
+  @Test
+  void syncTransactionsMarksMatchingTransfersBetweenRegisteredAccountsAsInternal() {
+    AppUser appUser =
+        appUserRepository.save(
+            AppUser.builder()
+                .email("person@example.com")
+                .powensToken("token")
+                .powensUserId("powens-id")
+                .build());
+    Account checking =
+        accountRepository.save(
+            Account.builder()
+                .userId(appUser.getId())
+                .externalAccountId(10L)
+                .name("Checking")
+                .balance(BigDecimal.ZERO)
+                .coming(BigDecimal.ZERO)
+                .currency("EUR")
+                .build());
+    Account savings =
+        accountRepository.save(
+            Account.builder()
+                .userId(appUser.getId())
+                .externalAccountId(20L)
+                .name("Savings")
+                .balance(BigDecimal.ZERO)
+                .coming(BigDecimal.ZERO)
+                .currency("EUR")
+                .build());
+    TransactionService service =
+        transactionService(
+            new PowensTransactionsResponse(
+                List.of(
+                    new PowensTransactionResponse(
+                        1L,
+                        10L,
+                        LocalDate.of(2026, 5, 1),
+                        null,
+                        "Transfer out",
+                        BigDecimal.valueOf(-200),
+                        null,
+                        "transfer"),
+                    new PowensTransactionResponse(
+                        2L,
+                        20L,
+                        LocalDate.of(2026, 5, 1),
+                        null,
+                        "Transfer in",
+                        BigDecimal.valueOf(200),
+                        null,
+                        "transfer"),
+                    new PowensTransactionResponse(
+                        3L,
+                        10L,
+                        LocalDate.of(2026, 5, 1),
+                        "Groceries",
+                        null,
+                        BigDecimal.valueOf(-50),
+                        2,
+                        "card"))));
+
+    service.syncTransactions(appUser);
+
+    Transaction debit =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 1L)
+            .orElseThrow();
+    Transaction credit =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 2L)
+            .orElseThrow();
+    Transaction groceries =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 3L)
+            .orElseThrow();
+
+    assertThat(debit.getAccountId()).isEqualTo(checking.getId());
+    assertThat(credit.getAccountId()).isEqualTo(savings.getId());
+    assertThat(debit.isInternalTransfer()).isTrue();
+    assertThat(credit.isInternalTransfer()).isTrue();
+    assertThat(groceries.isInternalTransfer()).isFalse();
   }
 
   private TransactionService transactionService(PowensTransactionsResponse response) {

@@ -81,6 +81,7 @@ public class DashboardSummaryService {
 
   private BigDecimal sumMonthlyIncome(List<Transaction> transactions) {
     return transactions.stream()
+        .filter(t -> !t.isInternalTransfer())
         .map(Transaction::getValue)
         .filter(value -> value.compareTo(BigDecimal.ZERO) > 0)
         .reduce(BigDecimal.ZERO, BigDecimal::add);
@@ -88,6 +89,7 @@ public class DashboardSummaryService {
 
   private BigDecimal sumMonthlyExpenses(List<Transaction> transactions) {
     return transactions.stream()
+        .filter(t -> !t.isInternalTransfer())
         .map(Transaction::getValue)
         .filter(value -> value.compareTo(BigDecimal.ZERO) < 0)
         .map(BigDecimal::abs)
@@ -96,6 +98,7 @@ public class DashboardSummaryService {
 
   private BigDecimal sumDailySpending(List<Transaction> transactions) {
     return transactions.stream()
+        .filter(t -> !t.isInternalTransfer())
         .map(Transaction::getValue)
         .filter(value -> value.compareTo(BigDecimal.ZERO) < 0)
         .map(BigDecimal::abs)

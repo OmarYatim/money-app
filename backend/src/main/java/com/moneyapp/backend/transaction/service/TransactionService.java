@@ -14,7 +14,11 @@ import com.moneyapp.backend.transaction.mapper.TransactionMapper;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -71,10 +75,49 @@ public class TransactionService {
       return List.of();
     }
 
-    return response.transactions().stream()
-        .filter(transaction -> transaction.id() != null)
-        .map(transaction -> upsertTransaction(appUser.getId(), transaction))
-        .toList();
+    List<Transaction> saved =
+        response.transactions().stream()
+            .filter(transaction -> transaction.id() != null)
+            .map(transaction -> upsertTransaction(appUser.getId(), transaction))
+            .toList();
+    detectInternalTransfers(appUser.getId());
+    return saved;
+  }
+
+  private void detectInternalTransfers(Long userId) {
+    List<Transaction> candidates =
+        transactionRepository.findByUserIdAndTypeAndAccountIdIsNotNull(userId, "transfer");
+
+    Set<Long> matched = new HashSet<>();
+    for (Transaction debit : candidates) {
+      if (debit.getValue().compareTo(BigDecimal.ZERO) >= 0) continue;
+      if (matched.contains(debit.getId())) continue;
+
+      BigDecimal creditAmount = debit.getValue().negate();
+      candidates.stream()
+          .filter(c -> c.getValue().compareTo(creditAmount) == 0)
+          .filter(c -> !c.getAccountId().equals(debit.getAccountId()))
+          .filter(c -> !matched.contains(c.getId()))
+          .filter(c -> Math.abs(ChronoUnit.DAYS.between(c.getDate(), debit.getDate())) <= 1)
+          .findFirst()
+          .ifPresent(
+              credit -> {
+                matched.add(debit.getId());
+                matched.add(credit.getId());
+              });
+    }
+
+    List<Transaction> toUpdate = new ArrayList<>();
+    for (Transaction t : candidates) {
+      boolean shouldBeInternal = matched.contains(t.getId());
+      if (t.isInternalTransfer() != shouldBeInternal) {
+        t.setInternalTransfer(shouldBeInternal);
+        toUpdate.add(t);
+      }
+    }
+    if (!toUpdate.isEmpty()) {
+      transactionRepository.saveAll(toUpdate);
+    }
   }
 
   private Transaction upsertTransaction(Long userId, PowensTransactionResponse powensTransaction) {
@@ -94,6 +137,7 @@ public class TransactionService {
     transaction.setLabel(defaultLabel(powensTransaction));
     transaction.setWording(powensTransaction.wording());
     transaction.setValue(defaultMoney(powensTransaction.value()));
+    transaction.setType(powensTransaction.type());
 
     if (!transaction.isCategoryOverridden()) {
       transaction.setCategory(categoryMappingService.map(powensTransaction.idCategory()).name());
