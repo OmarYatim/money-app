@@ -1,0 +1,56 @@
+<section class="transaction-detail">
+  <a mat-button routerLink="/transactions" class="transaction-detail__back">
+    <mat-icon aria-hidden="true">arrow_back</mat-icon>
+    Transactions
+  </a>
+
+  @if (state().loading) {
+    <div class="transaction-detail__loading" aria-live="polite">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (state().error && !state().transaction) {
+    <mat-card appearance="outlined" class="transaction-detail__notice">
+      <mat-card-content>{{ state().error }}</mat-card-content>
+    </mat-card>
+  } @else if (state().transaction; as transaction) {
+    <mat-card appearance="outlined" class="transaction-detail__card">
+      <mat-card-header>
+        <mat-card-title>{{ transaction.label }}</mat-card-title>
+        <mat-card-subtitle>{{ transaction.date | date: 'dd MMM yyyy' }}</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content class="transaction-detail__content">
+        <p
+          class="transaction-detail__amount"
+          [class.transaction-detail__amount--positive]="transaction.value > 0"
+          [class.transaction-detail__amount--negative]="transaction.value < 0"
+        >
+          {{ transaction.value | currency: 'EUR' : 'symbol' : '1.2-2' }}
+        </p>
+
+        @if (transaction.wording) {
+          <p class="transaction-detail__wording">{{ transaction.wording }}</p>
+        }
+
+        <div class="transaction-detail__category">
+          <span [class]="transaction.category | categoryColor">
+            {{ categoryLabel(transaction.category) }}
+          </span>
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="state().saving"
+            (click)="editCategory()"
+          >
+            <mat-icon aria-hidden="true">edit</mat-icon>
+            Edit
+          </button>
+        </div>
+
+        @if (state().error) {
+          <p class="transaction-detail__error" aria-live="polite">{{ state().error }}</p>
+        }
+      </mat-card-content>
+    </mat-card>
+  }
+</section>

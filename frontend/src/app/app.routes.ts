@@ -16,6 +16,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'transactions/:id',
+    loadComponent: () =>
+      import('./features/transactions/transaction-detail/transaction-detail.component').then(
+        (component) => component.TransactionDetailComponent,
+      ),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'accounts',

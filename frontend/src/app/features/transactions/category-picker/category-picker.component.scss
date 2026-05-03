@@ -1,0 +1,54 @@
+.category-picker {
+  display: grid;
+  gap: 0.75rem;
+  padding-block: 0.75rem;
+}
+
+.category-picker__title {
+  margin: 0;
+  padding-inline: 1rem;
+  font: var(--mat-sys-title-large);
+}
+
+.category-badge {
+  display: inline-flex;
+  border: 1px solid currentColor;
+  border-radius: 999rem;
+  padding: 0.25rem 0.625rem;
+  font: var(--mat-sys-label-medium);
+}
+
+.category-badge--groceries,
+.category-badge--income,
+.category-badge--savings {
+  background: var(--mat-sys-primary-container);
+  color: var(--mat-sys-on-primary-container);
+}
+
+.category-badge--dining,
+.category-badge--shopping,
+.category-badge--subscription {
+  background: var(--mat-sys-tertiary-container);
+  color: var(--mat-sys-on-tertiary-container);
+}
+
+.category-badge--transport,
+.category-badge--travel,
+.category-badge--transfer {
+  background: color-mix(in srgb, var(--mat-sys-primary-container) 64%, var(--mat-sys-surface));
+  color: var(--mat-sys-primary);
+}
+
+.category-badge--utilities,
+.category-badge--rent,
+.category-badge--health,
+.category-badge--entertainment,
+.category-badge--education {
+  background: color-mix(in srgb, var(--mat-sys-tertiary-container) 72%, var(--mat-sys-surface));
+  color: var(--mat-sys-tertiary);
+}
+
+.category-badge--other {
+  background: var(--mat-sys-surface-container-high);
+  color: var(--mat-sys-on-surface-variant);
+}

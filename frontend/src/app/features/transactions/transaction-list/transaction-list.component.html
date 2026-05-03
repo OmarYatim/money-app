@@ -28,7 +28,7 @@
   } @else {
     <div class="transaction-list__rows">
       @for (transaction of state().transactions; track transaction.id) {
-        <article class="transaction-row">
+        <a class="transaction-row" [routerLink]="['/transactions', transaction.id]">
           <div class="transaction-row__meta">
             <time class="transaction-row__date" [attr.datetime]="transaction.date">
               {{ transaction.date | date: 'dd MMM yyyy' }}
@@ -51,7 +51,7 @@
               {{ transaction.value | currency: 'EUR' : 'symbol' : '1.2-2' }}
             </span>
           </div>
-        </article>
+        </a>
       }
     </div>
   }

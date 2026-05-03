@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { RouterLink } from '@angular/router';
 import { catchError, map, of, startWith, Subject, switchMap } from 'rxjs';
 
 import { CategoryColorPipe } from '../../../shared/pipes/category-color.pipe';
@@ -26,6 +27,7 @@ interface TransactionListState {
     MatCardModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    RouterLink,
     CategoryColorPipe,
   ],
   templateUrl: './transaction-list.component.html',
