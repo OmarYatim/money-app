@@ -10,6 +10,7 @@ import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +30,11 @@ class PowensAuthServiceTest {
   @Autowired private AppUserRepository appUserRepository;
 
   @Autowired private CurrentAppUserService currentAppUserService;
+
+  @BeforeEach
+  void setUp() {
+    appUserRepository.deleteAll();
+  }
 
   @Test
   void ensurePowensUserCreatesAndPersistsPowensIdentity() {

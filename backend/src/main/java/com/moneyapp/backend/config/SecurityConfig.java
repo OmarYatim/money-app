@@ -28,7 +28,10 @@ public class SecurityConfig {
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     if (!appProperties.authEnabled()) {
-      return http.csrf(AbstractHttpConfigurer::disable)
+      // CSRF disabled intentionally: dev-only path has no cookie/session auth, so no CSRF surface.
+      // DevAuthBypassFilter authenticates every request unconditionally.
+      return http.csrf(
+              AbstractHttpConfigurer::disable) // lgtm[java/spring-csrf-protection-disabled]
           .addFilterBefore(new DevAuthBypassFilter(), AnonymousAuthenticationFilter.class)
           .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
           .build();
