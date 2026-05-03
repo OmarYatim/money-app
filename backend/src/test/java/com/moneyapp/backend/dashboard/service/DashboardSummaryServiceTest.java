@@ -86,16 +86,14 @@ class DashboardSummaryServiceTest {
   }
 
   @Test
-  void computeCalculatesDailySpendingFromThreeDaysAgoExpensesOnly() {
+  void computeCalculatesDailySpendingFromTodayExpensesOnly() {
     AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
     LocalDate today = LocalDate.now();
-    LocalDate spendingDate = today.minusDays(3);
-    transactionRepository.save(transaction(appUser.getId(), 1L, spendingDate, "Coffee", "-12"));
-    transactionRepository.save(transaction(appUser.getId(), 2L, spendingDate, "Lunch", "-45"));
-    transactionRepository.save(transaction(appUser.getId(), 3L, spendingDate, "Refund", "20"));
-    transactionRepository.save(transaction(appUser.getId(), 4L, today, "Today groceries", "-100"));
+    transactionRepository.save(transaction(appUser.getId(), 1L, today, "Coffee", "-12"));
+    transactionRepository.save(transaction(appUser.getId(), 2L, today, "Lunch", "-45"));
+    transactionRepository.save(transaction(appUser.getId(), 3L, today, "Refund", "20"));
     transactionRepository.save(
-        transaction(appUser.getId(), 5L, spendingDate.minusDays(1), "Old groceries", "-100"));
+        transaction(appUser.getId(), 4L, today.minusDays(1), "Yesterday groceries", "-100"));
 
     DashboardSummaryResponse summary = dashboardSummaryService.compute(appUser.getEmail());
 
