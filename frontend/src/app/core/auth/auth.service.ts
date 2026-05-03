@@ -1,22 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, tap } from 'rxjs';
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  accessToken: string;
-  email: string;
-}
+import { EMPTY, Observable, catchError, finalize, tap } from 'rxjs';
+import { LoginRequest, LoginResponse, RegisterRequest } from '../../shared/models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -31,15 +17,15 @@ export class AuthService {
   }
 
   login(request: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>('/api/auth/login', request).pipe(
-      tap((res) => this.storeTokens(res)),
-    );
+    return this.http
+      .post<LoginResponse>('/api/auth/login', request)
+      .pipe(tap((res) => this.storeTokens(res)));
   }
 
   register(request: RegisterRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>('/api/auth/register', request).pipe(
-      tap((res) => this.storeTokens(res)),
-    );
+    return this.http
+      .post<LoginResponse>('/api/auth/register', request)
+      .pipe(tap((res) => this.storeTokens(res)));
   }
 
   refresh(): Observable<LoginResponse> {
@@ -48,22 +34,23 @@ export class AuthService {
       .pipe(tap((res) => this.storeTokens(res)));
   }
 
-  logout(): void {
-    this.http
-      .post('/api/auth/logout', {}, { withCredentials: true })
-      // eslint-disable-next-line @typescript-eslint/no-empty-function
-      .subscribe({ error: () => {} });
-    this.clearTokens();
+  logout(): Observable<void> {
+    return this.http
+      .post<void>('/api/auth/logout', {}, { withCredentials: true })
+      .pipe(
+        catchError(() => EMPTY),
+        finalize(() => this.clearSession()),
+      );
+  }
+
+  clearSession(): void {
+    this.accessToken.set(null);
+    this.currentEmail.set(null);
     this.router.navigate(['/login']);
   }
 
   private storeTokens(res: LoginResponse): void {
     this.accessToken.set(res.accessToken);
     this.currentEmail.set(res.email);
-  }
-
-  private clearTokens(): void {
-    this.accessToken.set(null);
-    this.currentEmail.set(null);
   }
 }
