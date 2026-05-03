@@ -1,5 +1,11 @@
 <mat-toolbar class="app-shell__toolbar">
   <span class="app-shell__brand">Money App</span>
+  <nav class="app-shell__nav" aria-label="Primary navigation">
+    <a mat-button routerLink="/accounts" routerLinkActive="app-shell__nav-link--active">Accounts</a>
+    <a mat-button routerLink="/transactions" routerLinkActive="app-shell__nav-link--active">
+      Transactions
+    </a>
+  </nav>
 </mat-toolbar>
 
 <main class="app-shell__main">

@@ -9,6 +9,13 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'transactions',
+    loadComponent: () =>
+      import('./features/transactions/transaction-list/transaction-list.component').then(
+        (component) => component.TransactionListComponent,
+      ),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'accounts',

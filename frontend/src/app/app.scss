@@ -24,8 +24,33 @@
   font: var(--mat-sys-title-large);
 }
 
+.app-shell__nav {
+  display: flex;
+  gap: 0.25rem;
+  margin-inline-start: 2rem;
+}
+
+.app-shell__nav-link--active {
+  background: var(--mat-sys-secondary-container);
+  color: var(--mat-sys-on-secondary-container);
+}
+
 .app-shell__main {
   width: min(100%, 72rem);
   margin-inline: auto;
   padding: 2rem 1.5rem;
+}
+
+@media (max-width: 48rem) {
+  .app-shell__toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.5rem;
+    block-size: auto;
+    padding-block: 0.75rem;
+  }
+
+  .app-shell__nav {
+    margin-inline-start: 0;
+  }
 }
