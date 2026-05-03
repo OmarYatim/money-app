@@ -17,6 +17,8 @@ public final class TransactionMapper {
         transaction.getCategory(),
         transaction.isCategoryOverridden(),
         transaction.isInternalTransfer(),
-        transaction.isInternalTransferOverridden());
+        transaction.isInternalTransferOverridden(),
+        transaction.isReviewed(),
+        transaction.getReviewedAt());
   }
 }

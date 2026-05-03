@@ -20,6 +20,7 @@ import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
@@ -168,6 +169,47 @@ class TransactionServiceTest {
 
     assertThat(transaction.getCategory()).isEqualTo("DINING");
     assertThat(transaction.isCategoryOverridden()).isTrue();
+  }
+
+  @Test
+  void syncTransactionsDoesNotOverwriteReviewedState() {
+    AppUser appUser =
+        appUserRepository.save(
+            AppUser.builder()
+                .email("person@example.com")
+                .powensToken("permanent-token")
+                .powensUserId("powens-user-id")
+                .build());
+    LocalDateTime reviewedAt = LocalDateTime.of(2026, 5, 3, 10, 30);
+    transactionRepository.save(
+        Transaction.builder()
+            .userId(appUser.getId())
+            .externalTransactionId(123L)
+            .date(LocalDate.of(2026, 5, 2))
+            .label("Dinner")
+            .value(BigDecimal.valueOf(-25))
+            .category("DINING")
+            .reviewed(true)
+            .reviewedAt(reviewedAt)
+            .build());
+    TransactionService service =
+        transactionService(
+            new PowensTransactionsResponse(
+                List.of(
+                    new PowensTransactionResponse(
+                        123L,
+                        null,
+                        LocalDate.of(2026, 5, 3),
+                        "Market",
+                        "Supermarket card payment",
+                        BigDecimal.valueOf(-42.50),
+                        2,
+                        null))));
+
+    Transaction transaction = service.syncTransactions(appUser, Set.of()).get(0);
+
+    assertThat(transaction.isReviewed()).isTrue();
+    assertThat(transaction.getReviewedAt()).isEqualTo(reviewedAt);
   }
 
   @Test

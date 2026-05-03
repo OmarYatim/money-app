@@ -2,6 +2,7 @@ package com.moneyapp.backend.transaction.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 public record TransactionResponse(
     Long id,
@@ -12,4 +13,6 @@ public record TransactionResponse(
     String category,
     boolean categoryOverridden,
     boolean internalTransfer,
-    boolean internalTransferOverridden) {}
+    boolean internalTransferOverridden,
+    boolean reviewed,
+    LocalDateTime reviewedAt) {}
