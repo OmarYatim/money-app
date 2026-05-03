@@ -15,6 +15,7 @@ import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.banking.service.PowensClient;
 import com.moneyapp.backend.transaction.dto.PowensTransactionResponse;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
+import com.moneyapp.backend.transaction.dto.TransactionFilter;
 import com.moneyapp.backend.transaction.dto.TransactionResponse;
 import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
@@ -27,6 +28,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -56,6 +60,147 @@ class TransactionServiceTest {
     transactionRepository.deleteAll();
     accountRepository.deleteAll();
     appUserRepository.deleteAll();
+  }
+
+  @Test
+  void findTransactionsReturnsPaginatedTransactionsSortedNewestFirstWithAccountName() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Account checking =
+        accountRepository.save(
+            Account.builder()
+                .userId(appUser.getId())
+                .externalAccountId(456L)
+                .name("Main checking")
+                .balance(BigDecimal.ZERO)
+                .coming(BigDecimal.ZERO)
+                .currency("EUR")
+                .build());
+    transactionRepository.save(
+        transaction(
+            appUser.getId(),
+            checking.getId(),
+            1L,
+            LocalDate.of(2026, 4, 1),
+            "Older",
+            "Older payment",
+            "-20",
+            "GROCERIES"));
+    transactionRepository.save(
+        transaction(
+            appUser.getId(),
+            checking.getId(),
+            2L,
+            LocalDate.of(2026, 5, 1),
+            "Newer",
+            "Newer payment",
+            "-30",
+            "DINING"));
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    Page<TransactionResponse> response =
+        service.findTransactions(
+            appUser.getEmail(),
+            emptyFilter(),
+            PageRequest.of(0, 1, Sort.by(Sort.Order.desc("date"), Sort.Order.desc("id"))));
+
+    assertThat(response.getContent()).hasSize(1);
+    assertThat(response.getTotalElements()).isEqualTo(2);
+    assertThat(response.getTotalPages()).isEqualTo(2);
+    assertThat(response.getContent().get(0).label()).isEqualTo("Newer");
+    assertThat(response.getContent().get(0).accountName()).isEqualTo("Main checking");
+  }
+
+  @Test
+  void findTransactionsFiltersByKeywordCategoryDateAndAmount() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    transactionRepository.save(
+        transaction(
+            appUser.getId(),
+            null,
+            1L,
+            LocalDate.of(2026, 4, 1),
+            "AMAZON MARKETPLACE",
+            "Card payment",
+            "-80",
+            "SHOPPING"));
+    transactionRepository.save(
+        transaction(
+            appUser.getId(),
+            null,
+            2L,
+            LocalDate.of(2026, 4, 15),
+            "Amazon digital",
+            "Monthly subscription",
+            "-12",
+            "SUBSCRIPTION"));
+    transactionRepository.save(
+        transaction(
+            appUser.getId(),
+            null,
+            3L,
+            LocalDate.of(2026, 5, 1),
+            "NETFLIX",
+            "Streaming",
+            "-20",
+            "SUBSCRIPTION"));
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    Page<TransactionResponse> response =
+        service.findTransactions(
+            appUser.getEmail(),
+            new TransactionFilter(
+                null,
+                "SHOPPING",
+                LocalDate.of(2026, 4, 1),
+                LocalDate.of(2026, 4, 30),
+                BigDecimal.valueOf(-100),
+                BigDecimal.valueOf(-50),
+                "amaz"),
+            PageRequest.of(0, 20, Sort.by(Sort.Order.desc("date"), Sort.Order.desc("id"))));
+
+    assertThat(response.getContent())
+        .singleElement()
+        .extracting(TransactionResponse::label)
+        .isEqualTo("AMAZON MARKETPLACE");
+    assertThat(response.getTotalElements()).isEqualTo(1);
+  }
+
+  @Test
+  void findTransactionsRejectsInvalidCategory() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    assertThatThrownBy(
+            () ->
+                service.findTransactions(
+                    appUser.getEmail(),
+                    new TransactionFilter(null, "INVALID", null, null, null, null, null),
+                    PageRequest.of(0, 20)))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("INVALID is not a valid category");
+  }
+
+  @Test
+  void findTransactionsOnlyReturnsAuthenticatedUsersTransactions() {
+    AppUser owner = appUserRepository.save(AppUser.builder().email("owner@example.com").build());
+    AppUser other = appUserRepository.save(AppUser.builder().email("other@example.com").build());
+    transactionRepository.save(
+        transaction(
+            owner.getId(),
+            null,
+            1L,
+            LocalDate.of(2026, 4, 1),
+            "Owner transaction",
+            null,
+            "-80",
+            "SHOPPING"));
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    Page<TransactionResponse> response =
+        service.findTransactions(other.getEmail(), emptyFilter(), PageRequest.of(0, 20));
+
+    assertThat(response.getContent()).isEmpty();
+    assertThat(response.getTotalElements()).isZero();
   }
 
   @Test
@@ -543,6 +688,31 @@ class TransactionServiceTest {
         currentAppUserService,
         new StubPowensClient(response),
         new CategoryMappingService());
+  }
+
+  private TransactionFilter emptyFilter() {
+    return new TransactionFilter(null, null, null, null, null, null, null);
+  }
+
+  private Transaction transaction(
+      Long userId,
+      Long accountId,
+      Long externalTransactionId,
+      LocalDate date,
+      String label,
+      String wording,
+      String value,
+      String category) {
+    return Transaction.builder()
+        .userId(userId)
+        .accountId(accountId)
+        .externalTransactionId(externalTransactionId)
+        .date(date)
+        .label(label)
+        .wording(wording)
+        .value(new BigDecimal(value))
+        .category(category)
+        .build();
   }
 
   private record StubPowensClient(PowensTransactionsResponse response) implements PowensClient {

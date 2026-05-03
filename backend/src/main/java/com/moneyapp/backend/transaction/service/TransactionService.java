@@ -7,21 +7,29 @@ import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.banking.service.PowensClient;
 import com.moneyapp.backend.transaction.dto.PowensTransactionResponse;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
+import com.moneyapp.backend.transaction.dto.TransactionFilter;
 import com.moneyapp.backend.transaction.dto.TransactionResponse;
 import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.enums.CategoryType;
 import com.moneyapp.backend.transaction.mapper.TransactionMapper;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
+import com.moneyapp.backend.transaction.spec.TransactionSpecification;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,11 +49,22 @@ public class TransactionService {
   private final CategoryMappingService categoryMappingService;
 
   @Transactional(readOnly = true)
-  public List<TransactionResponse> findTransactions(String email) {
+  public Page<TransactionResponse> findTransactions(
+      String email, TransactionFilter filter, Pageable pageable) {
     AppUser appUser = currentAppUserService.resolveExisting(email);
-    return transactionRepository.findByUserIdOrderByDateDescIdDesc(appUser.getId()).stream()
-        .map(TransactionMapper::toResponse)
-        .toList();
+    TransactionFilter normalizedFilter = normalizeFilter(filter);
+    validateCategory(normalizedFilter.category());
+
+    Page<Transaction> transactions =
+        transactionRepository.findAll(
+            TransactionSpecification.forUserWithFilters(appUser.getId(), normalizedFilter),
+            pageable);
+    Map<Long, Account> accountsById = findAccountsById(appUser.getId(), transactions.getContent());
+
+    return transactions.map(
+        transaction ->
+            TransactionMapper.toResponse(
+                transaction, accountName(accountsById.get(transaction.getAccountId()))));
   }
 
   @Transactional(readOnly = true)
@@ -213,6 +232,40 @@ public class TransactionService {
     return currentAppUserService.resolveExisting(email).getId();
   }
 
+  private TransactionFilter normalizeFilter(TransactionFilter filter) {
+    if (filter == null) {
+      return new TransactionFilter(null, null, null, null, null, null, null);
+    }
+
+    return new TransactionFilter(
+        filter.accountId(),
+        normalizeText(filter.category()),
+        filter.minDate(),
+        filter.maxDate(),
+        filter.minAmount(),
+        filter.maxAmount(),
+        normalizeText(filter.keyword()));
+  }
+
+  private Map<Long, Account> findAccountsById(Long userId, List<Transaction> transactions) {
+    List<Long> accountIds =
+        transactions.stream()
+            .map(Transaction::getAccountId)
+            .filter(accountId -> accountId != null)
+            .distinct()
+            .toList();
+    if (accountIds.isEmpty()) {
+      return Collections.emptyMap();
+    }
+
+    return accountRepository.findByUserIdAndIdIn(userId, accountIds).stream()
+        .collect(Collectors.toMap(Account::getId, Function.identity()));
+  }
+
+  private String accountName(Account account) {
+    return account == null ? null : account.getName();
+  }
+
   private Transaction requireTransaction(Long transactionId) {
     return transactionRepository
         .findById(transactionId)
@@ -229,6 +282,14 @@ public class TransactionService {
   private CategoryType parseCategory(String category) {
     if (isBlank(category)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "category is required");
+    }
+
+    return validateCategory(category);
+  }
+
+  private CategoryType validateCategory(String category) {
+    if (isBlank(category)) {
+      return null;
     }
 
     try {
@@ -272,5 +333,9 @@ public class TransactionService {
 
   private boolean isBlank(String value) {
     return value == null || value.isBlank();
+  }
+
+  private String normalizeText(String value) {
+    return isBlank(value) ? null : value.trim();
   }
 }

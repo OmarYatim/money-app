@@ -6,6 +6,8 @@ import java.time.LocalDateTime;
 
 public record TransactionResponse(
     Long id,
+    Long accountId,
+    String accountName,
     LocalDate date,
     String label,
     String wording,

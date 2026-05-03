@@ -8,8 +8,14 @@ public final class TransactionMapper {
   private TransactionMapper() {}
 
   public static TransactionResponse toResponse(Transaction transaction) {
+    return toResponse(transaction, null);
+  }
+
+  public static TransactionResponse toResponse(Transaction transaction, String accountName) {
     return new TransactionResponse(
         transaction.getId(),
+        transaction.getAccountId(),
+        accountName,
         transaction.getDate(),
         transaction.getLabel(),
         transaction.getWording(),

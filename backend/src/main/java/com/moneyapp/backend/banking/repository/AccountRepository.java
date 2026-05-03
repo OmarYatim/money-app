@@ -9,6 +9,8 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
   List<Account> findByUserIdAndDisabledFalseOrderByNameAsc(Long userId);
 
+  List<Account> findByUserIdAndIdIn(Long userId, List<Long> ids);
+
   Optional<Account> findByUserIdAndExternalAccountId(Long userId, Long externalAccountId);
 
   Optional<Account>
