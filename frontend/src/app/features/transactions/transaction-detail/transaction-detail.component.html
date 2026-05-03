@@ -47,6 +47,27 @@
           </button>
         </div>
 
+        <div class="transaction-detail__internal-transfer">
+          <span class="transaction-detail__internal-transfer-label">
+            <mat-icon aria-hidden="true" class="transaction-detail__internal-transfer-icon">
+              {{ transaction.internalTransfer ? 'sync_alt' : 'sync_disabled' }}
+            </mat-icon>
+            {{ transaction.internalTransfer ? 'Internal transfer' : 'Not an internal transfer' }}
+            @if (transaction.internalTransferOverridden) {
+              <span class="transaction-detail__overridden-note">(manually set)</span>
+            }
+          </span>
+          <button
+            mat-stroked-button
+            type="button"
+            [disabled]="state().saving"
+            (click)="toggleInternalTransfer()"
+          >
+            <mat-icon aria-hidden="true">edit</mat-icon>
+            {{ transaction.internalTransfer ? 'Mark as regular' : 'Mark as internal' }}
+          </button>
+        </div>
+
         @if (state().error) {
           <p class="transaction-detail__error" aria-live="polite">{{ state().error }}</p>
         }

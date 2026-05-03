@@ -8,4 +8,6 @@ export interface Transaction {
   value: number;
   category: CategoryType;
   categoryOverridden: boolean;
+  internalTransfer: boolean;
+  internalTransferOverridden: boolean;
 }

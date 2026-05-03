@@ -55,6 +55,36 @@ export class TransactionDetailComponent {
     void this.loadTransaction();
   }
 
+  protected async toggleInternalTransfer(): Promise<void> {
+    const transaction = this.state().transaction;
+    if (!transaction) {
+      return;
+    }
+
+    this.state.update((current) => ({ ...current, saving: true, error: null }));
+
+    try {
+      const updatedTransaction = await firstValueFrom(
+        this.transactionService.updateInternalTransfer(
+          this.transactionId,
+          !transaction.internalTransfer,
+        ),
+      );
+      this.state.set({
+        transaction: updatedTransaction,
+        loading: false,
+        saving: false,
+        error: null,
+      });
+    } catch {
+      this.state.update((current) => ({
+        ...current,
+        saving: false,
+        error: 'Unable to update internal transfer flag.',
+      }));
+    }
+  }
+
   protected async editCategory(): Promise<void> {
     const transaction = this.state().transaction;
     if (!transaction) {
