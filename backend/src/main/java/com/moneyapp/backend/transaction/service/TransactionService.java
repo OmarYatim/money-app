@@ -1,19 +1,25 @@
 package com.moneyapp.backend.transaction.service;
 
 import com.moneyapp.backend.auth.entity.AppUser;
+import com.moneyapp.backend.auth.repository.AppUserRepository;
 import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.banking.service.PowensClient;
 import com.moneyapp.backend.transaction.dto.PowensTransactionResponse;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
+import com.moneyapp.backend.transaction.dto.TransactionResponse;
 import com.moneyapp.backend.transaction.entity.Transaction;
+import com.moneyapp.backend.transaction.enums.CategoryType;
+import com.moneyapp.backend.transaction.mapper.TransactionMapper;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +27,41 @@ public class TransactionService {
 
   private final TransactionRepository transactionRepository;
   private final AccountRepository accountRepository;
+  private final AppUserRepository appUserRepository;
   private final PowensClient powensClient;
   private final CategoryMappingService categoryMappingService;
+
+  @Transactional(readOnly = true)
+  public List<TransactionResponse> findTransactions(String email) {
+    return appUserRepository
+        .findByEmail(email)
+        .map(AppUser::getId)
+        .map(transactionRepository::findByUserIdOrderByDateDescIdDesc)
+        .orElse(List.of())
+        .stream()
+        .map(TransactionMapper::toResponse)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public TransactionResponse getTransaction(String email, Long transactionId) {
+    Long userId = requireUserId(email);
+    Transaction transaction = requireTransaction(transactionId);
+    verifyOwner(transaction, userId);
+    return TransactionMapper.toResponse(transaction);
+  }
+
+  @Transactional
+  public TransactionResponse updateCategory(String email, Long transactionId, String category) {
+    Long userId = requireUserId(email);
+    Transaction transaction = requireTransaction(transactionId);
+    verifyOwner(transaction, userId);
+
+    CategoryType categoryType = parseCategory(category);
+    transaction.setCategory(categoryType.name());
+    transaction.setCategoryOverridden(true);
+    return TransactionMapper.toResponse(transactionRepository.save(transaction));
+  }
 
   @Transactional
   public List<Transaction> syncTransactions(AppUser appUser) {
@@ -66,6 +105,39 @@ public class TransactionService {
     }
 
     return transactionRepository.save(transaction);
+  }
+
+  private Long requireUserId(String email) {
+    return appUserRepository
+        .findByEmail(email)
+        .map(AppUser::getId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+  }
+
+  private Transaction requireTransaction(Long transactionId) {
+    return transactionRepository
+        .findById(transactionId)
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Transaction not found"));
+  }
+
+  private void verifyOwner(Transaction transaction, Long userId) {
+    if (!transaction.getUserId().equals(userId)) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied");
+    }
+  }
+
+  private CategoryType parseCategory(String category) {
+    if (isBlank(category)) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "category is required");
+    }
+
+    try {
+      return CategoryType.valueOf(category);
+    } catch (IllegalArgumentException exception) {
+      throw new ResponseStatusException(
+          HttpStatus.BAD_REQUEST, category + " is not a valid category", exception);
+    }
   }
 
   private Long resolveAccountId(Long userId, Long externalAccountId) {

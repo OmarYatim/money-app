@@ -14,6 +14,7 @@ import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.banking.service.PowensClient;
 import com.moneyapp.backend.transaction.dto.PowensTransactionResponse;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
+import com.moneyapp.backend.transaction.dto.TransactionResponse;
 import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.web.server.ResponseStatusException;
 
 @SpringBootTest(
     properties = {
@@ -167,10 +169,90 @@ class TransactionServiceTest {
         .hasMessage("Powens user identity is required before syncing transactions");
   }
 
+  @Test
+  void updateCategorySetsOverrideFlag() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Transaction transaction =
+        transactionRepository.save(
+            Transaction.builder()
+                .userId(appUser.getId())
+                .externalTransactionId(123L)
+                .date(LocalDate.of(2026, 5, 2))
+                .label("Market")
+                .value(BigDecimal.valueOf(-25))
+                .category("GROCERIES")
+                .categoryOverridden(false)
+                .build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    TransactionResponse response =
+        service.updateCategory("person@example.com", transaction.getId(), "DINING");
+
+    assertThat(response.category()).isEqualTo("DINING");
+    assertThat(response.categoryOverridden()).isTrue();
+    Transaction savedTransaction =
+        transactionRepository.findById(transaction.getId()).orElseThrow();
+    assertThat(savedTransaction.getCategory()).isEqualTo("DINING");
+    assertThat(savedTransaction.isCategoryOverridden()).isTrue();
+  }
+
+  @Test
+  void updateCategoryRejectsInvalidCategory() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Transaction transaction =
+        transactionRepository.save(
+            Transaction.builder()
+                .userId(appUser.getId())
+                .externalTransactionId(123L)
+                .date(LocalDate.of(2026, 5, 2))
+                .label("Market")
+                .value(BigDecimal.valueOf(-25))
+                .category("GROCERIES")
+                .categoryOverridden(false)
+                .build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    assertThatThrownBy(
+            () ->
+                service.updateCategory(
+                    "person@example.com", transaction.getId(), "MADE_UP_CATEGORY"))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("MADE_UP_CATEGORY is not a valid category");
+
+    Transaction savedTransaction =
+        transactionRepository.findById(transaction.getId()).orElseThrow();
+    assertThat(savedTransaction.getCategory()).isEqualTo("GROCERIES");
+    assertThat(savedTransaction.isCategoryOverridden()).isFalse();
+  }
+
+  @Test
+  void updateCategoryRejectsOtherUsersTransaction() {
+    AppUser owner = appUserRepository.save(AppUser.builder().email("owner@example.com").build());
+    appUserRepository.save(AppUser.builder().email("other@example.com").build());
+    Transaction transaction =
+        transactionRepository.save(
+            Transaction.builder()
+                .userId(owner.getId())
+                .externalTransactionId(123L)
+                .date(LocalDate.of(2026, 5, 2))
+                .label("Market")
+                .value(BigDecimal.valueOf(-25))
+                .category("GROCERIES")
+                .categoryOverridden(false)
+                .build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    assertThatThrownBy(
+            () -> service.updateCategory("other@example.com", transaction.getId(), "DINING"))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("403 FORBIDDEN");
+  }
+
   private TransactionService transactionService(PowensTransactionsResponse response) {
     return new TransactionService(
         transactionRepository,
         accountRepository,
+        appUserRepository,
         new StubPowensClient(response),
         new CategoryMappingService());
   }
