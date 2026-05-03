@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
@@ -31,6 +32,7 @@ interface TransactionDetailState {
     MatCardModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatSlideToggleModule,
     RouterLink,
     CategoryColorPipe,
   ],
@@ -81,6 +83,33 @@ export class TransactionDetailComponent {
         ...current,
         saving: false,
         error: 'Unable to update internal transfer flag.',
+      }));
+    }
+  }
+
+  protected async toggleReviewed(): Promise<void> {
+    const transaction = this.state().transaction;
+    if (!transaction) {
+      return;
+    }
+
+    this.state.update((current) => ({ ...current, saving: true, error: null }));
+
+    try {
+      const updatedTransaction = await firstValueFrom(
+        this.transactionService.updateReviewed(this.transactionId, !transaction.reviewed),
+      );
+      this.state.set({
+        transaction: updatedTransaction,
+        loading: false,
+        saving: false,
+        error: null,
+      });
+    } catch {
+      this.state.update((current) => ({
+        ...current,
+        saving: false,
+        error: 'Unable to update reviewed state.',
       }));
     }
   }
@@ -140,7 +169,9 @@ export class TransactionDetailComponent {
     });
 
     try {
-      const transaction = await firstValueFrom(this.transactionService.getTransaction(this.transactionId));
+      const transaction = await firstValueFrom(
+        this.transactionService.getTransaction(this.transactionId),
+      );
       this.state.set({
         transaction,
         loading: false,

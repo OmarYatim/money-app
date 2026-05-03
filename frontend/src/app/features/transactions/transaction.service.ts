@@ -49,6 +49,12 @@ export class TransactionService {
     );
   }
 
+  updateReviewed(id: number, reviewed: boolean): Observable<Transaction> {
+    return this.http.patch<Transaction>(`${this.apiBaseUrl}/api/transactions/${id}/reviewed`, {
+      reviewed,
+    });
+  }
+
   private queryParams(query: TransactionQuery): HttpParams {
     let params = new HttpParams()
       .set('page', query.page ?? 0)
