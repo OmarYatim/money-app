@@ -93,6 +93,8 @@ git checkout -b feature/US-XX-short-description
 
 Use the Trello card or task name to choose the branch name. If no user story exists, use a short descriptive branch name such as `chore/update-agent-rules`.
 
+**Commit every file edit before moving to the next step.** Do not batch edits across multiple steps and commit at the end — each logical change gets its own commit as soon as it is complete. Never end a turn with modified but uncommitted files.
+
 After finishing the task:
 
 1. Run the relevant checks.
