@@ -9,7 +9,9 @@ spring:
     show-sql: ${DEV_JPA_SHOW_SQL:true}
 
 app:
-  auth-enabled: ${APP_AUTH_ENABLED:false}
+  jwt:
+    secret: ${JWT_SECRET}           # min 32 chars — generate with: openssl rand -base64 32
+    expiration-ms: ${JWT_EXPIRATION_MS:900000}   # 15 minutes
 
 powens:
   domain: ${POWENS_DOMAIN}

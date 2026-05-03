@@ -12,7 +12,9 @@ spring:
     enabled: true
 
 app:
-  auth-enabled: ${APP_AUTH_ENABLED:false}
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:900000}
 
 server:
   port: 8080
