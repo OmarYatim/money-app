@@ -1,0 +1,16 @@
+<mat-card
+  appearance="outlined"
+  class="summary-card"
+  [class.summary-card--positive]="tone() === 'positive'"
+  [class.summary-card--negative]="tone() === 'negative'"
+>
+  <mat-card-content class="summary-card__content">
+    <span class="summary-card__icon" aria-hidden="true">
+      <mat-icon>{{ icon() }}</mat-icon>
+    </span>
+    <span class="summary-card__label">{{ label() }}</span>
+    <strong class="summary-card__value">
+      {{ displaySign() }}{{ value() | currency: 'EUR' : 'symbol' : '1.2-2' }}
+    </strong>
+  </mat-card-content>
+</mat-card>

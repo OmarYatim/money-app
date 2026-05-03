@@ -1,0 +1,51 @@
+<section class="dashboard">
+  <header class="dashboard__header">
+    <div>
+      <h1 class="dashboard__title">Dashboard</h1>
+      <p class="dashboard__subtitle">Net worth, cash flow, and daily spending.</p>
+    </div>
+    <button mat-stroked-button type="button" (click)="reloadSummary()">
+      <mat-icon aria-hidden="true">refresh</mat-icon>
+      Refresh
+    </button>
+  </header>
+
+  @if (state().loading) {
+    <div class="dashboard__loading" aria-live="polite">
+      <mat-spinner diameter="36" />
+    </div>
+  } @else if (state().error) {
+    <mat-card appearance="outlined" class="dashboard__notice">
+      <mat-card-content>{{ state().error }}</mat-card-content>
+      <mat-card-actions>
+        <button mat-button type="button" (click)="reloadSummary()">Retry</button>
+      </mat-card-actions>
+    </mat-card>
+  } @else if (state().summary) {
+    <div class="dashboard__sync" aria-live="polite">
+      <mat-icon aria-hidden="true">sync</mat-icon>
+      <span>Last synced: {{ lastSyncedLabel() }}</span>
+    </div>
+
+    <div class="dashboard__metrics">
+      @for (metric of metrics(); track metric.label) {
+        <app-summary-card
+          [label]="metric.label"
+          [value]="metric.value"
+          [icon]="metric.icon"
+          [tone]="metric.tone"
+          [showSign]="metric.showSign"
+        />
+      }
+    </div>
+
+    @if (emptySummary()) {
+      <mat-card appearance="outlined" class="dashboard__notice">
+        <mat-card-content>Connect your first bank account to get started.</mat-card-content>
+        <mat-card-actions>
+          <a mat-button routerLink="/accounts">Go to accounts</a>
+        </mat-card-actions>
+      </mat-card>
+    }
+  }
+</section>
