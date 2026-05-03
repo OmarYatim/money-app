@@ -149,4 +149,6 @@ These four rules apply to every file in the entire project. All other constraint
 
 ---
 
+Temporary dev auth can use `APP_AUTH_ENABLED=false` so the backend falls back to the single seeded app user before full account authentication exists. Remove that shortcut once user login/account ownership is fully implemented.
+
 *Full architecture, patterns, and examples: see `ARCHITECTURE.md`*

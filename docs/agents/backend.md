@@ -207,3 +207,5 @@ See [`database.md`](database.md) for full SQL conventions.
 | `src/main/java/com/moneyapp/config/SecurityConfig.java` | Public vs protected routes |
 | `src/main/java/com/moneyapp/config/GlobalExceptionHandler.java` | Centralised error handling |
 | `src/main/java/com/moneyapp/config/WebClientConfig.java` | Powens WebClient bean |
+
+`app.auth-enabled` is a temporary bridge for local development. Keep it `false` until account authentication exists, and remove the fallback logic once the login flow is finished.
