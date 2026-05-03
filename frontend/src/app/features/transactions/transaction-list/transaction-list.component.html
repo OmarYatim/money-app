@@ -4,11 +4,82 @@
       <h1 class="transaction-list__title">Transactions</h1>
       <p class="transaction-list__subtitle">Recent imported bank activity.</p>
     </div>
-    <button mat-stroked-button type="button" (click)="reloadTransactions()">
-      <mat-icon aria-hidden="true">refresh</mat-icon>
-      Refresh
-    </button>
+    <div class="transaction-list__actions">
+      <button mat-stroked-button type="button" (click)="toggleFilters()">
+        <mat-icon aria-hidden="true">tune</mat-icon>
+        Filters
+        @if (activeFilterCount() > 0) {
+          <span class="transaction-list__filter-count">{{ activeFilterCount() }}</span>
+        }
+      </button>
+      <button mat-stroked-button type="button" (click)="reloadTransactions()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        Refresh
+      </button>
+    </div>
   </header>
+
+  <form class="transaction-list__search" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+    <mat-form-field appearance="outline" class="transaction-list__search-field">
+      <mat-label>Search transactions</mat-label>
+      <input matInput formControlName="keyword" type="search" />
+      <mat-icon matPrefix aria-hidden="true">search</mat-icon>
+    </mat-form-field>
+
+    <button mat-flat-button type="submit">
+      <mat-icon aria-hidden="true">search</mat-icon>
+      Search
+    </button>
+  </form>
+
+  @if (filtersOpen()) {
+    <form class="transaction-list__filters" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+      <mat-form-field appearance="outline">
+        <mat-label>Account</mat-label>
+        <mat-select formControlName="accountId">
+          <mat-option [value]="null">All accounts</mat-option>
+          @for (account of accounts(); track account.id) {
+            <mat-option [value]="account.id">{{ account.name }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Category</mat-label>
+        <mat-select formControlName="category">
+          <mat-option value="">All categories</mat-option>
+          @for (category of categories; track category) {
+            <mat-option [value]="category">{{ categoryLabel(category) }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>From date</mat-label>
+        <input matInput formControlName="minDate" type="date" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>To date</mat-label>
+        <input matInput formControlName="maxDate" type="date" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Minimum amount</mat-label>
+        <input matInput formControlName="minAmount" type="number" step="0.01" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Maximum amount</mat-label>
+        <input matInput formControlName="maxAmount" type="number" step="0.01" />
+      </mat-form-field>
+
+      <div class="transaction-list__filter-actions">
+        <button mat-flat-button type="submit">Apply</button>
+        <button mat-button type="button" (click)="clearFilters()">Clear</button>
+      </div>
+    </form>
+  }
 
   @if (state().loadingInitial) {
     <div class="transaction-list__loading" aria-live="polite">
