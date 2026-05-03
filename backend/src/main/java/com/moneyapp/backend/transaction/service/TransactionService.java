@@ -73,7 +73,9 @@ public class TransactionService {
     Long userId = requireUserId(email);
     Transaction transaction = requireTransaction(transactionId);
     verifyOwner(transaction, userId);
-    return TransactionMapper.toResponse(transaction);
+    Map<Long, Account> accountsById = findAccountsById(userId, List.of(transaction));
+    return TransactionMapper.toResponse(
+        transaction, accountName(accountsById.get(transaction.getAccountId())));
   }
 
   @Transactional
@@ -230,8 +232,11 @@ public class TransactionService {
     transaction.setDate(defaultDate(powensTransaction.date()));
     transaction.setLabel(defaultLabel(powensTransaction));
     transaction.setWording(powensTransaction.wording());
+    transaction.setOriginalWording(powensTransaction.originalWording());
+    transaction.setApplicationDate(powensTransaction.applicationDate());
     transaction.setValue(defaultMoney(powensTransaction.value()));
     transaction.setType(powensTransaction.type());
+    transaction.setCounterpartyLabel(counterpartyLabel(powensTransaction.counterparty()));
 
     if (!transaction.isCategoryOverridden()) {
       transaction.setCategory(categoryMappingService.map(powensTransaction.idCategory()).name());
@@ -276,6 +281,10 @@ public class TransactionService {
 
   private String accountName(Account account) {
     return account == null ? null : account.getName();
+  }
+
+  private String counterpartyLabel(PowensTransactionResponse.PowensCounterparty counterparty) {
+    return counterparty == null ? null : counterparty.label();
   }
 
   private Transaction requireTransaction(Long transactionId) {

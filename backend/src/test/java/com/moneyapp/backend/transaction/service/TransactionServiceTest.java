@@ -232,9 +232,13 @@ class TransactionServiceTest {
                         LocalDate.of(2026, 5, 3),
                         "Market",
                         "Supermarket card payment",
+                        "CB MARKET PARIS",
+                        LocalDate.of(2026, 5, 4),
                         BigDecimal.valueOf(-42.50),
                         2,
-                        "card")))); // id_category=2 → GROCERIES
+                        "card",
+                        new PowensTransactionResponse.PowensCounterparty(
+                            "Market SARL"))))); // 2 → GROCERIES
 
     List<Transaction> transactions = service.syncTransactions(appUser, Set.of());
 
@@ -244,6 +248,9 @@ class TransactionServiceTest {
     assertThat(transaction.getAccountId()).isEqualTo(account.getId());
     assertThat(transaction.getExternalAccountId()).isEqualTo(456L);
     assertThat(transaction.getValue()).isEqualByComparingTo("-42.50");
+    assertThat(transaction.getOriginalWording()).isEqualTo("CB MARKET PARIS");
+    assertThat(transaction.getApplicationDate()).isEqualTo(LocalDate.of(2026, 5, 4));
+    assertThat(transaction.getCounterpartyLabel()).isEqualTo("Market SARL");
     assertThat(transaction.getCategory()).isEqualTo("GROCERIES");
     assertThat(transaction.isCategoryOverridden()).isFalse();
   }
@@ -752,6 +759,91 @@ class TransactionServiceTest {
             .orElseThrow();
     assertThat(transaction.isInternalTransfer()).isFalse();
     assertThat(transaction.isInternalTransferOverridden()).isTrue();
+  }
+
+  @Test
+  void getTransactionReturnsFullDetailForOwner() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Account account =
+        accountRepository.save(
+            Account.builder()
+                .userId(appUser.getId())
+                .externalAccountId(456L)
+                .name("Main checking")
+                .balance(BigDecimal.ZERO)
+                .coming(BigDecimal.ZERO)
+                .currency("EUR")
+                .build());
+    Transaction transaction =
+        transactionRepository.save(
+            Transaction.builder()
+                .userId(appUser.getId())
+                .accountId(account.getId())
+                .externalTransactionId(123L)
+                .date(LocalDate.of(2026, 5, 3))
+                .applicationDate(LocalDate.of(2026, 5, 4))
+                .label("Market")
+                .wording("Supermarket card payment")
+                .originalWording("CB MARKET PARIS")
+                .value(BigDecimal.valueOf(-42.50))
+                .type("card")
+                .category("GROCERIES")
+                .categoryOverridden(true)
+                .reviewed(true)
+                .reviewedAt(LocalDateTime.of(2026, 5, 4, 10, 30))
+                .counterpartyLabel("Market SARL")
+                .build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    TransactionResponse response =
+        service.getTransaction("person@example.com", transaction.getId());
+
+    assertThat(response.id()).isEqualTo(transaction.getId());
+    assertThat(response.accountId()).isEqualTo(account.getId());
+    assertThat(response.accountName()).isEqualTo("Main checking");
+    assertThat(response.label()).isEqualTo("Market");
+    assertThat(response.wording()).isEqualTo("Supermarket card payment");
+    assertThat(response.originalWording()).isEqualTo("CB MARKET PARIS");
+    assertThat(response.value()).isEqualByComparingTo("-42.50");
+    assertThat(response.date()).isEqualTo(LocalDate.of(2026, 5, 3));
+    assertThat(response.applicationDate()).isEqualTo(LocalDate.of(2026, 5, 4));
+    assertThat(response.type()).isEqualTo("card");
+    assertThat(response.category()).isEqualTo("GROCERIES");
+    assertThat(response.categoryOverridden()).isTrue();
+    assertThat(response.reviewed()).isTrue();
+    assertThat(response.reviewedAt()).isEqualTo(LocalDateTime.of(2026, 5, 4, 10, 30));
+    assertThat(response.counterpartyLabel()).isEqualTo("Market SARL");
+  }
+
+  @Test
+  void getTransactionRejectsOtherUsersTransaction() {
+    AppUser owner = appUserRepository.save(AppUser.builder().email("owner@example.com").build());
+    appUserRepository.save(AppUser.builder().email("other@example.com").build());
+    Transaction transaction =
+        transactionRepository.save(
+            Transaction.builder()
+                .userId(owner.getId())
+                .externalTransactionId(123L)
+                .date(LocalDate.of(2026, 5, 3))
+                .label("Market")
+                .value(BigDecimal.valueOf(-42.50))
+                .category("GROCERIES")
+                .build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    assertThatThrownBy(() -> service.getTransaction("other@example.com", transaction.getId()))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("403 FORBIDDEN");
+  }
+
+  @Test
+  void getTransactionReturnsNotFoundForMissingTransaction() {
+    appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    assertThatThrownBy(() -> service.getTransaction("person@example.com", 999L))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("404 NOT_FOUND");
   }
 
   private TransactionService transactionService(PowensTransactionsResponse response) {
