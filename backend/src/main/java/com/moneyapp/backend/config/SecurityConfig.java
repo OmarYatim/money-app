@@ -23,7 +23,10 @@ public class SecurityConfig {
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    return http.csrf(AbstractHttpConfigurer::disable)
+    return http.csrf(
+            AbstractHttpConfigurer
+                ::disable) // lgtm[java/spring-csrf-protection-disabled] -- stateless JWT API;
+        // Bearer tokens in Authorization header are not vulnerable to CSRF
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
