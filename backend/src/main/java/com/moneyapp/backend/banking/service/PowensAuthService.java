@@ -2,6 +2,7 @@ package com.moneyapp.backend.banking.service;
 
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import java.util.Objects;
@@ -14,14 +15,12 @@ import org.springframework.transaction.annotation.Transactional;
 public class PowensAuthService {
 
   private final AppUserRepository appUserRepository;
+  private final CurrentAppUserService currentAppUserService;
   private final PowensClient powensClient;
 
   @Transactional
   public AppUser ensurePowensUser(String email) {
-    AppUser appUser =
-        appUserRepository
-            .findByEmail(email)
-            .orElseGet(() -> appUserRepository.save(AppUser.builder().email(email).build()));
+    AppUser appUser = currentAppUserService.resolveForWrite(email);
 
     if (hasPowensIdentity(appUser)) {
       return appUser;

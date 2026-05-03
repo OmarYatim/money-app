@@ -9,6 +9,7 @@ Read this file when committing, branching, or preparing a PR.
 - **Never push to GitHub** — the human reviews all changes and pushes
 - **Never commit directly to `main`** — always use a feature branch
 - **Create and switch branches as part of the normal task workflow**
+- **Commit every file edit before moving to the next step** — each logical change gets its own commit as soon as it is complete; never end a turn with modified but uncommitted files
 - **Commit locally after finishing a task, then wait for human approval**
 
 ---

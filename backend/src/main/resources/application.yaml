@@ -11,6 +11,9 @@ spring:
   flyway:
     enabled: true
 
+app:
+  auth-enabled: ${APP_AUTH_ENABLED:false}
+
 server:
   port: 8080
 

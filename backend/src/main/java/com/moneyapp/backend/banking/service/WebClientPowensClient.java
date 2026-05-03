@@ -5,6 +5,7 @@ import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.config.PowensProperties;
+import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -63,6 +64,19 @@ class WebClientPowensClient implements PowensClient {
         .header(HttpHeaders.AUTHORIZATION, "Bearer " + permanentAccessToken)
         .retrieve()
         .bodyToMono(PowensConnectionsResponse.class)
+        .block();
+  }
+
+  @Override
+  public PowensTransactionsResponse fetchTransactions(String permanentAccessToken) {
+    return powensWebClient
+        .get()
+        .uri(
+            uriBuilder ->
+                uriBuilder.path("/users/me/transactions").queryParam("limit", 500).build())
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + permanentAccessToken)
+        .retrieve()
+        .bodyToMono(PowensTransactionsResponse.class)
         .block();
   }
 }

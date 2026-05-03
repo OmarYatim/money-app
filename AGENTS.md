@@ -93,6 +93,8 @@ git checkout -b feature/US-XX-short-description
 
 Use the Trello card or task name to choose the branch name. If no user story exists, use a short descriptive branch name such as `chore/update-agent-rules`.
 
+**Commit every file edit before moving to the next step.** Do not batch edits across multiple steps and commit at the end — each logical change gets its own commit as soon as it is complete. Never end a turn with modified but uncommitted files.
+
 After finishing the task:
 
 1. Run the relevant checks.
@@ -148,5 +150,7 @@ These four rules apply to every file in the entire project. All other constraint
 | Marking a task complete | [`docs/agents/definition-of-done.md`](docs/agents/definition-of-done.md) |
 
 ---
+
+Temporary dev auth can use `APP_AUTH_ENABLED=false` so the backend falls back to the single seeded app user before full account authentication exists. Remove that shortcut once user login/account ownership is fully implemented.
 
 *Full architecture, patterns, and examples: see `ARCHITECTURE.md`*

@@ -1,0 +1,16 @@
+<section class="category-picker" aria-labelledby="category-picker-title">
+  <h2 id="category-picker-title" class="category-picker__title">Change category</h2>
+
+  <mat-action-list>
+    @for (category of categories; track category) {
+      <button type="button" mat-list-item (click)="selectCategory(category)">
+        <span matListItemTitle [class]="category | categoryColor">
+          {{ categoryLabel(category) }}
+        </span>
+        @if (category === data.selectedCategory) {
+          <mat-icon matListItemMeta aria-label="Selected category">check</mat-icon>
+        }
+      </button>
+    }
+  </mat-action-list>
+</section>

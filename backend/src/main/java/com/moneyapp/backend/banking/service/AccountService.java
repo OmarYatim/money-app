@@ -1,7 +1,7 @@
 package com.moneyapp.backend.banking.service;
 
 import com.moneyapp.backend.auth.entity.AppUser;
-import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.dto.AccountResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
@@ -18,18 +18,14 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AccountService {
 
-  private final AppUserRepository appUserRepository;
+  private final CurrentAppUserService currentAppUserService;
   private final AccountRepository accountRepository;
   private final PowensClient powensClient;
 
   @Transactional(readOnly = true)
   public List<AccountResponse> findAccounts(String email) {
-    return appUserRepository
-        .findByEmail(email)
-        .map(AppUser::getId)
-        .map(accountRepository::findByUserIdAndDisabledFalseOrderByNameAsc)
-        .orElse(List.of())
-        .stream()
+    AppUser appUser = currentAppUserService.resolveExisting(email);
+    return accountRepository.findByUserIdAndDisabledFalseOrderByNameAsc(appUser.getId()).stream()
         .map(AccountMapper::toResponse)
         .toList();
   }

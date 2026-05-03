@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionResponse;
@@ -35,6 +36,8 @@ class ConnectionStatusServiceTest {
 
   @Autowired private UserConnectionService userConnectionService;
 
+  @Autowired private CurrentAppUserService currentAppUserService;
+
   @BeforeEach
   void setUp() {
     userConnectionRepository.deleteAll();
@@ -52,7 +55,7 @@ class ConnectionStatusServiceTest {
                 .build());
     ConnectionStatusService service =
         new ConnectionStatusService(
-            appUserRepository,
+            currentAppUserService,
             new StubPowensClient(
                 new PowensConnectionsResponse(
                     List.of(new PowensConnectionResponse(123L, "wrongpass")))),

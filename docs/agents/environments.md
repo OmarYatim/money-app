@@ -48,6 +48,14 @@ Use the dotted form for any Spring property you want to override from `.env`. Ba
 
 `POWENS_DOMAIN` is the bare host (`xxx-sandbox.biapi.pro`) — no `https://`, no trailing slash. The code prepends `https://` and appends `/2.0`.
 
+### Temporary Dev Auth Flag
+
+```properties
+APP_AUTH_ENABLED=false
+```
+
+This flag keeps backend reads/writes pinned to the single seeded local app user while account authentication is still unfinished. Set it to `true` only when real authenticated user resolution is in place, then remove the flag entirely once the auth flow has been fully developed.
+
 ---
 
 ## Required Environment Variables

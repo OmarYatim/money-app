@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.dto.PowensAccessTokenResponse;
 import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -27,12 +29,20 @@ class PowensAuthServiceTest {
 
   @Autowired private AppUserRepository appUserRepository;
 
+  @Autowired private CurrentAppUserService currentAppUserService;
+
+  @BeforeEach
+  void setUp() {
+    appUserRepository.deleteAll();
+  }
+
   @Test
   void ensurePowensUserCreatesAndPersistsPowensIdentity() {
     StubPowensClient powensClient =
         StubPowensClient.withAccessToken(
             new PowensAccessTokenResponse("permanent-token", "powens-123"));
-    PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
+    PowensAuthService service =
+        new PowensAuthService(appUserRepository, currentAppUserService, powensClient);
 
     AppUser appUser = service.ensurePowensUser("auth-person@example.com");
 
@@ -51,7 +61,8 @@ class PowensAuthServiceTest {
             .build());
     StubPowensClient powensClient =
         StubPowensClient.withAccessToken(new PowensAccessTokenResponse("new-token", "new-id"));
-    PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
+    PowensAuthService service =
+        new PowensAuthService(appUserRepository, currentAppUserService, powensClient);
 
     AppUser appUser = service.ensurePowensUser("existing@example.com");
 
@@ -65,6 +76,7 @@ class PowensAuthServiceTest {
     PowensAuthService service =
         new PowensAuthService(
             appUserRepository,
+            currentAppUserService,
             StubPowensClient.withAccessToken(new PowensAccessTokenResponse(null, null)));
 
     assertThatThrownBy(() -> service.ensurePowensUser("bad-response@example.com"))
@@ -76,7 +88,8 @@ class PowensAuthServiceTest {
   void createTemporaryWebviewCodeReturnsShortLivedCode() {
     StubPowensClient powensClient =
         StubPowensClient.withTemporaryCode(new PowensTokenCodeResponse("short-lived-code"));
-    PowensAuthService service = new PowensAuthService(appUserRepository, powensClient);
+    PowensAuthService service =
+        new PowensAuthService(appUserRepository, currentAppUserService, powensClient);
 
     String code =
         service.createTemporaryWebviewCode(
@@ -92,6 +105,7 @@ class PowensAuthServiceTest {
     PowensAuthService service =
         new PowensAuthService(
             appUserRepository,
+            currentAppUserService,
             StubPowensClient.withTemporaryCode(new PowensTokenCodeResponse("short-lived-code")));
 
     assertThatThrownBy(
@@ -107,6 +121,7 @@ class PowensAuthServiceTest {
     PowensAuthService service =
         new PowensAuthService(
             appUserRepository,
+            currentAppUserService,
             StubPowensClient.withTemporaryCode(new PowensTokenCodeResponse(" ")));
 
     assertThatThrownBy(

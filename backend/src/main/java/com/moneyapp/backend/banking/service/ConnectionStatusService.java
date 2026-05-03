@@ -1,7 +1,7 @@
 package com.moneyapp.backend.banking.service;
 
 import com.moneyapp.backend.auth.entity.AppUser;
-import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.dto.PowensConnectionResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.SyncStatusResponse;
@@ -15,17 +15,13 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ConnectionStatusService {
 
-  private final AppUserRepository appUserRepository;
+  private final CurrentAppUserService currentAppUserService;
   private final PowensClient powensClient;
   private final UserConnectionService userConnectionService;
 
   @Transactional
   public SyncStatusResponse getStatus(String email) {
-    return appUserRepository
-        .findByEmail(email)
-        .map(this::refreshAndBuildStatus)
-        .orElseGet(
-            () -> SyncStatusResponse.builder().connectionsRequiringAction(List.of()).build());
+    return refreshAndBuildStatus(currentAppUserService.resolveExisting(email));
   }
 
   private SyncStatusResponse refreshAndBuildStatus(AppUser appUser) {
