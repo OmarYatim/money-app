@@ -63,7 +63,9 @@ public class AuthenticationService {
         refreshTokenService
             .validate(rawToken)
             .orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token"));
+                () ->
+                    new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Invalid or expired refresh token"));
     AppUser user =
         appUserRepository
             .findById(refreshToken.getUserId())
@@ -99,7 +101,8 @@ public class AuthenticationService {
         .filter(c -> REFRESH_COOKIE_NAME.equals(c.getName()))
         .map(Cookie::getValue)
         .findFirst()
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No refresh token"));
+        .orElseThrow(
+            () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "No refresh token"));
   }
 
   private void setRefreshCookie(HttpServletResponse response, String token) {

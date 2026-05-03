@@ -57,8 +57,7 @@ class AuthenticationServiceTest {
   @Test
   void registerRejectsDuplicateEmail() {
     MockHttpServletResponse response = new MockHttpServletResponse();
-    authenticationService.register(
-        new RegisterRequest("dup@example.com", "password123"), response);
+    authenticationService.register(new RegisterRequest("dup@example.com", "password123"), response);
 
     assertThatThrownBy(
             () ->

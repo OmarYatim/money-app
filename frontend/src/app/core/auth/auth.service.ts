@@ -51,6 +51,7 @@ export class AuthService {
   logout(): void {
     this.http
       .post('/api/auth/logout', {}, { withCredentials: true })
+      // eslint-disable-next-line @typescript-eslint/no-empty-function
       .subscribe({ error: () => {} });
     this.clearTokens();
     this.router.navigate(['/login']);
