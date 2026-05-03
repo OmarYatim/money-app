@@ -6,6 +6,7 @@ import com.moneyapp.backend.banking.dto.PowensConnectionResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.SyncStatusResponse;
 import com.moneyapp.backend.banking.mapper.AccountMapper;
+import com.moneyapp.backend.transaction.service.TransactionService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,23 @@ public class ConnectionStatusService {
   private final CurrentAppUserService currentAppUserService;
   private final PowensClient powensClient;
   private final UserConnectionService userConnectionService;
+  private final AccountService accountService;
+  private final TransactionService transactionService;
 
   @Transactional
   public SyncStatusResponse getStatus(String email) {
     return refreshAndBuildStatus(currentAppUserService.resolveExisting(email));
+  }
+
+  @Transactional
+  public SyncStatusResponse syncNow(String email) {
+    AppUser appUser = currentAppUserService.resolveExisting(email);
+    if (!isBlank(appUser.getPowensToken())) {
+      accountService.syncAccounts(appUser);
+      transactionService.syncTransactions(appUser);
+    }
+
+    return refreshAndBuildStatus(appUser);
   }
 
   private SyncStatusResponse refreshAndBuildStatus(AppUser appUser) {

@@ -5,7 +5,8 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
-import { catchError, map, of, startWith, Subject, switchMap } from 'rxjs';
+import { catchError, concat, map, of, startWith, Subject, switchMap } from 'rxjs';
+import type { Observable } from 'rxjs';
 
 import type { DashboardSummary } from '../../../shared/models/dashboard.model';
 import { DashboardService } from '../dashboard.service';
@@ -41,26 +42,33 @@ interface MetricTile {
 })
 export class DashboardComponent {
   private readonly dashboardService = inject(DashboardService);
-  private readonly refreshSummary$ = new Subject<void>();
+  private readonly refreshSummary$ = new Subject<boolean>();
 
   protected readonly state = toSignal(
     this.refreshSummary$.pipe(
-      startWith(undefined),
-      switchMap(() =>
-        this.dashboardService.getSummary().pipe(
-          map(
-            (summary): DashboardState => ({
-              summary,
-              loading: false,
-              error: null,
-            }),
-          ),
-          catchError(() =>
-            of({
-              summary: null,
-              loading: false,
-              error: 'Unable to load dashboard summary.',
-            }),
+      startWith(false),
+      switchMap((syncFirst) =>
+        concat(
+          of({
+            summary: null,
+            loading: true,
+            error: null,
+          }),
+          this.loadSummary(syncFirst).pipe(
+            map(
+              (summary): DashboardState => ({
+                summary,
+                loading: false,
+                error: null,
+              }),
+            ),
+            catchError(() =>
+              of({
+                summary: null,
+                loading: false,
+                error: 'Unable to refresh dashboard summary.',
+              }),
+            ),
           ),
         ),
       ),
@@ -160,7 +168,17 @@ export class DashboardComponent {
   });
 
   protected reloadSummary(): void {
-    this.refreshSummary$.next();
+    this.refreshSummary$.next(true);
+  }
+
+  private loadSummary(syncFirst: boolean): Observable<DashboardSummary> {
+    if (!syncFirst) {
+      return this.dashboardService.getSummary();
+    }
+
+    return this.dashboardService
+      .syncNow()
+      .pipe(switchMap(() => this.dashboardService.getSummary()));
   }
 
   private moneyTone(value: number): SummaryCardTone {
