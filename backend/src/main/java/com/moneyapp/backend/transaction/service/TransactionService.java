@@ -14,7 +14,13 @@ import com.moneyapp.backend.transaction.mapper.TransactionMapper;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -24,6 +30,9 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
+
+  private static final Pattern DIGIT_RUN = Pattern.compile("\\d{10,}");
+  private static final int MIN_IBAN_DIGIT_MATCH_LENGTH = 10;
 
   private final TransactionRepository transactionRepository;
   private final AccountRepository accountRepository;
@@ -60,7 +69,7 @@ public class TransactionService {
   }
 
   @Transactional
-  public List<Transaction> syncTransactions(AppUser appUser) {
+  public List<Transaction> syncTransactions(AppUser appUser, Set<String> knownIbans) {
     if (appUser == null || appUser.getId() == null || isBlank(appUser.getPowensToken())) {
       throw new IllegalStateException(
           "Powens user identity is required before syncing transactions");
@@ -71,10 +80,107 @@ public class TransactionService {
       return List.of();
     }
 
-    return response.transactions().stream()
-        .filter(transaction -> transaction.id() != null)
-        .map(transaction -> upsertTransaction(appUser.getId(), transaction))
-        .toList();
+    List<Transaction> saved =
+        response.transactions().stream()
+            .filter(transaction -> transaction.id() != null)
+            .map(transaction -> upsertTransaction(appUser.getId(), transaction))
+            .toList();
+    detectInternalTransfers(appUser.getId(), knownIbans);
+    return saved;
+  }
+
+  @Transactional
+  public TransactionResponse updateInternalTransfer(
+      String email, Long transactionId, boolean internalTransfer) {
+    Long userId = requireUserId(email);
+    Transaction transaction = requireTransaction(transactionId);
+    verifyOwner(transaction, userId);
+
+    transaction.setInternalTransfer(internalTransfer);
+    transaction.setInternalTransferOverridden(true);
+    return TransactionMapper.toResponse(transactionRepository.save(transaction));
+  }
+
+  private void detectInternalTransfers(Long userId, Set<String> knownIbans) {
+    List<Transaction> candidates =
+        transactionRepository.findByUserIdAndTypeAndInternalTransferOverriddenFalse(
+            userId, "transfer");
+
+    Set<Long> matched = new HashSet<>();
+
+    if (!knownIbans.isEmpty()) {
+      // Primary: detect by IBAN digit sequence in transaction wording
+      for (Transaction t : candidates) {
+        if (matchesKnownAccountByIban(t.getWording(), knownIbans)) {
+          matched.add(t.getId());
+        }
+      }
+      // Secondary: find credit pairs for each IBAN-detected debit
+      for (Transaction debit : candidates) {
+        if (debit.getValue().compareTo(BigDecimal.ZERO) >= 0) continue;
+        if (!matched.contains(debit.getId())) continue;
+        BigDecimal creditAmount = debit.getValue().negate();
+        candidates.stream()
+            .filter(c -> c.getValue().compareTo(creditAmount) == 0)
+            .filter(c -> !matched.contains(c.getId()))
+            .filter(c -> Math.abs(ChronoUnit.DAYS.between(c.getDate(), debit.getDate())) <= 1)
+            .findFirst()
+            .ifPresent(credit -> matched.add(credit.getId()));
+      }
+    } else {
+      // Fallback when IBANs are unavailable: match by value, date, and registered accounts
+      for (Transaction debit : candidates) {
+        if (debit.getValue().compareTo(BigDecimal.ZERO) >= 0) continue;
+        if (debit.getAccountId() == null) continue;
+        if (matched.contains(debit.getId())) continue;
+        BigDecimal creditAmount = debit.getValue().negate();
+        candidates.stream()
+            .filter(c -> c.getValue().compareTo(creditAmount) == 0)
+            .filter(c -> c.getAccountId() != null && !c.getAccountId().equals(debit.getAccountId()))
+            .filter(c -> !matched.contains(c.getId()))
+            .filter(c -> Math.abs(ChronoUnit.DAYS.between(c.getDate(), debit.getDate())) <= 1)
+            .findFirst()
+            .ifPresent(
+                credit -> {
+                  matched.add(debit.getId());
+                  matched.add(credit.getId());
+                });
+      }
+    }
+
+    List<Transaction> toUpdate = new ArrayList<>();
+    for (Transaction t : candidates) {
+      boolean shouldBeInternal = matched.contains(t.getId());
+      if (t.isInternalTransfer() != shouldBeInternal) {
+        t.setInternalTransfer(shouldBeInternal);
+        toUpdate.add(t);
+      }
+    }
+    if (!toUpdate.isEmpty()) {
+      transactionRepository.saveAll(toUpdate);
+    }
+  }
+
+  private boolean matchesKnownAccountByIban(String wording, Set<String> knownIbans) {
+    if (wording == null) return false;
+    List<String> wordingDigitRuns = extractDigitRuns(wording);
+    if (wordingDigitRuns.isEmpty()) return false;
+    return knownIbans.stream()
+        .filter(iban -> iban != null && !iban.isBlank())
+        .anyMatch(
+            iban -> {
+              String ibanDigits = iban.replaceAll("[^0-9]", "");
+              return wordingDigitRuns.stream().anyMatch(ibanDigits::contains);
+            });
+  }
+
+  private List<String> extractDigitRuns(String text) {
+    List<String> runs = new ArrayList<>();
+    Matcher matcher = DIGIT_RUN.matcher(text);
+    while (matcher.find()) {
+      runs.add(matcher.group());
+    }
+    return runs;
   }
 
   private Transaction upsertTransaction(Long userId, PowensTransactionResponse powensTransaction) {
@@ -94,6 +200,7 @@ public class TransactionService {
     transaction.setLabel(defaultLabel(powensTransaction));
     transaction.setWording(powensTransaction.wording());
     transaction.setValue(defaultMoney(powensTransaction.value()));
+    transaction.setType(powensTransaction.type());
 
     if (!transaction.isCategoryOverridden()) {
       transaction.setCategory(categoryMappingService.map(powensTransaction.idCategory()).name());

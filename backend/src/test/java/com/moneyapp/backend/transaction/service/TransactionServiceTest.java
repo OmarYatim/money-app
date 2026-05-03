@@ -21,6 +21,7 @@ import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,9 +87,10 @@ class TransactionServiceTest {
                         "Market",
                         "Supermarket card payment",
                         BigDecimal.valueOf(-42.50),
-                        2)))); // id_category=2 → GROCERIES
+                        2,
+                        "card")))); // id_category=2 → GROCERIES
 
-    List<Transaction> transactions = service.syncTransactions(appUser);
+    List<Transaction> transactions = service.syncTransactions(appUser, Set.of());
 
     assertThat(transactions).hasSize(1);
     Transaction transaction = transactions.get(0);
@@ -120,9 +122,10 @@ class TransactionServiceTest {
                         "Unknown",
                         null,
                         BigDecimal.TEN,
-                        9998)))); // id_category=9998 (Indéfini) → OTHER
+                        9998,
+                        null)))); // id_category=9998 (Indéfini) → OTHER
 
-    Transaction transaction = service.syncTransactions(appUser).get(0);
+    Transaction transaction = service.syncTransactions(appUser, Set.of()).get(0);
 
     assertThat(transaction.getCategory()).isEqualTo("OTHER");
   }
@@ -157,10 +160,11 @@ class TransactionServiceTest {
                         "Market",
                         "Supermarket card payment",
                         BigDecimal.valueOf(-42.50),
-                        2)))); // id_category=2 → GROCERIES, but categoryOverridden=true so stays
+                        2,
+                        null)))); // id_category=2 → GROCERIES, but categoryOverridden=true so stays
     // DINING
 
-    Transaction transaction = service.syncTransactions(appUser).get(0);
+    Transaction transaction = service.syncTransactions(appUser, Set.of()).get(0);
 
     assertThat(transaction.getCategory()).isEqualTo("DINING");
     assertThat(transaction.isCategoryOverridden()).isTrue();
@@ -170,7 +174,7 @@ class TransactionServiceTest {
   void syncTransactionsRequiresPowensIdentity() {
     TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
 
-    assertThatThrownBy(() -> service.syncTransactions(AppUser.builder().id(1L).build()))
+    assertThatThrownBy(() -> service.syncTransactions(AppUser.builder().id(1L).build(), Set.of()))
         .isInstanceOf(IllegalStateException.class)
         .hasMessage("Powens user identity is required before syncing transactions");
   }
@@ -252,6 +256,242 @@ class TransactionServiceTest {
             () -> service.updateCategory("other@example.com", transaction.getId(), "DINING"))
         .isInstanceOf(ResponseStatusException.class)
         .hasMessageContaining("403 FORBIDDEN");
+  }
+
+  @Test
+  void updateInternalTransferSetsOverrideFlagAndPreventsFutureAutoDetection() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Transaction transaction =
+        transactionRepository.save(
+            Transaction.builder()
+                .userId(appUser.getId())
+                .externalTransactionId(1L)
+                .date(LocalDate.of(2026, 5, 1))
+                .label("Salary")
+                .value(BigDecimal.valueOf(2000))
+                .category("OTHER")
+                .type("transfer")
+                .build());
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    TransactionResponse response =
+        service.updateInternalTransfer("person@example.com", transaction.getId(), true);
+
+    assertThat(response.internalTransfer()).isTrue();
+    assertThat(response.internalTransferOverridden()).isTrue();
+    Transaction saved = transactionRepository.findById(transaction.getId()).orElseThrow();
+    assertThat(saved.isInternalTransfer()).isTrue();
+    assertThat(saved.isInternalTransferOverridden()).isTrue();
+  }
+
+  @Test
+  void syncTransactionsMarksMatchingTransfersBetweenRegisteredAccountsAsInternal() {
+    AppUser appUser =
+        appUserRepository.save(
+            AppUser.builder()
+                .email("person@example.com")
+                .powensToken("token")
+                .powensUserId("powens-id")
+                .build());
+    Account checking =
+        accountRepository.save(
+            Account.builder()
+                .userId(appUser.getId())
+                .externalAccountId(10L)
+                .name("Checking")
+                .balance(BigDecimal.ZERO)
+                .coming(BigDecimal.ZERO)
+                .currency("EUR")
+                .build());
+    Account savings =
+        accountRepository.save(
+            Account.builder()
+                .userId(appUser.getId())
+                .externalAccountId(20L)
+                .name("Savings")
+                .balance(BigDecimal.ZERO)
+                .coming(BigDecimal.ZERO)
+                .currency("EUR")
+                .build());
+    TransactionService service =
+        transactionService(
+            new PowensTransactionsResponse(
+                List.of(
+                    new PowensTransactionResponse(
+                        1L,
+                        10L,
+                        LocalDate.of(2026, 5, 1),
+                        null,
+                        "Transfer out",
+                        BigDecimal.valueOf(-200),
+                        null,
+                        "transfer"),
+                    new PowensTransactionResponse(
+                        2L,
+                        20L,
+                        LocalDate.of(2026, 5, 1),
+                        null,
+                        "Transfer in",
+                        BigDecimal.valueOf(200),
+                        null,
+                        "transfer"),
+                    new PowensTransactionResponse(
+                        3L,
+                        10L,
+                        LocalDate.of(2026, 5, 1),
+                        "Groceries",
+                        null,
+                        BigDecimal.valueOf(-50),
+                        2,
+                        "card"))));
+
+    service.syncTransactions(appUser, Set.of());
+
+    Transaction debit =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 1L)
+            .orElseThrow();
+    Transaction credit =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 2L)
+            .orElseThrow();
+    Transaction groceries =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 3L)
+            .orElseThrow();
+
+    assertThat(debit.getAccountId()).isEqualTo(checking.getId());
+    assertThat(credit.getAccountId()).isEqualTo(savings.getId());
+    assertThat(debit.isInternalTransfer()).isTrue();
+    assertThat(credit.isInternalTransfer()).isTrue();
+    assertThat(groceries.isInternalTransfer()).isFalse();
+  }
+
+  @Test
+  void syncTransactionsDetectsInternalTransferByIbanDigitsInWording() {
+    AppUser appUser =
+        appUserRepository.save(
+            AppUser.builder()
+                .email("person@example.com")
+                .powensToken("token")
+                .powensUserId("powens-id")
+                .build());
+    accountRepository.save(
+        Account.builder()
+            .userId(appUser.getId())
+            .externalAccountId(10L)
+            .name("Checking")
+            .balance(BigDecimal.ZERO)
+            .coming(BigDecimal.ZERO)
+            .currency("EUR")
+            .build());
+    accountRepository.save(
+        Account.builder()
+            .userId(appUser.getId())
+            .externalAccountId(20L)
+            .name("Savings")
+            .balance(BigDecimal.ZERO)
+            .coming(BigDecimal.ZERO)
+            .currency("EUR")
+            .build());
+    // savingsIban: "FR7698765432109876543210" → digits: "7698765432109876543210"
+    // Wording of debit contains "9876543210987654321" which is substring of those digits
+    String savingsIban = "FR7698765432109876543210";
+    TransactionService service =
+        transactionService(
+            new PowensTransactionsResponse(
+                List.of(
+                    new PowensTransactionResponse(
+                        1L,
+                        10L,
+                        LocalDate.of(2026, 5, 1),
+                        "Transfer to savings",
+                        "9876543210987654321 MOTIF: Epargne",
+                        BigDecimal.valueOf(-200),
+                        null,
+                        "transfer"),
+                    new PowensTransactionResponse(
+                        2L,
+                        20L,
+                        LocalDate.of(2026, 5, 1),
+                        "Transfer received",
+                        "VIREMENT RECU",
+                        BigDecimal.valueOf(200),
+                        null,
+                        "transfer"),
+                    new PowensTransactionResponse(
+                        3L,
+                        10L,
+                        LocalDate.of(2026, 5, 1),
+                        "Coffee",
+                        null,
+                        BigDecimal.valueOf(-5),
+                        2,
+                        "card"))));
+
+    service.syncTransactions(appUser, Set.of(savingsIban));
+
+    Transaction debit =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 1L)
+            .orElseThrow();
+    Transaction credit =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 2L)
+            .orElseThrow();
+    Transaction coffee =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 3L)
+            .orElseThrow();
+
+    assertThat(debit.isInternalTransfer()).isTrue();
+    assertThat(credit.isInternalTransfer()).isTrue();
+    assertThat(coffee.isInternalTransfer()).isFalse();
+  }
+
+  @Test
+  void syncTransactionsPreservesManualInternalTransferOverride() {
+    AppUser appUser =
+        appUserRepository.save(
+            AppUser.builder()
+                .email("person@example.com")
+                .powensToken("token")
+                .powensUserId("powens-id")
+                .build());
+    transactionRepository.save(
+        Transaction.builder()
+            .userId(appUser.getId())
+            .externalTransactionId(1L)
+            .date(LocalDate.of(2026, 5, 1))
+            .label("Salary")
+            .value(BigDecimal.valueOf(2000))
+            .category("OTHER")
+            .type("transfer")
+            .internalTransfer(false)
+            .internalTransferOverridden(true)
+            .build());
+    TransactionService service =
+        transactionService(
+            new PowensTransactionsResponse(
+                List.of(
+                    new PowensTransactionResponse(
+                        1L,
+                        null,
+                        LocalDate.of(2026, 5, 1),
+                        "Salary",
+                        "9876543210987654321 MOTIF: Paie",
+                        BigDecimal.valueOf(2000),
+                        null,
+                        "transfer"))));
+
+    service.syncTransactions(appUser, Set.of("FR7698765432109876543210"));
+
+    Transaction transaction =
+        transactionRepository
+            .findByUserIdAndExternalTransactionId(appUser.getId(), 1L)
+            .orElseThrow();
+    assertThat(transaction.isInternalTransfer()).isFalse();
+    assertThat(transaction.isInternalTransferOverridden()).isTrue();
   }
 
   private TransactionService transactionService(PowensTransactionsResponse response) {

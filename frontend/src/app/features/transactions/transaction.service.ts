@@ -24,4 +24,11 @@ export class TransactionService {
       category,
     });
   }
+
+  updateInternalTransfer(id: number, internalTransfer: boolean): Observable<Transaction> {
+    return this.http.patch<Transaction>(
+      `${this.apiBaseUrl}/api/transactions/${id}/internal-transfer`,
+      { internalTransfer },
+    );
+  }
 }

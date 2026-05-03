@@ -31,8 +31,8 @@ public class ConnectionStatusService {
   public SyncStatusResponse syncNow(String email) {
     AppUser appUser = currentAppUserService.resolveExisting(email);
     if (!isBlank(appUser.getPowensToken())) {
-      accountService.syncAccounts(appUser);
-      transactionService.syncTransactions(appUser);
+      AccountService.AccountSyncResult syncResult = accountService.syncAccounts(appUser);
+      transactionService.syncTransactions(appUser, syncResult.ibans());
     }
 
     return refreshAndBuildStatus(appUser);

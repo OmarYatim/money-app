@@ -11,12 +11,12 @@ import com.moneyapp.backend.banking.dto.PowensConnectionResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.dto.SyncStatusResponse;
-import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.repository.UserConnectionRepository;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
 import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.service.TransactionService;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,9 +110,9 @@ class ConnectionStatusServiceTest {
     }
 
     @Override
-    public List<Account> syncAccounts(AppUser appUser) {
+    public AccountSyncResult syncAccounts(AppUser appUser) {
       syncedUserId = appUser.getId();
-      return List.of();
+      return new AccountSyncResult(List.of(), Set.of());
     }
   }
 
@@ -124,7 +124,7 @@ class ConnectionStatusServiceTest {
     }
 
     @Override
-    public List<Transaction> syncTransactions(AppUser appUser) {
+    public List<Transaction> syncTransactions(AppUser appUser, Set<String> knownIbans) {
       syncedUserId = appUser.getId();
       return List.of();
     }

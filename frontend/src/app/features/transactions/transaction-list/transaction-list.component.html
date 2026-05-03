@@ -40,6 +40,9 @@
           </div>
 
           <div class="transaction-row__summary">
+            @if (transaction.internalTransfer) {
+              <span class="transaction-row__internal-badge">Internal transfer</span>
+            }
             <span [class]="transaction.category | categoryColor">
               {{ categoryLabel(transaction.category) }}
             </span>

@@ -11,4 +11,5 @@ public record PowensTransactionResponse(
     String label,
     String wording,
     BigDecimal value,
-    @JsonProperty("id_category") Integer idCategory) {}
+    @JsonProperty("id_category") Integer idCategory,
+    String type) {}

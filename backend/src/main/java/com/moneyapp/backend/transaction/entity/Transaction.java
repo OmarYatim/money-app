@@ -58,12 +58,23 @@ public class Transaction {
   @Builder.Default
   private BigDecimal value = BigDecimal.ZERO;
 
+  @Column(length = 50)
+  private String type;
+
   @Column(nullable = false, length = 30)
   private String category;
 
   @Column(name = "category_overridden", nullable = false)
   @Builder.Default
   private boolean categoryOverridden = false;
+
+  @Column(name = "internal_transfer", nullable = false)
+  @Builder.Default
+  private boolean internalTransfer = false;
+
+  @Column(name = "internal_transfer_overridden", nullable = false)
+  @Builder.Default
+  private boolean internalTransferOverridden = false;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;

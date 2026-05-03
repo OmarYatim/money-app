@@ -86,16 +86,14 @@ class DashboardSummaryServiceTest {
   }
 
   @Test
-  void computeCalculatesDailySpendingFromThreeDaysAgoExpensesOnly() {
+  void computeCalculatesDailySpendingFromTodayExpensesOnly() {
     AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
     LocalDate today = LocalDate.now();
-    LocalDate spendingDate = today.minusDays(3);
-    transactionRepository.save(transaction(appUser.getId(), 1L, spendingDate, "Coffee", "-12"));
-    transactionRepository.save(transaction(appUser.getId(), 2L, spendingDate, "Lunch", "-45"));
-    transactionRepository.save(transaction(appUser.getId(), 3L, spendingDate, "Refund", "20"));
-    transactionRepository.save(transaction(appUser.getId(), 4L, today, "Today groceries", "-100"));
+    transactionRepository.save(transaction(appUser.getId(), 1L, today, "Coffee", "-12"));
+    transactionRepository.save(transaction(appUser.getId(), 2L, today, "Lunch", "-45"));
+    transactionRepository.save(transaction(appUser.getId(), 3L, today, "Refund", "20"));
     transactionRepository.save(
-        transaction(appUser.getId(), 5L, spendingDate.minusDays(1), "Old groceries", "-100"));
+        transaction(appUser.getId(), 4L, today.minusDays(1), "Yesterday groceries", "-100"));
 
     DashboardSummaryResponse summary = dashboardSummaryService.compute(appUser.getEmail());
 
@@ -133,6 +131,22 @@ class DashboardSummaryServiceTest {
         .build();
   }
 
+  @Test
+  void computeExcludesInternalTransfersFromIncomeAndExpenses() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    LocalDate today = LocalDate.now();
+    transactionRepository.save(transaction(appUser.getId(), 1L, today, "Salary", "2000"));
+    transactionRepository.save(transaction(appUser.getId(), 2L, today, "Groceries", "-50"));
+    transactionRepository.save(
+        internalTransfer(appUser.getId(), 3L, today, "Transfer out", "-500"));
+    transactionRepository.save(internalTransfer(appUser.getId(), 4L, today, "Transfer in", "500"));
+
+    DashboardSummaryResponse summary = dashboardSummaryService.compute(appUser.getEmail());
+
+    assertThat(summary.monthlyIncome()).isEqualByComparingTo("2000");
+    assertThat(summary.monthlyExpenses()).isEqualByComparingTo("50");
+  }
+
   private Transaction transaction(
       Long userId, Long externalTransactionId, LocalDate date, String label, String value) {
     return Transaction.builder()
@@ -142,6 +156,19 @@ class DashboardSummaryServiceTest {
         .label(label)
         .value(new BigDecimal(value))
         .category("OTHER")
+        .build();
+  }
+
+  private Transaction internalTransfer(
+      Long userId, Long externalTransactionId, LocalDate date, String label, String value) {
+    return Transaction.builder()
+        .userId(userId)
+        .externalTransactionId(externalTransactionId)
+        .date(date)
+        .label(label)
+        .value(new BigDecimal(value))
+        .category("OTHER")
+        .internalTransfer(true)
         .build();
   }
 }

@@ -77,16 +77,17 @@ class AccountServiceTest {
                             LocalDateTime.of(2026, 5, 2, 12, 0),
                             false)))));
 
-    List<Account> accounts = service.syncAccounts(appUser);
+    AccountService.AccountSyncResult result = service.syncAccounts(appUser);
 
-    assertThat(accounts).hasSize(1);
-    Account account = accounts.get(0);
+    assertThat(result.accounts()).hasSize(1);
+    Account account = result.accounts().get(0);
     assertThat(account.getExternalAccountId()).isEqualTo(123L);
     assertThat(account.getConnectionId()).isEqualTo(456L);
     assertThat(account.getInstitutionName()).isEqualTo("Test Bank");
     assertThat(account.getAccountNumberLastFour()).isEqualTo("1234");
     assertThat(account.getBalance()).isEqualByComparingTo("1200");
     assertThat(account.getComing()).isEqualByComparingTo("25");
+    assertThat(result.ibans()).containsExactly("FR7612345678901234");
   }
 
   @Test
@@ -131,7 +132,7 @@ class AccountServiceTest {
                             LocalDateTime.of(2026, 5, 2, 12, 0),
                             false)))));
 
-    List<Account> accounts = service.syncAccounts(appUser);
+    List<Account> accounts = service.syncAccounts(appUser).accounts();
 
     assertThat(accounts).hasSize(1);
     assertThat(accountRepository.findAll()).hasSize(1);
