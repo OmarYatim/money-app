@@ -12,7 +12,16 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
-@SpringBootTest(properties = {"app.auth-enabled=true"})
+@SpringBootTest(
+    properties = {
+      "powens.domain=powens.test",
+      "powens.client-id=test-client-id",
+      "powens.client-secret=test-client-secret",
+      "powens.manage-token=test-manage-token",
+      "powens.redirect-url=https://local.nexioo.me/api/bank/callback",
+      "app.jwt.secret=test-secret-key-must-be-at-least-32-chars!!",
+      "app.jwt.expiration-ms=900000"
+    })
 @ActiveProfiles("test")
 class CurrentAppUserServiceTest {
 
@@ -26,20 +35,35 @@ class CurrentAppUserServiceTest {
   }
 
   @Test
-  void resolveExistingRejectsPrincipalMismatchWhenAuthIsEnabled() {
-    appUserRepository.save(AppUser.builder().email("dev@nexioo.me").build());
+  void resolveExistingReturnsUserByEmail() {
+    AppUser saved = appUserRepository.save(AppUser.builder().email("user@example.com").build());
 
-    assertThatThrownBy(() -> currentAppUserService.resolveExisting("user"))
+    AppUser result = currentAppUserService.resolveExisting("user@example.com");
+
+    assertThat(result.getId()).isEqualTo(saved.getId());
+  }
+
+  @Test
+  void resolveExistingThrows401WhenEmailNotFound() {
+    assertThatThrownBy(() -> currentAppUserService.resolveExisting("nobody@example.com"))
         .isInstanceOf(ResponseStatusException.class)
         .hasMessageContaining("401 UNAUTHORIZED");
   }
 
   @Test
-  void resolveExistingReturnsExactMatchWhenAuthIsEnabled() {
-    AppUser savedUser = appUserRepository.save(AppUser.builder().email("user").build());
+  void resolveForWriteReturnsExistingUser() {
+    AppUser saved = appUserRepository.save(AppUser.builder().email("user@example.com").build());
 
-    AppUser appUser = currentAppUserService.resolveExisting("user");
+    AppUser result = currentAppUserService.resolveForWrite("user@example.com");
 
-    assertThat(appUser.getId()).isEqualTo(savedUser.getId());
+    assertThat(result.getId()).isEqualTo(saved.getId());
+  }
+
+  @Test
+  void resolveForWriteCreatesUserWhenNotFound() {
+    AppUser result = currentAppUserService.resolveForWrite("new@example.com");
+
+    assertThat(result.getId()).isNotNull();
+    assertThat(result.getEmail()).isEqualTo("new@example.com");
   }
 }

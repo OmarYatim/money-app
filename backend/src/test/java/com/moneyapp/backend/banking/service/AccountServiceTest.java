@@ -29,7 +29,9 @@ import org.springframework.test.context.ActiveProfiles;
       "powens.client-id=test-client-id",
       "powens.client-secret=test-client-secret",
       "powens.manage-token=test-manage-token",
-      "powens.redirect-url=https://local.nexioo.me/api/bank/callback"
+      "powens.redirect-url=https://local.nexioo.me/api/bank/callback",
+      "app.jwt.secret=test-secret-key-must-be-at-least-32-chars!!",
+      "app.jwt.expiration-ms=900000"
     })
 @ActiveProfiles("test")
 class AccountServiceTest {
@@ -130,31 +132,16 @@ class AccountServiceTest {
   }
 
   @Test
-  void findAccountsFallsBackToOnlyExistingUserWhenPrincipalDoesNotMatchEmail() {
-    AppUser appUser = appUserRepository.save(AppUser.builder().email("dev@nexioo.me").build());
-    accountRepository.save(
-        Account.builder()
-            .userId(appUser.getId())
-            .externalAccountId(123L)
-            .connectionId(456L)
-            .institutionName("Test Bank")
-            .name("Main checking")
-            .type("checking")
-            .accountNumberLastFour("1234")
-            .balance(BigDecimal.TEN)
-            .coming(BigDecimal.ZERO)
-            .currency("EUR")
-            .build());
+  void findAccountsThrows401WhenEmailNotFound() {
     AccountService service =
         new AccountService(
             currentAppUserService,
             accountRepository,
             new StubPowensClient(new PowensAccountsResponse(List.of())));
 
-    List<AccountResponse> accounts = service.findAccounts("user");
-
-    assertThat(accounts).hasSize(1);
-    assertThat(accounts.get(0).name()).isEqualTo("Main checking");
+    assertThatThrownBy(() -> service.findAccounts("nobody@example.com"))
+        .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+        .hasMessageContaining("401 UNAUTHORIZED");
   }
 
   private record StubPowensClient(PowensAccountsResponse response) implements PowensClient {

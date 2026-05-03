@@ -1,64 +1,58 @@
 package com.moneyapp.backend.config;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
+import com.moneyapp.backend.auth.filter.JwtAuthenticationFilter;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-  private final AppProperties appProperties;
+  private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
   @Bean
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    if (!appProperties.authEnabled()) {
-      // CSRF disabled intentionally: dev-only path has no cookie/session auth, so no CSRF surface.
-      // DevAuthBypassFilter authenticates every request unconditionally.
-      return http.csrf(
-              AbstractHttpConfigurer::disable) // lgtm[java/spring-csrf-protection-disabled]
-          .addFilterBefore(new DevAuthBypassFilter(), AnonymousAuthenticationFilter.class)
-          .authorizeHttpRequests(auth -> auth.anyRequest().permitAll())
-          .build();
-    }
-
     return http.csrf(
-            csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-        .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-        .httpBasic(Customizer.withDefaults())
-        .formLogin(AbstractHttpConfigurer::disable)
+            AbstractHttpConfigurer
+                ::disable) // lgtm[java/spring-csrf-protection-disabled] -- stateless JWT API;
+        // Bearer tokens in Authorization header are not vulnerable to CSRF
+        .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("/api/auth/**")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.OPTIONS, "/**")
+                    .permitAll()
+                    .anyRequest()
+                    .authenticated())
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
         .build();
   }
 
-  // Sets a fully-authenticated token on every request so controller auth checks pass.
-  // Principal "dev-bypass" is recognised by CurrentAppUserService as the fallback dev user.
-  private static class DevAuthBypassFilter extends OncePerRequestFilter {
+  @Bean
+  CorsConfigurationSource corsConfigurationSource() {
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowedOrigins(List.of("http://localhost:4200", "https://app.moneyapp.com"));
+    config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+    config.setAllowCredentials(true);
+    config.setMaxAge(3600L);
 
-    @Override
-    protected void doFilterInternal(
-        HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-        throws ServletException, IOException {
-      if (SecurityContextHolder.getContext().getAuthentication() == null) {
-        SecurityContextHolder.getContext()
-            .setAuthentication(
-                new UsernamePasswordAuthenticationToken("dev-bypass", null, List.of()));
-      }
-      chain.doFilter(request, response);
-    }
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
   }
 }

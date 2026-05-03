@@ -34,7 +34,9 @@ import org.springframework.web.server.ResponseStatusException;
       "powens.client-id=test-client-id",
       "powens.client-secret=test-client-secret",
       "powens.manage-token=test-manage-token",
-      "powens.redirect-url=https://local.nexioo.me/api/bank/callback"
+      "powens.redirect-url=https://local.nexioo.me/api/bank/callback",
+      "app.jwt.secret=test-secret-key-must-be-at-least-32-chars!!",
+      "app.jwt.expiration-ms=900000"
     })
 @ActiveProfiles("test")
 class TransactionServiceTest {
