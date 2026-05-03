@@ -45,6 +45,16 @@ class BankConnectionStateServiceTest {
   }
 
   @Test
+  void consumeByStateReturnsUserIdAndMarksStateAsConsumed() {
+    bankConnectionStateService.create(1L, "valid-state");
+
+    Long userId = bankConnectionStateService.consume("valid-state");
+
+    assertThat(userId).isEqualTo(1L);
+    assertThat(bankConnectionStateRepository.findByStateAndConsumedFalse("valid-state")).isEmpty();
+  }
+
+  @Test
   void consumeRejectsMissingState() {
     assertThatThrownBy(() -> bankConnectionStateService.consume(1L, null))
         .isInstanceOf(InvalidBankConnectionStateException.class)

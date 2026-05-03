@@ -9,7 +9,11 @@ import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.mapper.AccountMapper;
 import com.moneyapp.backend.banking.repository.AccountRepository;
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,31 +45,84 @@ public class AccountService {
       return List.of();
     }
 
-    return response.accounts().stream()
-        .filter(account -> account.id() != null)
-        .map(account -> upsertAccount(appUser.getId(), account))
-        .toList();
+    List<Account> syncedAccounts =
+        response.accounts().stream()
+            .filter(account -> account.id() != null)
+            .map(account -> upsertAccount(appUser.getId(), account))
+            .toList();
+    disableDuplicateVisibleAccounts(appUser.getId(), syncedAccounts);
+    return syncedAccounts;
   }
 
   private Account upsertAccount(Long userId, PowensAccountResponse powensAccount) {
-    Account account =
-        accountRepository
-            .findByUserIdAndExternalAccountId(userId, powensAccount.id())
-            .orElseGet(
-                () ->
-                    Account.builder().userId(userId).externalAccountId(powensAccount.id()).build());
+    String accountNumberLastFour = lastFour(powensAccount.iban());
+    String currency = defaultCurrency(currencyCode(powensAccount.currency()));
+    Account account = resolveAccount(userId, powensAccount, accountNumberLastFour, currency);
 
     account.setConnectionId(powensAccount.connectionId());
     account.setInstitutionName(powensAccount.institutionName());
     account.setName(powensAccount.name());
     account.setType(powensAccount.type());
-    account.setAccountNumberLastFour(lastFour(powensAccount.iban()));
+    account.setExternalAccountId(powensAccount.id());
+    account.setAccountNumberLastFour(accountNumberLastFour);
     account.setBalance(defaultMoney(powensAccount.balance()));
     account.setComing(defaultMoney(powensAccount.coming()));
-    account.setCurrency(defaultCurrency(currencyCode(powensAccount.currency())));
+    account.setCurrency(currency);
     account.setLastUpdate(powensAccount.lastUpdate());
     account.setDisabled(Boolean.TRUE.equals(powensAccount.disabled()));
     return accountRepository.save(account);
+  }
+
+  private Account resolveAccount(
+      Long userId,
+      PowensAccountResponse powensAccount,
+      String accountNumberLastFour,
+      String currency) {
+    Optional<Account> existingByExternalId =
+        accountRepository.findByUserIdAndExternalAccountId(userId, powensAccount.id());
+    if (existingByExternalId.isPresent()) {
+      return existingByExternalId.get();
+    }
+
+    return accountRepository
+        .findFirstByUserIdAndInstitutionNameAndNameAndTypeAndAccountNumberLastFourAndCurrencyAndDisabledFalse(
+            userId,
+            powensAccount.institutionName(),
+            powensAccount.name(),
+            powensAccount.type(),
+            accountNumberLastFour,
+            currency)
+        .orElseGet(
+            () -> Account.builder().userId(userId).externalAccountId(powensAccount.id()).build());
+  }
+
+  private void disableDuplicateVisibleAccounts(Long userId, List<Account> syncedAccounts) {
+    Set<AccountIdentity> seen = new HashSet<>();
+    Set<Long> syncedAccountIds =
+        syncedAccounts.stream().map(Account::getId).collect(Collectors.toSet());
+    accountRepository.findByUserIdAndDisabledFalseOrderByNameAsc(userId).stream()
+        .sorted((left, right) -> comparePreferred(left, right, syncedAccountIds))
+        .forEach(
+            account -> {
+              if (!seen.add(AccountIdentity.from(account))) {
+                account.setDisabled(true);
+                accountRepository.save(account);
+              }
+            });
+  }
+
+  private int comparePreferred(Account left, Account right, Set<Long> syncedAccountIds) {
+    boolean leftSynced = syncedAccountIds.contains(left.getId());
+    boolean rightSynced = syncedAccountIds.contains(right.getId());
+    if (leftSynced != rightSynced) {
+      return leftSynced ? -1 : 1;
+    }
+
+    return Long.compare(nullSafeId(right), nullSafeId(left));
+  }
+
+  private long nullSafeId(Account account) {
+    return account.getId() == null ? 0L : account.getId();
   }
 
   private String lastFour(String value) {
@@ -91,5 +148,22 @@ public class AccountService {
 
   private boolean isBlank(String value) {
     return value == null || value.isBlank();
+  }
+
+  private record AccountIdentity(
+      String institutionName,
+      String name,
+      String type,
+      String accountNumberLastFour,
+      String currency) {
+
+    private static AccountIdentity from(Account account) {
+      return new AccountIdentity(
+          account.getInstitutionName(),
+          account.getName(),
+          account.getType(),
+          account.getAccountNumberLastFour(),
+          account.getCurrency());
+    }
   }
 }

@@ -36,19 +36,13 @@ public class BankConnectionController {
       @RequestParam(required = false, name = "connection_ids") String connectionIds,
       @RequestParam(required = false, name = "connection_id") String connectionId,
       @RequestParam(required = false) String error,
-      @RequestParam(required = false) String state,
-      Authentication authentication) {
-    if (authentication == null || !authentication.isAuthenticated()) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-    }
-
+      @RequestParam(required = false) String state) {
     String mergedIds =
         Stream.of(connectionIds, connectionId)
             .filter(value -> value != null && !value.isBlank())
             .collect(Collectors.joining(","));
 
     return ResponseEntity.ok(
-        bankConnectionService.handleCallback(
-            authentication.getName(), mergedIds.isEmpty() ? null : mergedIds, error, state));
+        bankConnectionService.handleCallback(mergedIds.isEmpty() ? null : mergedIds, error, state));
   }
 }

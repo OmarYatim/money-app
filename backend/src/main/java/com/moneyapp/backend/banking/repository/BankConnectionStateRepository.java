@@ -7,4 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface BankConnectionStateRepository extends JpaRepository<BankConnectionState, Long> {
 
   Optional<BankConnectionState> findByUserIdAndStateAndConsumedFalse(Long userId, String state);
+
+  Optional<BankConnectionState> findByStateAndConsumedFalse(String state);
 }

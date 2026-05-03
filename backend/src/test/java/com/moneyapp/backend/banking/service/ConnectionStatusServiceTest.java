@@ -11,7 +11,11 @@ import com.moneyapp.backend.banking.dto.PowensConnectionResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.dto.SyncStatusResponse;
+import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.repository.UserConnectionRepository;
+import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
+import com.moneyapp.backend.transaction.entity.Transaction;
+import com.moneyapp.backend.transaction.service.TransactionService;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,13 +65,69 @@ class ConnectionStatusServiceTest {
             new StubPowensClient(
                 new PowensConnectionsResponse(
                     List.of(new PowensConnectionResponse(123L, "wrongpass")))),
-            userConnectionService);
+            userConnectionService,
+            new FakeAccountService(),
+            new FakeTransactionService());
 
     SyncStatusResponse response = service.getStatus(appUser.getEmail());
 
     assertThat(response.connectionsRequiringAction()).hasSize(1);
     assertThat(response.connectionsRequiringAction().get(0).connectionId()).isEqualTo(123L);
     assertThat(response.connectionsRequiringAction().get(0).state()).isEqualTo("wrongpass");
+  }
+
+  @Test
+  void syncNowRefreshesAccountsAndTransactionsBeforeReturningStatus() {
+    AppUser appUser =
+        appUserRepository.save(
+            AppUser.builder()
+                .email("person@example.com")
+                .powensToken("permanent-token")
+                .powensUserId("powens-user-id")
+                .build());
+    FakeAccountService accountService = new FakeAccountService();
+    FakeTransactionService transactionService = new FakeTransactionService();
+    ConnectionStatusService service =
+        new ConnectionStatusService(
+            currentAppUserService,
+            new StubPowensClient(new PowensConnectionsResponse(List.of())),
+            userConnectionService,
+            accountService,
+            transactionService);
+
+    SyncStatusResponse response = service.syncNow(appUser.getEmail());
+
+    assertThat(response.connectionsRequiringAction()).isEmpty();
+    assertThat(accountService.syncedUserId).isEqualTo(appUser.getId());
+    assertThat(transactionService.syncedUserId).isEqualTo(appUser.getId());
+  }
+
+  private static class FakeAccountService extends AccountService {
+    private Long syncedUserId;
+
+    FakeAccountService() {
+      super(null, null, null);
+    }
+
+    @Override
+    public List<Account> syncAccounts(AppUser appUser) {
+      syncedUserId = appUser.getId();
+      return List.of();
+    }
+  }
+
+  private static class FakeTransactionService extends TransactionService {
+    private Long syncedUserId;
+
+    FakeTransactionService() {
+      super(null, null, null, null, null);
+    }
+
+    @Override
+    public List<Transaction> syncTransactions(AppUser appUser) {
+      syncedUserId = appUser.getId();
+      return List.of();
+    }
   }
 
   private record StubPowensClient(PowensConnectionsResponse response) implements PowensClient {
@@ -90,6 +150,11 @@ class ConnectionStatusServiceTest {
     @Override
     public PowensConnectionsResponse fetchConnections(String permanentAccessToken) {
       return response;
+    }
+
+    @Override
+    public PowensTransactionsResponse fetchTransactions(String permanentAccessToken) {
+      throw new UnsupportedOperationException("Not needed in this test");
     }
   }
 }

@@ -8,6 +8,14 @@ export const routes: Routes = [
       import('./features/auth/login/login.component').then((c) => c.LoginComponent),
   },
   {
+    path: 'dashboard',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/dashboard/dashboard/dashboard.component').then(
+        (component) => component.DashboardComponent,
+      ),
+  },
+  {
     path: 'accounts',
     canActivate: [authGuard],
     loadComponent: () =>
@@ -34,6 +42,6 @@ export const routes: Routes = [
   {
     path: '',
     pathMatch: 'full',
-    redirectTo: 'accounts',
+    redirectTo: 'dashboard',
   },
 ];

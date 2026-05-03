@@ -21,6 +21,13 @@ public class CurrentAppUserService {
         .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
   }
 
+  @Transactional(readOnly = true)
+  public AppUser resolveExisting(Long userId) {
+    return appUserRepository
+        .findById(userId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED));
+  }
+
   @Transactional
   public AppUser resolveForWrite(String email) {
     return appUserRepository

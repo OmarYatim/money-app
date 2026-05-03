@@ -10,4 +10,13 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
   List<Account> findByUserIdAndDisabledFalseOrderByNameAsc(Long userId);
 
   Optional<Account> findByUserIdAndExternalAccountId(Long userId, Long externalAccountId);
+
+  Optional<Account>
+      findFirstByUserIdAndInstitutionNameAndNameAndTypeAndAccountNumberLastFourAndCurrencyAndDisabledFalse(
+          Long userId,
+          String institutionName,
+          String name,
+          String type,
+          String accountNumberLastFour,
+          String currency);
 }
