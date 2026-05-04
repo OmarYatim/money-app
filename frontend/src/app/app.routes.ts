@@ -40,6 +40,18 @@ export const routes: Routes = [
       ),
   },
   {
+    path: 'goals',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/goals/goals.component').then((c) => c.GoalsComponent),
+  },
+  {
+    path: 'reports',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/reports/reports.component').then((c) => c.ReportsComponent),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'dashboard',
