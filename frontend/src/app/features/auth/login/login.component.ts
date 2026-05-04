@@ -18,6 +18,7 @@ type AuthMode = 'login' | 'register';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [ReactiveFormsModule],
   templateUrl: './login.component.html',
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private readonly authService = inject(AuthService);
@@ -44,22 +45,21 @@ export class LoginComponent {
   });
 
   readonly isFormValid = computed(() => this.formStatus() === 'VALID');
-  readonly title = computed(() => (this.mode() === 'login' ? 'Sign in' : 'Create account'));
   readonly submitLabel = computed(() => {
     if (this.loading()) {
       return this.mode() === 'login' ? 'Signing in…' : 'Creating account…';
     }
     return this.mode() === 'login' ? 'Sign in' : 'Create account';
   });
-  readonly togglePrompt = computed(() =>
-    this.mode() === 'login' ? "Don't have an account?" : 'Already have an account?',
-  );
-  readonly toggleLabel = computed(() => (this.mode() === 'login' ? 'Create one' : 'Sign in'));
 
-  toggleMode(): void {
-    this.mode.update((m) => (m === 'login' ? 'register' : 'login'));
+  setMode(mode: AuthMode): void {
+    this.mode.set(mode);
     this.errorMessage.set(null);
     this.form.reset();
+  }
+
+  toggleMode(): void {
+    this.setMode(this.mode() === 'login' ? 'register' : 'login');
   }
 
   onSubmit(): void {
