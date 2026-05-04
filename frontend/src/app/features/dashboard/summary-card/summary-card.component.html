@@ -1,16 +1,15 @@
-<mat-card
-  appearance="outlined"
-  class="summary-card"
-  [class.summary-card--positive]="tone() === 'positive'"
-  [class.summary-card--negative]="tone() === 'negative'"
+<div
+  class="kpi-card"
+  [class.kpi-card--positive]="tone() === 'positive'"
+  [class.kpi-card--negative]="tone() === 'negative'"
 >
-  <mat-card-content class="summary-card__content">
-    <span class="summary-card__icon" aria-hidden="true">
-      <mat-icon>{{ icon() }}</mat-icon>
+  <div class="kpi-card__head">
+    <span class="kpi-card__icon" aria-hidden="true">
+      <span class="material-icons">{{ icon() }}</span>
     </span>
-    <span class="summary-card__label">{{ label() }}</span>
-    <strong class="summary-card__value">
-      {{ displaySign() }}{{ value() | currency: 'EUR' : 'symbol' : '1.2-2' }}
-    </strong>
-  </mat-card-content>
-</mat-card>
+    <span class="kpi-card__label">{{ label() }}</span>
+  </div>
+  <div class="kpi-card__value">
+    {{ displaySign() }}{{ value() | currency: 'EUR' : 'symbol' : '1.2-2' }}
+  </div>
+</div>

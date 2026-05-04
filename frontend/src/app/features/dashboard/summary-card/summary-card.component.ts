@@ -1,13 +1,11 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
-import { MatIconModule } from '@angular/material/icon';
 
 export type SummaryCardTone = 'neutral' | 'positive' | 'negative';
 
 @Component({
   selector: 'app-summary-card',
-  imports: [CurrencyPipe, MatCardModule, MatIconModule],
+  imports: [CurrencyPipe],
   templateUrl: './summary-card.component.html',
   styleUrl: './summary-card.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
