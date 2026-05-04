@@ -113,6 +113,7 @@ export class TransactionListComponent {
     saving: false,
     error: null,
   });
+  protected readonly categoryMenuOpen = signal(false);
 
   protected readonly groupedTransactions = computed(() => {
     const txns = this.state().transactions;
@@ -276,6 +277,7 @@ export class TransactionListComponent {
   }
 
   protected async openTransaction(transaction: Transaction): Promise<void> {
+    this.categoryMenuOpen.set(false);
     this.detailState.set({
       transaction,
       loading: true,
@@ -302,12 +304,18 @@ export class TransactionListComponent {
   }
 
   protected closeTransaction(): void {
+    this.categoryMenuOpen.set(false);
     this.detailState.set({
       transaction: null,
       loading: false,
       saving: false,
       error: null,
     });
+  }
+
+  protected toggleCategoryMenu(): void {
+    if (this.detailState().saving) return;
+    this.categoryMenuOpen.update((open) => !open);
   }
 
   protected async toggleDetailReviewed(): Promise<void> {
@@ -336,11 +344,14 @@ export class TransactionListComponent {
     }
   }
 
-  protected async updateDetailCategory(event: Event): Promise<void> {
+  protected async updateDetailCategory(selectedCategory: CategoryType): Promise<void> {
     const transaction = this.detailState().transaction;
-    const selectedCategory = (event.target as HTMLSelectElement).value as CategoryType;
-    if (!transaction || selectedCategory === transaction.category) return;
+    if (!transaction || selectedCategory === transaction.category) {
+      this.categoryMenuOpen.set(false);
+      return;
+    }
 
+    this.categoryMenuOpen.set(false);
     this.detailState.update((current) => ({ ...current, saving: true, error: null }));
 
     try {
@@ -359,6 +370,35 @@ export class TransactionListComponent {
         ...current,
         saving: false,
         error: 'Unable to update category.',
+      }));
+    }
+  }
+
+  protected async toggleDetailInternalTransfer(): Promise<void> {
+    const transaction = this.detailState().transaction;
+    if (!transaction) return;
+
+    this.detailState.update((current) => ({ ...current, saving: true, error: null }));
+
+    try {
+      const updated = await firstValueFrom(
+        this.transactionService.updateInternalTransfer(
+          transaction.id,
+          !transaction.internalTransfer,
+        ),
+      );
+      this.replaceTransaction(updated);
+      this.detailState.set({
+        transaction: updated,
+        loading: false,
+        saving: false,
+        error: null,
+      });
+    } catch {
+      this.detailState.update((current) => ({
+        ...current,
+        saving: false,
+        error: 'Unable to update internal transfer state.',
       }));
     }
   }

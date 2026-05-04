@@ -298,19 +298,62 @@
               <mat-icon aria-hidden="true">check</mat-icon>
               {{ transaction.reviewed ? 'Reviewed' : 'Mark reviewed' }}
             </button>
-            <label class="tx-modal__action-btn tx-modal__category-action">
-              <mat-icon aria-hidden="true">sell</mat-icon>
-              <select
-                [value]="transaction.category"
+            <div class="tx-modal__category-menu">
+              <button
+                class="tx-modal__action-btn tx-modal__select-btn"
+                type="button"
                 [disabled]="detailState().saving"
-                (change)="updateDetailCategory($event)"
+                [attr.aria-expanded]="categoryMenuOpen()"
+                aria-haspopup="listbox"
                 aria-label="Recategorize transaction"
+                (click)="toggleCategoryMenu()"
               >
-                @for (cat of categories; track cat) {
-                  <option [value]="cat">{{ categoryLabel(cat) }}</option>
-                }
-              </select>
-            </label>
+                <span
+                  class="tx-modal__option-dot"
+                  [style.background]="categoryIconColor(transaction.category)"
+                  aria-hidden="true"
+                ></span>
+                <span>{{ categoryLabel(transaction.category) }}</span>
+                <mat-icon aria-hidden="true">expand_more</mat-icon>
+              </button>
+              @if (categoryMenuOpen()) {
+                <div class="tx-modal__select-menu" role="listbox" aria-label="Transaction category">
+                  @for (cat of categories; track cat) {
+                    <button
+                      class="tx-modal__select-option"
+                      type="button"
+                      role="option"
+                      [class.tx-modal__select-option--active]="cat === transaction.category"
+                      [attr.aria-selected]="cat === transaction.category"
+                      [disabled]="detailState().saving"
+                      (click)="updateDetailCategory(cat)"
+                    >
+                      <span
+                        class="tx-modal__option-dot"
+                        [style.background]="categoryIconColor(cat)"
+                        aria-hidden="true"
+                      ></span>
+                      <span>{{ categoryLabel(cat) }}</span>
+                      @if (cat === transaction.category) {
+                        <mat-icon aria-hidden="true">check</mat-icon>
+                      }
+                    </button>
+                  }
+                </div>
+              }
+            </div>
+            <button
+              class="tx-modal__action-btn"
+              type="button"
+              [class.tx-modal__action-btn--active]="transaction.internalTransfer"
+              [disabled]="detailState().saving"
+              (click)="toggleDetailInternalTransfer()"
+            >
+              <mat-icon aria-hidden="true">
+                {{ transaction.internalTransfer ? 'sync_alt' : 'sync_disabled' }}
+              </mat-icon>
+              {{ transaction.internalTransfer ? 'Internal transfer' : 'Mark internal' }}
+            </button>
             <button class="tx-modal__action-btn" type="button">
               <mat-icon aria-hidden="true">description</mat-icon>
               Add note
@@ -367,6 +410,19 @@
               <div class="tx-modal__kv">
                 <dt>Type</dt>
                 <dd>{{ transactionDirection(transaction) }}</dd>
+              </div>
+              <div class="tx-modal__kv">
+                <dt>Internal transfer</dt>
+                <dd>
+                  <span
+                    class="tx-modal__status-dot"
+                    [class.tx-modal__status-dot--muted]="!transaction.internalTransfer"
+                  ></span>
+                  <span>{{ transaction.internalTransfer ? 'Yes' : 'No' }}</span>
+                  @if (transaction.internalTransferOverridden) {
+                    <span class="tx-modal__muted">Manually set</span>
+                  }
+                </dd>
               </div>
             </dl>
           </section>
