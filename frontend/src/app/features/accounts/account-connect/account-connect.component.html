@@ -1,10 +1,9 @@
 <button
-  mat-flat-button
   type="button"
-  class="account-connect__button"
+  class="connect-btn"
   [disabled]="loading()"
   (click)="connect()"
 >
-  <mat-icon aria-hidden="true">add_card</mat-icon>
-  <span>Connect a bank</span>
+  <span class="material-icons" aria-hidden="true">add_card</span>
+  <span>{{ loading() ? 'Connecting…' : 'Connect a bank' }}</span>
 </button>

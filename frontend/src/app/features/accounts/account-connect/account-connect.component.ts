@@ -1,14 +1,12 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { AccountService } from '../account.service';
 
 @Component({
   selector: 'app-account-connect',
-  imports: [MatButtonModule, MatIconModule],
+  imports: [],
   templateUrl: './account-connect.component.html',
   styleUrl: './account-connect.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
