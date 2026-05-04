@@ -6,12 +6,19 @@ import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 
 type SettingsTab = 'profile' | 'security' | 'email' | 'privacy' | 'delete';
+type RetentionPeriod = '6m' | '24m' | '60m';
 
 interface SettingsTabItem {
   id: SettingsTab;
   label: string;
   icon: string;
   danger?: boolean;
+}
+
+interface RetentionOption {
+  value: RetentionPeriod;
+  label: string;
+  hint: string;
 }
 
 @Component({
@@ -35,7 +42,7 @@ export class AccountSettingsComponent {
   protected readonly analyticsConsent = signal(true);
   protected readonly thirdPartyConsent = signal(false);
   protected readonly profilingConsent = signal(true);
-  protected readonly retention = signal<'6m' | '24m' | '60m'>('24m');
+  protected readonly retention = signal<RetentionPeriod>('24m');
 
   protected readonly email = computed(() => this.authService.currentEmail() ?? '');
   protected readonly initials = computed(() => {
@@ -53,6 +60,12 @@ export class AccountSettingsComponent {
     { id: 'email', label: 'Email', icon: 'mail' },
     { id: 'privacy', label: 'Privacy (GDPR)', icon: 'shield' },
     { id: 'delete', label: 'Delete account', icon: 'logout', danger: true },
+  ];
+
+  protected readonly retentionOptions: RetentionOption[] = [
+    { value: '6m', label: '6 months', hint: 'Minimum legal retention for financial records' },
+    { value: '24m', label: '24 months', hint: 'Recommended for tax-year data' },
+    { value: '60m', label: '5 years', hint: 'Full statutory window for audits' },
   ];
 
   protected readonly profileForm = new FormGroup({

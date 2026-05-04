@@ -261,11 +261,7 @@
           </div>
 
           <div class="settings-radio-group">
-            @for (item of [
-              { value: '6m', label: '6 months', hint: 'Minimum legal retention for financial records' },
-              { value: '24m', label: '24 months', hint: 'Recommended for tax-year data' },
-              { value: '60m', label: '5 years', hint: 'Full statutory window for audits' }
-            ]; track item.value) {
+            @for (item of retentionOptions; track item.value) {
               <button
                 class="settings-radio"
                 type="button"
