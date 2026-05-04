@@ -1,0 +1,351 @@
+<section class="account-settings">
+  <header class="topbar">
+    <div class="topbar__left">
+      <nav class="topbar__crumb" aria-label="Breadcrumb">
+        <mat-icon aria-hidden="true">home</mat-icon>
+        <span>Workspace</span>
+        <mat-icon aria-hidden="true">chevron_right</mat-icon>
+        <span class="topbar__crumb-current">Account</span>
+      </nav>
+      <h1 class="topbar__title">Account settings</h1>
+      <p class="topbar__subtitle">Manage your profile, login methods, privacy and data</p>
+    </div>
+    <a class="topbar__action-btn" routerLink="/dashboard">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+      <span>Back to dashboard</span>
+    </a>
+  </header>
+
+  <div class="account-settings__body">
+    <aside class="settings-nav" aria-label="Account settings sections">
+      <div class="settings-nav__head">
+        <div class="settings-nav__avatar">{{ initials() }}</div>
+        <div class="settings-nav__identity">
+          <div class="settings-nav__name">{{ profileForm.controls.displayName.value }}</div>
+          <div class="settings-nav__email">{{ email() }}</div>
+        </div>
+      </div>
+
+      <div class="settings-nav__list">
+        @for (tab of tabs; track tab.id) {
+          <button
+            class="settings-nav__item"
+            type="button"
+            [class.settings-nav__item--active]="activeTab() === tab.id"
+            [class.settings-nav__item--danger]="tab.danger"
+            (click)="setActiveTab(tab.id)"
+          >
+            <mat-icon aria-hidden="true">{{ tab.icon }}</mat-icon>
+            <span>{{ tab.label }}</span>
+            @if (activeTab() === tab.id) {
+              <mat-icon class="settings-nav__chevron" aria-hidden="true">chevron_right</mat-icon>
+            }
+          </button>
+        }
+      </div>
+
+      <div class="settings-nav__foot">
+        <div class="settings-nav__foot-label">Account ID</div>
+        <div class="settings-nav__foot-id">nx_acc_4f29-c81b-aa07</div>
+        <div class="settings-nav__foot-note">Member since March 2024</div>
+      </div>
+    </aside>
+
+    <main class="settings-content">
+      @if (activeTab() === 'profile') {
+        <form class="settings-card" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
+          <div class="settings-card__head">
+            <h2>Personal information</h2>
+            <p>Used across your dashboard, exports and statements.</p>
+          </div>
+
+          <label class="settings-row">
+            <span>
+              <strong>Display name</strong>
+              <small>Shown in greetings and reports.</small>
+            </span>
+            <input formControlName="displayName" />
+          </label>
+
+          <label class="settings-row">
+            <span>
+              <strong>Username</strong>
+              <small>Lowercase letters, numbers and dots.</small>
+            </span>
+            <div class="settings-input-affix">
+              <span>nexioo.app/u/</span>
+              <input formControlName="username" />
+            </div>
+          </label>
+
+          <label class="settings-row">
+            <span>
+              <strong>Phone number</strong>
+              <small>For SMS verification only. Never shared.</small>
+            </span>
+            <input formControlName="phone" />
+          </label>
+
+          <label class="settings-row">
+            <span><strong>Country</strong></span>
+            <select formControlName="country">
+              <option>France</option>
+              <option>Spain</option>
+              <option>Germany</option>
+              <option>Italy</option>
+              <option>Portugal</option>
+              <option>Netherlands</option>
+              <option>Belgium</option>
+              <option>Ireland</option>
+            </select>
+          </label>
+
+          <label class="settings-row">
+            <span><strong>Default currency</strong></span>
+            <select formControlName="currency">
+              <option>EUR</option>
+              <option>GBP</option>
+              <option>USD</option>
+              <option>CHF</option>
+            </select>
+          </label>
+
+          <div class="settings-actions">
+            <button class="settings-actions__primary" type="submit">Save changes</button>
+          </div>
+        </form>
+      }
+
+      @if (activeTab() === 'security') {
+        <form class="settings-card" [formGroup]="passwordForm" (ngSubmit)="updatePassword()">
+          <div class="settings-card__head">
+            <h2>Change password</h2>
+            <p>Use 12+ characters with mixed cases, numbers and symbols.</p>
+          </div>
+
+          <label class="settings-row">
+            <span><strong>Current password</strong></span>
+            <input formControlName="currentPassword" [type]="showPassword() ? 'text' : 'password'" />
+          </label>
+
+          <label class="settings-row">
+            <span><strong>New password</strong></span>
+            <div class="settings-password">
+              <input formControlName="newPassword" [type]="showPassword() ? 'text' : 'password'" />
+              <div class="settings-password__meter" aria-hidden="true">
+                @for (item of [1, 2, 3, 4]; track item) {
+                  <span [class.settings-password__bar--active]="passwordScore() >= item"></span>
+                }
+              </div>
+            </div>
+          </label>
+
+          <label class="settings-row">
+            <span><strong>Confirm new password</strong></span>
+            <input formControlName="confirmPassword" [type]="showPassword() ? 'text' : 'password'" />
+          </label>
+
+          <label class="settings-check">
+            <input type="checkbox" [checked]="showPassword()" (change)="showPassword.set(!showPassword())" />
+            <span>Show passwords</span>
+          </label>
+
+          <div class="settings-card__head settings-card__head--nested">
+            <h2>Login methods</h2>
+            <p>Choose how you sign in to Nexioo.</p>
+          </div>
+
+          <button class="settings-toggle" type="button" (click)="twoFactorEnabled.set(!twoFactorEnabled())">
+            <span>
+              <strong>Two-factor authentication</strong>
+              <small>Authenticator app (TOTP).</small>
+            </span>
+            <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="twoFactorEnabled()"></span>
+          </button>
+
+          <button class="settings-toggle" type="button" (click)="biometricLoginEnabled.set(!biometricLoginEnabled())">
+            <span>
+              <strong>Biometric sign-in</strong>
+              <small>Touch ID / Face ID on this device.</small>
+            </span>
+            <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="biometricLoginEnabled()"></span>
+          </button>
+
+          <button class="settings-toggle" type="button" (click)="magicLinkEnabled.set(!magicLinkEnabled())">
+            <span>
+              <strong>Email magic links</strong>
+              <small>One-tap sign-in via a link sent to your inbox.</small>
+            </span>
+            <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="magicLinkEnabled()"></span>
+          </button>
+
+          <div class="settings-actions">
+            <button class="settings-actions__primary" type="submit">Update password</button>
+          </div>
+        </form>
+      }
+
+      @if (activeTab() === 'email') {
+        <form class="settings-card" [formGroup]="emailForm" (ngSubmit)="requestEmailChange()">
+          <div class="settings-card__head">
+            <h2>Email address</h2>
+            <p>Used for sign-in, statements and security alerts.</p>
+          </div>
+
+          <div class="settings-row">
+            <span><strong>Current email</strong></span>
+            <div class="settings-readonly">
+              <mat-icon aria-hidden="true">mail</mat-icon>
+              <span>{{ email() }}</span>
+              <span class="settings-tag settings-tag--green">Verified</span>
+            </div>
+          </div>
+
+          <label class="settings-row">
+            <span>
+              <strong>New email</strong>
+              <small>We will send a verification link before switching.</small>
+            </span>
+            <input formControlName="newEmail" type="email" placeholder="you@example.com" />
+          </label>
+
+          <label class="settings-row">
+            <span>
+              <strong>Confirm with password</strong>
+              <small>Required to change the address used for sign-in.</small>
+            </span>
+            <input formControlName="password" type="password" />
+          </label>
+
+          <div class="settings-actions">
+            <button class="settings-actions__primary" type="submit">Send verification</button>
+          </div>
+        </form>
+      }
+
+      @if (activeTab() === 'privacy') {
+        <div class="settings-card">
+          <div class="privacy-banner">
+            <mat-icon aria-hidden="true">shield</mat-icon>
+            <div>
+              <strong>Your data, your rules</strong>
+              <p>Under EU GDPR you can access, rectify, port and erase your personal data at any time.</p>
+            </div>
+          </div>
+
+          <div class="settings-card__head">
+            <h2>Consent</h2>
+            <p>Granular control over how Nexioo uses your data.</p>
+          </div>
+
+          <button class="settings-toggle" type="button" (click)="marketingConsent.set(!marketingConsent())">
+            <span><strong>Marketing communications</strong><small>Product updates, tips, occasional offers.</small></span>
+            <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="marketingConsent()"></span>
+          </button>
+          <button class="settings-toggle" type="button" (click)="analyticsConsent.set(!analyticsConsent())">
+            <span><strong>Anonymous analytics</strong><small>Helps us improve the product. No personal data.</small></span>
+            <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="analyticsConsent()"></span>
+          </button>
+          <button class="settings-toggle" type="button" (click)="thirdPartyConsent.set(!thirdPartyConsent())">
+            <span><strong>Third-party integrations</strong><small>Allow categorisation by partner enrichment services.</small></span>
+            <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="thirdPartyConsent()"></span>
+          </button>
+          <button class="settings-toggle" type="button" (click)="profilingConsent.set(!profilingConsent())">
+            <span><strong>Automated profiling</strong><small>Personalise insights based on your spending patterns.</small></span>
+            <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="profilingConsent()"></span>
+          </button>
+
+          <div class="settings-card__head settings-card__head--nested">
+            <h2>Data retention</h2>
+            <p>How long Nexioo keeps your transaction history after closure.</p>
+          </div>
+
+          <div class="settings-radio-group">
+            @for (item of [
+              { value: '6m', label: '6 months', hint: 'Minimum legal retention for financial records' },
+              { value: '24m', label: '24 months', hint: 'Recommended for tax-year data' },
+              { value: '60m', label: '5 years', hint: 'Full statutory window for audits' }
+            ]; track item.value) {
+              <button
+                class="settings-radio"
+                type="button"
+                [class.settings-radio--active]="retention() === item.value"
+                (click)="retention.set(item.value)"
+              >
+                <span><strong>{{ item.label }}</strong><small>{{ item.hint }}</small></span>
+                <mat-icon aria-hidden="true">{{ retention() === item.value ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
+              </button>
+            }
+          </div>
+
+          <div class="settings-card__head settings-card__head--nested">
+            <h2>Your data rights</h2>
+            <p>Exercise any of these at no cost.</p>
+          </div>
+
+          <div class="data-rights">
+            <button class="data-right" type="button" (click)="requestDataExport()">
+              <mat-icon aria-hidden="true">content_copy</mat-icon>
+              <span><strong>Export my data</strong><small>Complete account, transaction and metadata export.</small></span>
+              <em>Request export</em>
+            </button>
+            <button class="data-right" type="button" (click)="flash('Rectification request opened.')">
+              <mat-icon aria-hidden="true">description</mat-icon>
+              <span><strong>Rectify my data</strong><small>Open a request to correct personal information.</small></span>
+              <em>Open request</em>
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'delete') {
+        <div class="settings-card settings-card--danger">
+          <div class="settings-card__head">
+            <h2>Delete account</h2>
+            <p>This starts a 30-day deletion window for your Nexioo account and financial data.</p>
+          </div>
+
+          <div class="delete-panel">
+            <mat-icon aria-hidden="true">warning</mat-icon>
+            <div>
+              <strong>Before deleting</strong>
+              <p>You can export your data first, or pause your account for up to 90 days instead.</p>
+            </div>
+          </div>
+
+          <div class="settings-actions">
+            <button class="settings-actions__secondary" type="button" (click)="requestDataExport()">Export first</button>
+            <button class="settings-actions__danger" type="button" (click)="openDeleteConfirmation()">Delete account</button>
+          </div>
+        </div>
+      }
+    </main>
+  </div>
+
+  @if (toast()) {
+    <div class="settings-toast" aria-live="polite">
+      <mat-icon aria-hidden="true">check_circle</mat-icon>
+      <span>{{ toast() }}</span>
+    </div>
+  }
+
+  @if (confirmDelete()) {
+    <div class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+      <div class="settings-modal__card">
+        <h2 id="delete-title">Schedule account deletion?</h2>
+        <p>
+          We will send a confirmation link to <strong>{{ email() }}</strong>. Your data is permanently
+          erased 30 days after confirmation unless you cancel.
+        </p>
+        <label class="settings-check">
+          <input type="checkbox" />
+          <span>I understand this action is irreversible after 30 days.</span>
+        </label>
+        <div class="settings-actions">
+          <button class="settings-actions__secondary" type="button" (click)="cancelDelete()">Cancel</button>
+          <button class="settings-actions__danger" type="button" (click)="confirmDeletion()">Send confirmation</button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

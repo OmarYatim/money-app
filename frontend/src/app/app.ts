@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
@@ -16,6 +16,7 @@ import { AuthService } from './core/auth/auth.service';
 export class App {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  protected readonly profileMenuOpen = signal(false);
 
   protected readonly showShell = toSignal(
     this.router.events.pipe(
@@ -38,7 +39,27 @@ export class App {
 
   protected readonly userEmail = computed(() => this.authService.currentEmail() ?? '');
 
+  protected readonly userName = computed(() => {
+    const email = this.userEmail();
+    if (!email) return 'Account';
+    return email
+      .split('@')[0]
+      .split(/[._-]/)
+      .filter(Boolean)
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  });
+
+  protected toggleProfileMenu(): void {
+    this.profileMenuOpen.update((open) => !open);
+  }
+
+  protected closeProfileMenu(): void {
+    this.profileMenuOpen.set(false);
+  }
+
   protected logout(): void {
+    this.profileMenuOpen.set(false);
     this.authService.logout().subscribe();
   }
 }

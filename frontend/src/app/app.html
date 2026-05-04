@@ -45,13 +45,76 @@
 
       <div class="sidebar__spacer"></div>
 
-      <button class="sidebar__user" type="button" (click)="logout()">
-        <div class="sidebar__avatar">{{ userInitials() }}</div>
-        <div class="sidebar__user-info">
-          <div class="sidebar__user-email">{{ userEmail() }}</div>
-        </div>
-        <mat-icon aria-hidden="true" class="sidebar__logout-icon">logout</mat-icon>
-      </button>
+      <div class="sidebar__profile">
+        @if (profileMenuOpen()) {
+          <div class="sidebar__profile-menu" role="menu">
+            <div class="sidebar__profile-head">
+              <div class="sidebar__profile-avatar">{{ userInitials() }}</div>
+              <div class="sidebar__profile-identity">
+                <div class="sidebar__profile-name">{{ userName() }}</div>
+                <div class="sidebar__profile-email">{{ userEmail() }}</div>
+                <div class="sidebar__profile-status">
+                  <span class="sidebar__profile-status-dot"></span>
+                  <span>Free plan · secure workspace</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="sidebar__profile-list">
+              <a class="sidebar__profile-item" routerLink="/account-settings" (click)="closeProfileMenu()">
+                <span class="sidebar__profile-item-icon">
+                  <mat-icon aria-hidden="true">person</mat-icon>
+                </span>
+                <span>
+                  <span>Your profile</span>
+                  <small>View & edit details</small>
+                </span>
+              </a>
+              <a class="sidebar__profile-item" routerLink="/account-settings" (click)="closeProfileMenu()">
+                <span class="sidebar__profile-item-icon">
+                  <mat-icon aria-hidden="true">settings</mat-icon>
+                </span>
+                <span>
+                  <span>Account settings</span>
+                  <small>Preferences, privacy</small>
+                </span>
+              </a>
+              <a class="sidebar__profile-item" routerLink="/account-settings" (click)="closeProfileMenu()">
+                <span class="sidebar__profile-item-icon">
+                  <mat-icon aria-hidden="true">shield</mat-icon>
+                </span>
+                <span>
+                  <span>Security</span>
+                  <small>Password and sessions</small>
+                </span>
+              </a>
+              <button class="sidebar__profile-item sidebar__profile-item--danger" type="button" (click)="logout()">
+                <span class="sidebar__profile-item-icon">
+                  <mat-icon aria-hidden="true">logout</mat-icon>
+                </span>
+                <span>
+                  <span>Sign out</span>
+                  <small>End this session</small>
+                </span>
+              </button>
+            </div>
+          </div>
+        }
+
+        <button
+          class="sidebar__user"
+          type="button"
+          [class.sidebar__user--open]="profileMenuOpen()"
+          (click)="toggleProfileMenu()"
+        >
+          <div class="sidebar__avatar">{{ userInitials() }}</div>
+          <div class="sidebar__user-info">
+            <div class="sidebar__user-name">{{ userName() }}</div>
+            <div class="sidebar__user-email">{{ userEmail() }}</div>
+          </div>
+          <mat-icon aria-hidden="true" class="sidebar__chevron">expand_more</mat-icon>
+        </button>
+      </div>
     </aside>
 
     <main class="app-content">

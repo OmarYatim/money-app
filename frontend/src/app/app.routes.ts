@@ -52,6 +52,14 @@ export const routes: Routes = [
       import('./features/reports/reports.component').then((c) => c.ReportsComponent),
   },
   {
+    path: 'account-settings',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account-settings/account-settings.component').then(
+        (c) => c.AccountSettingsComponent,
+      ),
+  },
+  {
     path: '',
     pathMatch: 'full',
     redirectTo: 'dashboard',
