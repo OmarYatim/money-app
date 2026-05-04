@@ -441,6 +441,37 @@
   &:hover {
     background: var(--lavender-50);
   }
+
+  &:focus-visible {
+    outline: 2px solid var(--indigo-400);
+    outline-offset: -2px;
+  }
+}
+
+.tx-row__review-btn {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--ink-300);
+
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  &:hover {
+    color: var(--ink-500);
+  }
+
+  &:focus-visible {
+    border-radius: 50%;
+    outline: 2px solid var(--indigo-400);
+    outline-offset: 3px;
+  }
+}
+
+.tx-row__review-icon--active {
+  color: var(--green-500);
 }
 
 .tx-icon {
@@ -476,11 +507,13 @@
   gap: 7px;
 }
 
-.tx-row__unreviewed-icon {
-  font-size: 14px !important;
-  width: 14px !important;
-  height: 14px !important;
-  color: var(--red-600);
+.tx-row__new-dot {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--indigo-500);
+  vertical-align: middle;
   flex-shrink: 0;
 }
 

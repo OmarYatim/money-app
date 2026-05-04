@@ -149,11 +149,28 @@
               </div>
 
               @for (transaction of group.items; track transaction.id) {
-                <button
-                  type="button"
+                <div
                   class="tx-row"
+                  role="button"
+                  tabindex="0"
                   (click)="openTransaction(transaction)"
+                  (keydown.enter)="openTransaction(transaction)"
+                  (keydown.space)="openTransactionFromKeyboard($event, transaction)"
                 >
+                  <button
+                    class="tx-row__review-btn"
+                    type="button"
+                    [attr.aria-label]="transaction.reviewed ? 'Mark transaction unreviewed' : 'Mark transaction reviewed'"
+                    [title]="transaction.reviewed ? 'Mark unreviewed' : 'Mark reviewed'"
+                    (click)="toggleRowReviewed($event, transaction)"
+                  >
+                    <mat-icon
+                      aria-hidden="true"
+                      [class.tx-row__review-icon--active]="transaction.reviewed"
+                    >
+                      {{ transaction.reviewed ? 'check_circle' : 'radio_button_unchecked' }}
+                    </mat-icon>
+                  </button>
                   <div
                     class="tx-icon"
                     [style.background]="categoryIconBg(transaction.category)"
@@ -167,7 +184,7 @@
                     <div class="tx-row__label">
                       {{ transaction.label }}
                       @if (!transaction.reviewed) {
-                        <mat-icon class="tx-row__unreviewed-icon" aria-label="Unreviewed">cancel</mat-icon>
+                        <span class="tx-row__new-dot" title="Unreviewed" aria-label="Unreviewed"></span>
                       }
                     </div>
                     @if (transaction.wording) {
@@ -193,7 +210,7 @@
                   >
                     {{ transaction.value | currency: 'EUR' : 'symbol' : '1.2-2' }}
                   </span>
-                </button>
+                </div>
               }
             </div>
           }

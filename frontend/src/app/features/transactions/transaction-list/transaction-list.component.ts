@@ -303,6 +303,11 @@ export class TransactionListComponent {
     }
   }
 
+  protected openTransactionFromKeyboard(event: Event, transaction: Transaction): void {
+    event.preventDefault();
+    void this.openTransaction(transaction);
+  }
+
   protected closeTransaction(): void {
     this.categoryMenuOpen.set(false);
     this.detailState.set({
@@ -311,6 +316,33 @@ export class TransactionListComponent {
       saving: false,
       error: null,
     });
+  }
+
+  protected async toggleRowReviewed(event: MouseEvent, transaction: Transaction): Promise<void> {
+    event.stopPropagation();
+    this.categoryMenuOpen.set(false);
+
+    try {
+      const updated = await firstValueFrom(
+        this.transactionService.updateReviewed(transaction.id, !transaction.reviewed),
+      );
+      this.replaceTransaction(updated);
+
+      const currentDetail = this.detailState().transaction;
+      if (currentDetail?.id === updated.id) {
+        this.detailState.set({
+          transaction: updated,
+          loading: false,
+          saving: false,
+          error: null,
+        });
+      }
+    } catch {
+      this.detailState.update((current) => ({
+        ...current,
+        error: 'Unable to update reviewed state.',
+      }));
+    }
   }
 
   protected toggleCategoryMenu(): void {
