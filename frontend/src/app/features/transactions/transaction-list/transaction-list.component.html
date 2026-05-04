@@ -149,9 +149,10 @@
               </div>
 
               @for (transaction of group.items; track transaction.id) {
-                <a
+                <button
+                  type="button"
                   class="tx-row"
-                  [routerLink]="['/transactions', transaction.id]"
+                  (click)="openTransaction(transaction)"
                 >
                   <div
                     class="tx-icon"
@@ -192,7 +193,7 @@
                   >
                     {{ transaction.value | currency: 'EUR' : 'symbol' : '1.2-2' }}
                   </span>
-                </a>
+                </button>
               }
             </div>
           }
@@ -208,4 +209,198 @@
       }
     }
   </div>
+
+  @if (detailState().transaction; as transaction) {
+    <div class="tx-modal" role="dialog" aria-modal="true" aria-labelledby="tx-modal-title">
+      <button
+        class="tx-modal__backdrop"
+        type="button"
+        aria-label="Close transaction detail"
+        (click)="closeTransaction()"
+      ></button>
+      <div class="tx-modal__panel">
+        <header class="tx-modal__head">
+          <nav class="tx-modal__crumb" aria-label="Transaction detail breadcrumb">
+            <mat-icon aria-hidden="true">receipt_long</mat-icon>
+            <span>Transactions</span>
+            <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            <span class="tx-modal__crumb-current">Detail</span>
+          </nav>
+          <div class="tx-modal__head-actions">
+            <button class="tx-modal__icon-btn" type="button" title="Copy reference">
+              <mat-icon aria-hidden="true">content_copy</mat-icon>
+            </button>
+            <button class="tx-modal__icon-btn" type="button" title="Flag for review">
+              <mat-icon aria-hidden="true">flag</mat-icon>
+            </button>
+            <button class="tx-modal__icon-btn" type="button" title="Close" (click)="closeTransaction()">
+              <mat-icon aria-hidden="true">close</mat-icon>
+            </button>
+          </div>
+        </header>
+
+        @if (detailState().loading) {
+          <div class="tx-modal__loading" aria-live="polite">
+            <mat-spinner diameter="32" />
+          </div>
+        }
+
+        <div class="tx-modal__scroll">
+          <section class="tx-modal__hero">
+            <div
+              class="tx-modal__merchant-avatar"
+              [style.background]="categoryIconBg(transaction.category)"
+              [style.color]="categoryIconColor(transaction.category)"
+              aria-hidden="true"
+            >
+              <mat-icon>{{ categoryIcon(transaction.category) }}</mat-icon>
+            </div>
+            <div class="tx-modal__merchant">
+              <div class="tx-modal__merchant-line">
+                <h2 id="tx-modal-title">{{ transaction.label }}</h2>
+                @if (transaction.reviewed) {
+                  <span class="tx-modal__reviewed-tag">
+                    <mat-icon aria-hidden="true">check</mat-icon>
+                    Reviewed
+                  </span>
+                } @else {
+                  <span class="tx-modal__unreviewed-tag">Unreviewed</span>
+                }
+              </div>
+              @if (transaction.wording) {
+                <p class="tx-modal__description">{{ transaction.wording }}</p>
+              }
+              <p class="tx-modal__date">
+                {{ transaction.date | date: 'EEEE, d MMMM yyyy' }}
+                @if (transaction.applicationDate) {
+                  · Applied {{ transaction.applicationDate | date: 'd MMM yyyy' }}
+                }
+              </p>
+            </div>
+            <div class="tx-modal__amount-wrap">
+              <div
+                class="tx-modal__amount"
+                [class.tx-modal__amount--income]="transaction.value > 0"
+              >
+                {{ transaction.value | currency: 'EUR' : 'symbol' : '1.2-2' }}
+              </div>
+            </div>
+          </section>
+
+          <section class="tx-modal__actions" aria-label="Transaction actions">
+            <button
+              class="tx-modal__action-btn"
+              type="button"
+              [class.tx-modal__action-btn--active]="transaction.reviewed"
+              [disabled]="detailState().saving"
+              (click)="toggleDetailReviewed()"
+            >
+              <mat-icon aria-hidden="true">check</mat-icon>
+              {{ transaction.reviewed ? 'Reviewed' : 'Mark reviewed' }}
+            </button>
+            <label class="tx-modal__action-btn tx-modal__category-action">
+              <mat-icon aria-hidden="true">sell</mat-icon>
+              <select
+                [value]="transaction.category"
+                [disabled]="detailState().saving"
+                (change)="updateDetailCategory($event)"
+                aria-label="Recategorize transaction"
+              >
+                @for (cat of categories; track cat) {
+                  <option [value]="cat">{{ categoryLabel(cat) }}</option>
+                }
+              </select>
+            </label>
+            <button class="tx-modal__action-btn" type="button">
+              <mat-icon aria-hidden="true">description</mat-icon>
+              Add note
+            </button>
+            <button class="tx-modal__action-btn" type="button">
+              <mat-icon aria-hidden="true">repeat</mat-icon>
+              Mark recurring
+            </button>
+          </section>
+
+          <section class="tx-modal__section">
+            <div class="tx-modal__section-label">Transaction details</div>
+            <dl class="tx-modal__kv-grid">
+              <div class="tx-modal__kv">
+                <dt>Account</dt>
+                <dd>
+                  <span class="tx-modal__dot"></span>
+                  <span>{{ transaction.accountName ?? 'Connected account' }}</span>
+                </dd>
+              </div>
+              <div class="tx-modal__kv">
+                <dt>Category</dt>
+                <dd>
+                  <span
+                    class="tx-modal__dot"
+                    [style.background]="categoryIconColor(transaction.category)"
+                  ></span>
+                  <span>{{ categoryLabel(transaction.category) }}</span>
+                </dd>
+              </div>
+              <div class="tx-modal__kv">
+                <dt>Reference</dt>
+                <dd class="tx-modal__mono">{{ transactionReference(transaction) }}</dd>
+              </div>
+              <div class="tx-modal__kv">
+                <dt>Method</dt>
+                <dd>{{ transactionMethod(transaction) }}</dd>
+              </div>
+              <div class="tx-modal__kv">
+                <dt>Posted</dt>
+                <dd class="tx-modal__mono">{{ transaction.date }}</dd>
+              </div>
+              <div class="tx-modal__kv">
+                <dt>Status</dt>
+                <dd>
+                  <span class="tx-modal__status-dot"></span>
+                  <span>Cleared</span>
+                </dd>
+              </div>
+              <div class="tx-modal__kv">
+                <dt>Counterparty</dt>
+                <dd>{{ transaction.counterpartyLabel ?? transaction.label }}</dd>
+              </div>
+              <div class="tx-modal__kv">
+                <dt>Type</dt>
+                <dd>{{ transactionDirection(transaction) }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="tx-modal__section">
+            <div class="tx-modal__section-label">Your notes</div>
+            <div class="tx-modal__notes">
+              <mat-icon aria-hidden="true">description</mat-icon>
+              <span>No notes yet. Add a private note for your own tracking.</span>
+            </div>
+          </section>
+
+          @if (transaction.originalWording) {
+            <section class="tx-modal__section">
+              <div class="tx-modal__section-label">Original wording</div>
+              <div class="tx-modal__notes">
+                <mat-icon aria-hidden="true">tag</mat-icon>
+                <span>{{ transaction.originalWording }}</span>
+              </div>
+            </section>
+          }
+
+          @if (detailState().error) {
+            <p class="tx-modal__error" aria-live="polite">{{ detailState().error }}</p>
+          }
+
+          <div class="tx-modal__readonly">
+            <mat-icon aria-hidden="true">shield</mat-icon>
+            <span>
+              This transaction is read-only. Nexioo cannot modify or refund payments; contact your bank directly to dispute.
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
 </div>

@@ -15,7 +15,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 
 import type { Account } from '../../../shared/models/account.model';
@@ -33,6 +33,13 @@ interface TransactionListState {
   page: number;
   totalPages: number;
   totalElements: number;
+}
+
+interface TransactionDetailModalState {
+  transaction: Transaction | null;
+  loading: boolean;
+  saving: boolean;
+  error: string | null;
 }
 
 const PAGE_SIZE = 20;
@@ -55,7 +62,6 @@ interface TransactionFilterForm {
     ReactiveFormsModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    RouterLink,
     CategoryColorPipe,
   ],
   templateUrl: './transaction-list.component.html',
@@ -100,6 +106,12 @@ export class TransactionListComponent {
     page: -1,
     totalPages: 0,
     totalElements: 0,
+  });
+  protected readonly detailState = signal<TransactionDetailModalState>({
+    transaction: null,
+    loading: false,
+    saving: false,
+    error: null,
   });
 
   protected readonly groupedTransactions = computed(() => {
@@ -263,6 +275,111 @@ export class TransactionListComponent {
     await this.reloadTransactions();
   }
 
+  protected async openTransaction(transaction: Transaction): Promise<void> {
+    this.detailState.set({
+      transaction,
+      loading: true,
+      saving: false,
+      error: null,
+    });
+
+    try {
+      const detail = await firstValueFrom(this.transactionService.getTransaction(transaction.id));
+      this.detailState.set({
+        transaction: detail,
+        loading: false,
+        saving: false,
+        error: null,
+      });
+    } catch {
+      this.detailState.set({
+        transaction,
+        loading: false,
+        saving: false,
+        error: 'Unable to load full transaction details.',
+      });
+    }
+  }
+
+  protected closeTransaction(): void {
+    this.detailState.set({
+      transaction: null,
+      loading: false,
+      saving: false,
+      error: null,
+    });
+  }
+
+  protected async toggleDetailReviewed(): Promise<void> {
+    const transaction = this.detailState().transaction;
+    if (!transaction) return;
+
+    this.detailState.update((current) => ({ ...current, saving: true, error: null }));
+
+    try {
+      const updated = await firstValueFrom(
+        this.transactionService.updateReviewed(transaction.id, !transaction.reviewed),
+      );
+      this.replaceTransaction(updated);
+      this.detailState.set({
+        transaction: updated,
+        loading: false,
+        saving: false,
+        error: null,
+      });
+    } catch {
+      this.detailState.update((current) => ({
+        ...current,
+        saving: false,
+        error: 'Unable to update reviewed state.',
+      }));
+    }
+  }
+
+  protected async updateDetailCategory(event: Event): Promise<void> {
+    const transaction = this.detailState().transaction;
+    const selectedCategory = (event.target as HTMLSelectElement).value as CategoryType;
+    if (!transaction || selectedCategory === transaction.category) return;
+
+    this.detailState.update((current) => ({ ...current, saving: true, error: null }));
+
+    try {
+      const updated = await firstValueFrom(
+        this.transactionService.updateCategory(transaction.id, selectedCategory),
+      );
+      this.replaceTransaction(updated);
+      this.detailState.set({
+        transaction: updated,
+        loading: false,
+        saving: false,
+        error: null,
+      });
+    } catch {
+      this.detailState.update((current) => ({
+        ...current,
+        saving: false,
+        error: 'Unable to update category.',
+      }));
+    }
+  }
+
+  protected transactionReference(transaction: Transaction): string {
+    const year = new Date(transaction.date).getFullYear();
+    return `NX-${String(transaction.id).padStart(6, '0')}-${year}`;
+  }
+
+  protected transactionMethod(transaction: Transaction): string {
+    const type = transaction.type?.toLowerCase() ?? '';
+    if (type.includes('card')) return 'Card';
+    if (type.includes('transfer')) return 'Bank transfer';
+    if (type.includes('debit')) return 'SEPA Direct Debit';
+    return transaction.type ? this.categoryLabel(transaction.type) : 'Bank transaction';
+  }
+
+  protected transactionDirection(transaction: Transaction): string {
+    return transaction.value >= 0 ? 'Credit (incoming)' : 'Debit (outgoing)';
+  }
+
   protected async clearFilters(): Promise<void> {
     this.selectedPeriod.set('all');
     this.filterForm.reset(
@@ -366,5 +483,14 @@ export class TransactionListComponent {
       value.maxAmount,
       value.keyword.trim(),
     ].filter(Boolean).length;
+  }
+
+  private replaceTransaction(updated: Transaction): void {
+    this.state.update((current) => ({
+      ...current,
+      transactions: current.transactions.map((transaction) =>
+        transaction.id === updated.id ? updated : transaction,
+      ),
+    }));
   }
 }
