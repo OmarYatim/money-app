@@ -1,16 +1,63 @@
-<mat-toolbar class="app-shell__toolbar">
-  <span class="app-shell__brand">Money App</span>
-  <nav class="app-shell__nav" aria-label="Primary navigation">
-    <a mat-button routerLink="/dashboard" routerLinkActive="app-shell__nav-link--active">
-      Dashboard
-    </a>
-    <a mat-button routerLink="/accounts" routerLinkActive="app-shell__nav-link--active">Accounts</a>
-    <a mat-button routerLink="/transactions" routerLinkActive="app-shell__nav-link--active">
-      Transactions
-    </a>
-  </nav>
-</mat-toolbar>
+@if (showShell()) {
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar__brand">
+        <div class="sidebar__logo">
+          <svg width="20" height="20" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <path d="M6 24V8l20 16V8" stroke="white" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="26" cy="8" r="2.2" fill="white"/>
+          </svg>
+        </div>
+        <div>
+          <div class="sidebar__app-name">Nexioo</div>
+          <div class="sidebar__app-tagline">Personal Finance</div>
+        </div>
+      </div>
 
-<main class="app-shell__main">
+      <div class="sidebar__nav-section">
+        <div class="sidebar__nav-label">Workspace</div>
+        <a routerLink="/dashboard" routerLinkActive="sidebar__nav-item--active"
+           class="sidebar__nav-item">
+          <mat-icon aria-hidden="true">dashboard</mat-icon>
+          <span>Dashboard</span>
+        </a>
+        <a routerLink="/accounts" routerLinkActive="sidebar__nav-item--active"
+           class="sidebar__nav-item">
+          <mat-icon aria-hidden="true">account_balance_wallet</mat-icon>
+          <span>Accounts</span>
+        </a>
+        <a routerLink="/transactions" routerLinkActive="sidebar__nav-item--active"
+           class="sidebar__nav-item">
+          <mat-icon aria-hidden="true">receipt_long</mat-icon>
+          <span>Transactions</span>
+        </a>
+        <a routerLink="/goals" routerLinkActive="sidebar__nav-item--active"
+           class="sidebar__nav-item">
+          <mat-icon aria-hidden="true">flag</mat-icon>
+          <span>Goals</span>
+        </a>
+        <a routerLink="/reports" routerLinkActive="sidebar__nav-item--active"
+           class="sidebar__nav-item">
+          <mat-icon aria-hidden="true">bar_chart</mat-icon>
+          <span>Reports</span>
+        </a>
+      </div>
+
+      <div class="sidebar__spacer"></div>
+
+      <button class="sidebar__user" type="button" (click)="logout()">
+        <div class="sidebar__avatar">{{ userInitials() }}</div>
+        <div class="sidebar__user-info">
+          <div class="sidebar__user-email">{{ userEmail() }}</div>
+        </div>
+        <mat-icon aria-hidden="true" class="sidebar__logout-icon">logout</mat-icon>
+      </button>
+    </aside>
+
+    <main class="app-content">
+      <router-outlet />
+    </main>
+  </div>
+} @else {
   <router-outlet />
-</main>
+}
