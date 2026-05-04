@@ -1,18 +1,14 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
-import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
-import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 
-import type { CategoryType } from '../../../shared/models/category.model';
+import { CATEGORY_TYPES, type CategoryType } from '../../../shared/models/category.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
 import { CategoryColorPipe } from '../../../shared/pipes/category-color.pipe';
-import { CategoryPickerComponent } from '../category-picker/category-picker.component';
 import { TransactionService } from '../transaction.service';
 
 interface TransactionDetailState {
@@ -27,9 +23,6 @@ interface TransactionDetailState {
   imports: [
     CurrencyPipe,
     DatePipe,
-    MatBottomSheetModule,
-    MatButtonModule,
-    MatCardModule,
     MatIconModule,
     MatProgressSpinnerModule,
     MatSlideToggleModule,
@@ -42,9 +35,10 @@ interface TransactionDetailState {
 })
 export class TransactionDetailComponent {
   private readonly route = inject(ActivatedRoute);
-  private readonly bottomSheet = inject(MatBottomSheet);
   private readonly transactionService = inject(TransactionService);
   private readonly transactionId = Number(this.route.snapshot.paramMap.get('id'));
+
+  protected readonly categories = CATEGORY_TYPES;
 
   protected readonly state = signal<TransactionDetailState>({
     transaction: null,
@@ -114,20 +108,11 @@ export class TransactionDetailComponent {
     }
   }
 
-  protected async editCategory(): Promise<void> {
+  protected async onCategoryChange(event: Event): Promise<void> {
+    const select = event.target as HTMLSelectElement;
+    const selectedCategory = select.value as CategoryType;
     const transaction = this.state().transaction;
-    if (!transaction) {
-      return;
-    }
-
-    const bottomSheetRef = this.bottomSheet.open(CategoryPickerComponent, {
-      data: { selectedCategory: transaction.category },
-    });
-    const selectedCategory = (await firstValueFrom(
-      bottomSheetRef.afterDismissed(),
-    )) as CategoryType | undefined;
-
-    if (!selectedCategory || selectedCategory === transaction.category) {
+    if (!transaction || selectedCategory === transaction.category) {
       return;
     }
 

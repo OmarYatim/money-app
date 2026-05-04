@@ -1,25 +1,29 @@
 <section class="transaction-detail">
-  <a mat-button routerLink="/transactions" class="transaction-detail__back">
-    <mat-icon aria-hidden="true">arrow_back</mat-icon>
-    Transactions
-  </a>
+  <header class="topbar">
+    <a class="topbar__back" routerLink="/transactions">
+      <mat-icon aria-hidden="true">arrow_back</mat-icon>
+      <span>Transactions</span>
+    </a>
+  </header>
 
   @if (state().loading) {
     <div class="transaction-detail__loading" aria-live="polite">
       <mat-spinner diameter="36" />
     </div>
   } @else if (state().error && !state().transaction) {
-    <mat-card appearance="outlined" class="transaction-detail__notice">
-      <mat-card-content>{{ state().error }}</mat-card-content>
-    </mat-card>
+    <div class="notice-card">
+      <p>{{ state().error }}</p>
+    </div>
   } @else if (state().transaction; as transaction) {
-    <mat-card appearance="outlined" class="transaction-detail__card">
-      <mat-card-header>
-        <mat-card-title>{{ transaction.label }}</mat-card-title>
-        <mat-card-subtitle>{{ transaction.date | date: 'dd MMM yyyy' }}</mat-card-subtitle>
-      </mat-card-header>
+    <div class="transaction-detail__card">
+      <div class="transaction-detail__card-header">
+        <div>
+          <h1 class="transaction-detail__title">{{ transaction.label }}</h1>
+          <p class="transaction-detail__date">
+            {{ transaction.date | date: 'dd MMM yyyy' }}
+          </p>
+        </div>
 
-      <mat-card-content class="transaction-detail__content">
         <div class="transaction-detail__status">
           <mat-slide-toggle
             [checked]="transaction.reviewed"
@@ -29,12 +33,14 @@
             Reviewed
           </mat-slide-toggle>
           @if (transaction.reviewedAt) {
-            <span class="transaction-detail__status-note">
+            <span class="transaction-detail__reviewed-at">
               {{ transaction.reviewedAt | date: 'dd MMM yyyy, HH:mm' }}
             </span>
           }
         </div>
+      </div>
 
+      <div class="transaction-detail__content">
         <p
           class="transaction-detail__amount"
           [class.transaction-detail__amount--positive]="transaction.value > 0"
@@ -80,46 +86,57 @@
           }
         </dl>
 
-        <div class="transaction-detail__category">
-          <span [class]="transaction.category | categoryColor">
-            {{ categoryLabel(transaction.category) }}
-          </span>
-          <button
-            mat-stroked-button
-            type="button"
-            [disabled]="state().saving"
-            (click)="editCategory()"
-          >
-            <mat-icon aria-hidden="true">edit</mat-icon>
-            Edit
-          </button>
+        <!-- Category -->
+        <div class="transaction-detail__section">
+          <div class="transaction-detail__section-head">
+            <div class="cat-pill" [class]="transaction.category | categoryColor">
+              <select
+                class="cat-pill__select"
+                [value]="transaction.category"
+                [disabled]="state().saving"
+                (change)="onCategoryChange($event)"
+                aria-label="Category"
+              >
+                @for (cat of categories; track cat) {
+                  <option [value]="cat" [selected]="cat === transaction.category">{{ categoryLabel(cat) }}</option>
+                }
+              </select>
+              <span class="material-icons cat-pill__chevron">expand_more</span>
+            </div>
+          </div>
         </div>
 
-        <div class="transaction-detail__internal-transfer">
-          <span class="transaction-detail__internal-transfer-label">
-            <mat-icon aria-hidden="true" class="transaction-detail__internal-transfer-icon">
-              {{ transaction.internalTransfer ? 'sync_alt' : 'sync_disabled' }}
-            </mat-icon>
-            {{ transaction.internalTransfer ? 'Internal transfer' : 'Not an internal transfer' }}
-            @if (transaction.internalTransferOverridden) {
-              <span class="transaction-detail__overridden-note">(manually set)</span>
-            }
-          </span>
-          <button
-            mat-stroked-button
-            type="button"
-            [disabled]="state().saving"
-            (click)="toggleInternalTransfer()"
-          >
-            <mat-icon aria-hidden="true">edit</mat-icon>
-            {{ transaction.internalTransfer ? 'Mark as regular' : 'Mark as internal' }}
-          </button>
+        <!-- Internal transfer -->
+        <div class="transaction-detail__section">
+          <div class="transaction-detail__transfer">
+            <div class="transaction-detail__transfer-info">
+              <mat-icon aria-hidden="true" class="transaction-detail__transfer-icon"
+                [class.transaction-detail__transfer-icon--active]="transaction.internalTransfer">
+                {{ transaction.internalTransfer ? 'sync_alt' : 'sync_disabled' }}
+              </mat-icon>
+              <span class="transaction-detail__transfer-label">
+                {{ transaction.internalTransfer ? 'Internal transfer' : 'Not an internal transfer' }}
+              </span>
+              @if (transaction.internalTransferOverridden) {
+                <span class="transaction-detail__overridden">(manually set)</span>
+              }
+            </div>
+            <button
+              class="detail-edit-btn"
+              type="button"
+              [disabled]="state().saving"
+              (click)="toggleInternalTransfer()"
+            >
+              <mat-icon aria-hidden="true">edit</mat-icon>
+              {{ transaction.internalTransfer ? 'Mark as regular' : 'Mark as internal' }}
+            </button>
+          </div>
         </div>
 
         @if (state().error) {
           <p class="transaction-detail__error" aria-live="polite">{{ state().error }}</p>
         }
-      </mat-card-content>
-    </mat-card>
+      </div>
+    </div>
   }
 </section>
