@@ -32,14 +32,6 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'transactions/:id',
-    canActivate: [authGuard],
-    loadComponent: () =>
-      import('./features/transactions/transaction-detail/transaction-detail.component').then(
-        (component) => component.TransactionDetailComponent,
-      ),
-  },
-  {
     path: 'goals',
     canActivate: [authGuard],
     loadComponent: () =>
