@@ -148,7 +148,7 @@ export class DashboardComponent {
 
   // SVG chart calculations
   protected readonly netWorthChart = computed(() => this.buildNetWorthChart(this.netWorthData()));
-  protected readonly cashFlowChart = this.buildCashFlowChart();
+  protected readonly cashFlowChart = computed(() => this.buildCashFlowChart(this.chartTransactions()));
 
   protected reloadSummary(): void {
     this.refreshSummary$.next(true);
@@ -250,16 +250,36 @@ export class DashboardComponent {
     return colors[index % colors.length];
   }
 
-  private buildCashFlowChart() {
-    const data = Array.from({ length: 30 }, (_, i) => {
-      const seed = (i * 9301 + 49297) % 233280;
-      const r = seed / 233280;
-      const inflow = i === 4 || i === 22 ? 1400 + r * 800 : r > 0.85 ? r * 200 : 0;
-      const outflow = 30 + r * 180 + (i % 7 === 0 ? 200 : 0);
-      return { inflow, outflow };
+  private buildCashFlowChart(transactions: Transaction[]) {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const start = new Date(today);
+    start.setDate(start.getDate() - 29);
+    const data = Array.from({ length: 30 }, (_, index) => {
+      const date = new Date(start);
+      date.setDate(start.getDate() + index);
+      return { date: this.isoDate(date), inflow: 0, outflow: 0 };
     });
+    const byDate = new Map(data.map((day) => [day.date, day]));
+
+    transactions
+      .filter((transaction) => !transaction.internalTransfer)
+      .forEach((transaction) => {
+        const transactionDate = new Date(transaction.date);
+        if (transactionDate < start || transactionDate > today) return;
+
+        const day = byDate.get(this.isoDate(transactionDate));
+        if (!day) return;
+
+        if (transaction.value > 0) {
+          day.inflow += transaction.value;
+        } else {
+          day.outflow += Math.abs(transaction.value);
+        }
+      });
+
     const w = 600, h = 180, padL = 30, padR = 8, padT = 8, padB = 18;
-    const max = Math.max(...data.map((d) => Math.max(d.inflow, d.outflow)));
+    const max = Math.max(...data.map((d) => Math.max(d.inflow, d.outflow)), 1);
     const cx = (w - padL - padR) / data.length;
     const mid = (h - padT - padB) / 2 + padT;
     const bars: CashFlowBar[] = data.map((d, i) => {
@@ -276,5 +296,13 @@ export class DashboardComponent {
       dashed: r !== 0,
     }));
     return { bars, gridLines, mid, w, h, padL, padR };
+  }
+
+  private isoDate(date: Date): string {
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0'),
+    ].join('-');
   }
 }
