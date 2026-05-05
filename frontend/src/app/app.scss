@@ -116,6 +116,20 @@
   }
 }
 
+.sidebar__nav-badge {
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  margin-left: auto;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--indigo-500);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
 .sidebar__spacer {
   flex: 1;
 }

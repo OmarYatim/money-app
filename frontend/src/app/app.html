@@ -30,6 +30,14 @@
            class="sidebar__nav-item">
           <mat-icon aria-hidden="true">receipt_long</mat-icon>
           <span>Transactions</span>
+          @if (unreviewedCount() > 0) {
+            <span
+              class="sidebar__nav-badge"
+              [attr.aria-label]="unreviewedCount() + ' unreviewed transactions'"
+            >
+              {{ unreviewedCountLabel() }}
+            </span>
+          }
         </a>
         <a routerLink="/goals" routerLinkActive="sidebar__nav-item--active"
            class="sidebar__nav-item">

@@ -32,6 +32,7 @@
 .page-actions__notification {
   position: relative;
   justify-content: center;
+  text-decoration: none;
   width: 34px;
   height: 34px;
   border-radius: 9px;
@@ -43,13 +44,19 @@
   }
 }
 
-.page-actions__notification-dot {
+.page-actions__badge {
   position: absolute;
-  top: 7px;
-  right: 8px;
-  width: 7px;
-  height: 7px;
+  top: -6px;
+  right: -6px;
+  display: grid;
+  min-width: 18px;
+  height: 18px;
+  place-items: center;
   border: 2px solid white;
-  border-radius: 50%;
+  border-radius: 999px;
   background: var(--indigo-500);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
 }

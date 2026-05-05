@@ -25,6 +25,7 @@ import { PageActionsComponent } from '../../../shared/components/page-actions/pa
 import { CategoryColorPipe } from '../../../shared/pipes/category-color.pipe';
 import { AccountService } from '../../accounts/account.service';
 import { TransactionService, type TransactionQuery } from '../transaction.service';
+import { UnreviewedTransactionCountService } from '../unreviewed-transaction-count.service';
 
 interface TransactionListState {
   transactions: Transaction[];
@@ -73,6 +74,7 @@ interface TransactionFilterForm {
 export class TransactionListComponent {
   private readonly accountService = inject(AccountService);
   private readonly transactionService = inject(TransactionService);
+  private readonly unreviewedTransactionCountService = inject(UnreviewedTransactionCountService);
   private readonly route = inject(ActivatedRoute);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly destroyRef = inject(DestroyRef);
@@ -329,6 +331,7 @@ export class TransactionListComponent {
         this.transactionService.updateReviewed(transaction.id, !transaction.reviewed),
       );
       this.replaceTransaction(updated);
+      this.unreviewedTransactionCountService.refresh();
 
       const currentDetail = this.detailState().transaction;
       if (currentDetail?.id === updated.id) {
@@ -363,6 +366,7 @@ export class TransactionListComponent {
         this.transactionService.updateReviewed(transaction.id, !transaction.reviewed),
       );
       this.replaceTransaction(updated);
+      this.unreviewedTransactionCountService.refresh();
       this.detailState.set({
         transaction: updated,
         loading: false,

@@ -5,6 +5,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { filter, map } from 'rxjs';
 
 import { AuthService } from './core/auth/auth.service';
+import { UnreviewedTransactionCountService } from './features/transactions/unreviewed-transaction-count.service';
 
 @Component({
   selector: 'app-root',
@@ -16,7 +17,10 @@ import { AuthService } from './core/auth/auth.service';
 export class App {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly unreviewedTransactionCountService = inject(UnreviewedTransactionCountService);
   protected readonly profileMenuOpen = signal(false);
+  protected readonly unreviewedCount = this.unreviewedTransactionCountService.count;
+  protected readonly unreviewedCountLabel = this.unreviewedTransactionCountService.label;
 
   protected readonly showShell = toSignal(
     this.router.events.pipe(
