@@ -244,6 +244,11 @@ export class TransactionListComponent {
       this.filterForm.patchValue({ accountId: Number(accountIdParam) }, { emitEvent: false });
     }
 
+    const transactionIdParam = this.route.snapshot.queryParamMap.get('transactionId');
+    if (transactionIdParam) {
+      void this.openTransactionById(Number(transactionIdParam));
+    }
+
     void this.loadAccounts();
     void this.reloadTransactions();
   }
@@ -825,6 +830,16 @@ export class TransactionListComponent {
       if (this.sortBy() === 'smallest') return Math.abs(left.value) - Math.abs(right.value);
       return this.transactionTime(right) - this.transactionTime(left);
     });
+  }
+
+  private async openTransactionById(id: number): Promise<void> {
+    this.detailState.set({ transaction: null, loading: true, saving: false, error: null });
+    try {
+      const transaction = await firstValueFrom(this.transactionService.getTransaction(id));
+      this.detailState.set({ transaction, loading: false, saving: false, error: null });
+    } catch {
+      this.detailState.set({ transaction: null, loading: false, saving: false, error: 'Unable to load transaction.' });
+    }
   }
 
   private async loadAccounts(): Promise<void> {
