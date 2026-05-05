@@ -164,7 +164,7 @@ export class TransactionListComponent {
   });
 
   protected readonly totals = computed(() => {
-    const txns = this.state().filteredTransactions;
+    const txns = this.state().filteredTransactions.filter((transaction) => !transaction.internalTransfer);
     const totalIn = txns.filter((t) => t.value > 0).reduce((s, t) => s + t.value, 0);
     const totalOut = txns.filter((t) => t.value < 0).reduce((s, t) => s + Math.abs(t.value), 0);
     return { totalIn, totalOut, net: totalIn - totalOut };
