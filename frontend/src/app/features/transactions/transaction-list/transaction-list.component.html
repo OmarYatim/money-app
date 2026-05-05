@@ -156,6 +156,105 @@
         }
       </div>
 
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'status'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('status')"
+        >
+          <span class="filter-pill__label">Status</span>
+          <span class="filter-pill__value">{{ selectedStatusLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'status') {
+          <div class="filter-menu__panel filter-menu__panel--compact" role="listbox" aria-label="Status filter">
+            @for (option of statusOptions; track option.value) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="statusFilter() === option.value"
+                [attr.aria-selected]="statusFilter() === option.value"
+                (click)="selectStatus(option.value)"
+              >
+                <span class="filter-menu__option-label">{{ option.label }}</span>
+                @if (statusFilter() === option.value) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'group'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('group')"
+        >
+          <span class="filter-pill__label">Group by</span>
+          <span class="filter-pill__value">{{ selectedGroupLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'group') {
+          <div class="filter-menu__panel filter-menu__panel--compact" role="listbox" aria-label="Group transactions by">
+            @for (option of groupOptions; track option.value) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="groupBy() === option.value"
+                [attr.aria-selected]="groupBy() === option.value"
+                (click)="selectGroupBy(option.value)"
+              >
+                <span class="filter-menu__option-label">{{ option.label }}</span>
+                @if (groupBy() === option.value) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'sort'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('sort')"
+        >
+          <span class="filter-pill__label">Sort</span>
+          <span class="filter-pill__value">{{ selectedSortLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'sort') {
+          <div class="filter-menu__panel" role="listbox" aria-label="Sort transactions">
+            @for (option of sortOptions; track option.value) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="sortBy() === option.value"
+                [attr.aria-selected]="sortBy() === option.value"
+                (click)="selectSort(option.value)"
+              >
+                <span class="filter-menu__option-label">{{ option.label }}</span>
+                @if (sortBy() === option.value) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
       <div class="filter-spacer"></div>
 
       @if (activeFilterCount() > 0) {
@@ -256,10 +355,10 @@
             <div class="list-empty__sub">Try clearing some filters or expanding the period.</div>
           </div>
         } @else {
-          @for (group of groupedTransactions(); track group.date) {
+          @for (group of groupedTransactions(); track group.key) {
             <div class="list-group">
               <div class="list-group__header">
-                <span class="list-group__date">{{ prettyDate(group.date) }}</span>
+                <span class="list-group__date">{{ group.label }}</span>
                 <span class="list-group__line"></span>
                 <span class="list-group__summary">
                   {{ group.items.length }} txn{{ group.items.length !== 1 ? 's' : '' }}

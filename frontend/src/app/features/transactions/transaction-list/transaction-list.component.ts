@@ -23,6 +23,8 @@ import { TransactionService, type TransactionQuery } from '../transaction.servic
 import { UnreviewedTransactionCountService } from '../unreviewed-transaction-count.service';
 
 interface TransactionListState {
+  sourceTransactions: Transaction[];
+  filteredTransactions: Transaction[];
   transactions: Transaction[];
   loadingInitial: boolean;
   error: string | null;
@@ -40,6 +42,7 @@ interface TransactionDetailModalState {
 
 const PAGE_SIZE = 20;
 const REVIEW_ALL_PAGE_SIZE = 100;
+const CLIENT_FETCH_PAGE_SIZE = 100;
 const PAGE_SIZE_OPTIONS = [20, 50, 100] as const;
 
 interface TransactionFilterForm {
@@ -52,7 +55,15 @@ interface TransactionFilterForm {
   maxAmount: FormControl<string>;
 }
 
-type FilterMenu = 'account' | 'category' | 'rows';
+type FilterMenu = 'account' | 'category' | 'status' | 'group' | 'sort' | 'rows';
+type StatusFilter = 'all' | 'reviewed' | 'unreviewed';
+type GroupByFilter = 'date' | 'bank' | 'category';
+type SortFilter = 'newest' | 'oldest' | 'largest' | 'smallest';
+
+interface Option<T extends string> {
+  value: T;
+  label: string;
+}
 
 @Component({
   selector: 'app-transaction-list',
@@ -79,6 +90,25 @@ export class TransactionListComponent {
   protected readonly accounts = signal<Account[]>([]);
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly pageSize = signal<number>(PAGE_SIZE);
+  protected readonly statusFilter = signal<StatusFilter>('all');
+  protected readonly groupBy = signal<GroupByFilter>('date');
+  protected readonly sortBy = signal<SortFilter>('newest');
+  protected readonly statusOptions: Option<StatusFilter>[] = [
+    { value: 'all', label: 'All' },
+    { value: 'reviewed', label: 'Reviewed' },
+    { value: 'unreviewed', label: 'Unreviewed' },
+  ];
+  protected readonly groupOptions: Option<GroupByFilter>[] = [
+    { value: 'date', label: 'Date' },
+    { value: 'bank', label: 'Bank' },
+    { value: 'category', label: 'Category' },
+  ];
+  protected readonly sortOptions: Option<SortFilter>[] = [
+    { value: 'newest', label: 'Newest' },
+    { value: 'oldest', label: 'Oldest' },
+    { value: 'largest', label: 'Largest amount' },
+    { value: 'smallest', label: 'Smallest amount' },
+  ];
   protected readonly selectedPeriod = signal<string>('all');
   protected readonly periodTabs = [
     { id: '7d', label: '7D' },
@@ -100,6 +130,8 @@ export class TransactionListComponent {
   });
 
   protected readonly state = signal<TransactionListState>({
+    sourceTransactions: [],
+    filteredTransactions: [],
     transactions: [],
     loadingInitial: true,
     error: null,
@@ -120,22 +152,26 @@ export class TransactionListComponent {
     const txns = this.state().transactions;
     const groups = new Map<string, Transaction[]>();
     for (const tx of txns) {
-      const key = tx.date;
+      const key = this.groupKey(tx);
       if (!groups.has(key)) groups.set(key, []);
       groups.get(key)!.push(tx);
     }
-    return Array.from(groups.entries()).map(([date, items]) => ({ date, items }));
+    return Array.from(groups.entries()).map(([key, items]) => ({
+      key,
+      label: this.groupLabel(key),
+      items,
+    }));
   });
 
   protected readonly totals = computed(() => {
-    const txns = this.state().transactions;
+    const txns = this.state().filteredTransactions;
     const totalIn = txns.filter((t) => t.value > 0).reduce((s, t) => s + t.value, 0);
     const totalOut = txns.filter((t) => t.value < 0).reduce((s, t) => s + Math.abs(t.value), 0);
     return { totalIn, totalOut, net: totalIn - totalOut };
   });
 
   protected readonly unreviewedCount = computed(
-    () => this.state().transactions.filter((t) => !t.reviewed).length,
+    () => this.state().filteredTransactions.filter((t) => !t.reviewed).length,
   );
   protected readonly visiblePages = computed(() => {
     const { page, totalPages } = this.state();
@@ -158,6 +194,18 @@ export class TransactionListComponent {
     return category ? this.categoryLabel(category) : 'All categories';
   }
 
+  protected selectedStatusLabel(): string {
+    return this.optionLabel(this.statusOptions, this.statusFilter());
+  }
+
+  protected selectedGroupLabel(): string {
+    return this.optionLabel(this.groupOptions, this.groupBy());
+  }
+
+  protected selectedSortLabel(): string {
+    return this.optionLabel(this.sortOptions, this.sortBy());
+  }
+
   constructor() {
     this.filterForm.controls.keyword.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed())
@@ -177,6 +225,8 @@ export class TransactionListComponent {
   protected async reloadTransactions(): Promise<void> {
     this.activeFilterCount.set(this.countActiveFilters());
     this.state.set({
+      sourceTransactions: [],
+      filteredTransactions: [],
       transactions: [],
       loadingInitial: true,
       error: null,
@@ -185,7 +235,7 @@ export class TransactionListComponent {
       totalElements: 0,
     });
 
-    await this.loadPage(0);
+    await this.loadTransactions();
   }
 
   protected async goToPage(page: number): Promise<void> {
@@ -194,7 +244,7 @@ export class TransactionListComponent {
       return;
     }
 
-    await this.loadPage(page);
+    this.applyClientView(page);
   }
 
   protected async goToPreviousPage(): Promise<void> {
@@ -226,7 +276,25 @@ export class TransactionListComponent {
     if (size === this.pageSize()) return;
 
     this.pageSize.set(size);
-    await this.reloadTransactions();
+    this.applyClientView(0);
+  }
+
+  protected async selectStatus(status: StatusFilter): Promise<void> {
+    this.filterMenuOpen.set(null);
+    this.statusFilter.set(status);
+    this.activeFilterCount.set(this.countActiveFilters());
+    this.applyClientView(0);
+  }
+
+  protected selectGroupBy(group: GroupByFilter): void {
+    this.filterMenuOpen.set(null);
+    this.groupBy.set(group);
+  }
+
+  protected selectSort(sort: SortFilter): void {
+    this.filterMenuOpen.set(null);
+    this.sortBy.set(sort);
+    this.applyClientView(0);
   }
 
   protected categoryLabel(category: string): string {
@@ -411,10 +479,11 @@ export class TransactionListComponent {
       );
       this.state.update((current) => ({
         ...current,
-        transactions: current.transactions.map(
+        sourceTransactions: current.sourceTransactions.map(
           (transaction) => updatedById.get(transaction.id) ?? transaction,
         ),
       }));
+      this.applyClientView(this.state().page);
 
       const currentDetail = this.detailState().transaction;
       if (currentDetail) {
@@ -577,6 +646,9 @@ export class TransactionListComponent {
   protected async clearFilters(): Promise<void> {
     this.filterMenuOpen.set(null);
     this.selectedPeriod.set('all');
+    this.statusFilter.set('all');
+    this.groupBy.set('date');
+    this.sortBy.set('newest');
     this.filterForm.reset(
       {
         keyword: '',
@@ -592,30 +664,41 @@ export class TransactionListComponent {
     await this.reloadTransactions();
   }
 
-  private async loadPage(page: number): Promise<void> {
+  private async loadTransactions(): Promise<void> {
     this.state.update((current) => ({
       ...current,
-      loadingInitial: page === 0 && current.transactions.length === 0,
+      loadingInitial: true,
       error: null,
     }));
 
     try {
-      const result = await firstValueFrom(
+      const query = this.currentQuery();
+      const firstPage = await firstValueFrom(
         this.transactionService.getTransactions({
-          ...this.currentQuery(),
-          page,
-          size: this.pageSize(),
+          ...query,
+          page: 0,
+          size: CLIENT_FETCH_PAGE_SIZE,
         }),
       );
+      const additionalPages = await Promise.all(
+        Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) =>
+          firstValueFrom(
+            this.transactionService.getTransactions({
+              ...query,
+              page: index + 1,
+              size: CLIENT_FETCH_PAGE_SIZE,
+            }),
+          ),
+        ),
+      );
+      const sourceTransactions = [firstPage, ...additionalPages].flatMap((page) => page.content);
       this.state.update((current) => ({
         ...current,
-        transactions: result.content,
+        sourceTransactions,
         loadingInitial: false,
         error: null,
-        page: result.number,
-        totalPages: result.totalPages,
-        totalElements: result.totalElements,
       }));
+      this.applyClientView(0);
     } catch {
       this.state.update((current) => ({
         ...current,
@@ -623,6 +706,40 @@ export class TransactionListComponent {
         error: 'Unable to load transactions.',
       }));
     }
+  }
+
+  private applyClientView(page: number): void {
+    const filteredTransactions = this.sortTransactions(
+      this.filterByStatus(this.state().sourceTransactions),
+    );
+    const totalPages = Math.ceil(filteredTransactions.length / this.pageSize());
+    const safePage = totalPages === 0 ? 0 : Math.min(Math.max(page, 0), totalPages - 1);
+    const start = safePage * this.pageSize();
+
+    this.state.update((current) => ({
+      ...current,
+      filteredTransactions,
+      transactions: filteredTransactions.slice(start, start + this.pageSize()),
+      page: safePage,
+      totalPages,
+      totalElements: filteredTransactions.length,
+    }));
+  }
+
+  private filterByStatus(transactions: Transaction[]): Transaction[] {
+    const status = this.statusFilter();
+    if (status === 'reviewed') return transactions.filter((transaction) => transaction.reviewed);
+    if (status === 'unreviewed') return transactions.filter((transaction) => !transaction.reviewed);
+    return transactions;
+  }
+
+  private sortTransactions(transactions: Transaction[]): Transaction[] {
+    return [...transactions].sort((left, right) => {
+      if (this.sortBy() === 'oldest') return this.transactionTime(left) - this.transactionTime(right);
+      if (this.sortBy() === 'largest') return Math.abs(right.value) - Math.abs(left.value);
+      if (this.sortBy() === 'smallest') return Math.abs(left.value) - Math.abs(right.value);
+      return this.transactionTime(right) - this.transactionTime(left);
+    });
   }
 
   private async loadAccounts(): Promise<void> {
@@ -635,6 +752,26 @@ export class TransactionListComponent {
 
   private accountLabel(account: Account): string {
     return account.institutionName ?? account.name;
+  }
+
+  private groupKey(transaction: Transaction): string {
+    if (this.groupBy() === 'bank') return transaction.accountName ?? 'Connected account';
+    if (this.groupBy() === 'category') return transaction.category;
+    return transaction.date;
+  }
+
+  private groupLabel(key: string): string {
+    if (this.groupBy() === 'category') return this.categoryLabel(key);
+    if (this.groupBy() === 'date') return this.prettyDate(key);
+    return key;
+  }
+
+  private optionLabel<T extends string>(options: Option<T>[], value: T): string {
+    return options.find((option) => option.value === value)?.label ?? value;
+  }
+
+  private transactionTime(transaction: Transaction): number {
+    return new Date(transaction.date).getTime();
   }
 
   private currentQuery(): TransactionQuery {
@@ -661,15 +798,17 @@ export class TransactionListComponent {
       value.minAmount,
       value.maxAmount,
       value.keyword.trim(),
+      this.statusFilter() === 'all' ? '' : this.statusFilter(),
     ].filter(Boolean).length;
   }
 
   private replaceTransaction(updated: Transaction): void {
     this.state.update((current) => ({
       ...current,
-      transactions: current.transactions.map((transaction) =>
+      sourceTransactions: current.sourceTransactions.map((transaction) =>
         transaction.id === updated.id ? updated : transaction,
       ),
     }));
+    this.applyClientView(this.state().page);
   }
 }
