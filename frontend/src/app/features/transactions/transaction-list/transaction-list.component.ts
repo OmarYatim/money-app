@@ -21,6 +21,7 @@ import { CategoryColorPipe } from '../../../shared/pipes/category-color.pipe';
 import { AccountService } from '../../accounts/account.service';
 import { TransactionService, type TransactionQuery } from '../transaction.service';
 import { UnreviewedTransactionCountService } from '../unreviewed-transaction-count.service';
+import { TransactionModalComponent } from '../transaction-modal/transaction-modal.component';
 
 interface TransactionListState {
   sourceTransactions: Transaction[];
@@ -76,6 +77,7 @@ interface Option<T extends string> {
     MatProgressSpinnerModule,
     PageActionsComponent,
     CategoryColorPipe,
+    TransactionModalComponent,
   ],
   templateUrl: './transaction-list.component.html',
   styleUrl: './transaction-list.component.scss',
@@ -168,7 +170,6 @@ export class TransactionListComponent {
     error: null,
   });
   protected readonly filterMenuOpen = signal<FilterMenu | null>(null);
-  protected readonly categoryMenuOpen = signal(false);
 
   protected readonly groupedTransactions = computed(() => {
     const txns = this.state().transactions;
@@ -466,7 +467,6 @@ export class TransactionListComponent {
 
   protected async openTransaction(transaction: Transaction): Promise<void> {
     this.filterMenuOpen.set(null);
-    this.categoryMenuOpen.set(false);
     this.detailState.set({
       transaction,
       loading: true,
@@ -499,7 +499,6 @@ export class TransactionListComponent {
 
   protected closeTransaction(): void {
     this.filterMenuOpen.set(null);
-    this.categoryMenuOpen.set(false);
     this.detailState.set({
       transaction: null,
       loading: false,
@@ -510,7 +509,6 @@ export class TransactionListComponent {
 
   protected async toggleRowReviewed(event: MouseEvent, transaction: Transaction): Promise<void> {
     event.stopPropagation();
-    this.categoryMenuOpen.set(false);
 
     try {
       const updated = await firstValueFrom(
@@ -609,12 +607,6 @@ export class TransactionListComponent {
       .filter((transaction) => !transaction.reviewed);
   }
 
-  protected toggleCategoryMenu(): void {
-    this.filterMenuOpen.set(null);
-    if (this.detailState().saving) return;
-    this.categoryMenuOpen.update((open) => !open);
-  }
-
   protected async toggleDetailReviewed(): Promise<void> {
     const transaction = this.detailState().transaction;
     if (!transaction) return;
@@ -644,12 +636,8 @@ export class TransactionListComponent {
 
   protected async updateDetailCategory(selectedCategory: CategoryType): Promise<void> {
     const transaction = this.detailState().transaction;
-    if (!transaction || selectedCategory === transaction.category) {
-      this.categoryMenuOpen.set(false);
-      return;
-    }
+    if (!transaction || selectedCategory === transaction.category) return;
 
-    this.categoryMenuOpen.set(false);
     this.detailState.update((current) => ({ ...current, saving: true, error: null }));
 
     try {
@@ -699,23 +687,6 @@ export class TransactionListComponent {
         error: 'Unable to update internal transfer state.',
       }));
     }
-  }
-
-  protected transactionReference(transaction: Transaction): string {
-    const year = new Date(transaction.date).getFullYear();
-    return `NX-${String(transaction.id).padStart(6, '0')}-${year}`;
-  }
-
-  protected transactionMethod(transaction: Transaction): string {
-    const type = transaction.type?.toLowerCase() ?? '';
-    if (type.includes('card')) return 'Card';
-    if (type.includes('transfer')) return 'Bank transfer';
-    if (type.includes('debit')) return 'SEPA Direct Debit';
-    return transaction.type ? this.categoryLabel(transaction.type) : 'Bank transaction';
-  }
-
-  protected transactionDirection(transaction: Transaction): string {
-    return transaction.value >= 0 ? 'Credit (incoming)' : 'Debit (outgoing)';
   }
 
   protected async clearFilters(): Promise<void> {
