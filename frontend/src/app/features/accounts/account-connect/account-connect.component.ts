@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  inject,
+  input,
+  output,
+  signal,
+} from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -12,6 +20,10 @@ import { AccountService } from '../account.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountConnectComponent {
+  readonly label = input('Connect a bank');
+  readonly loadingLabel = input('Connecting…');
+  readonly icon = input('add_card');
+  readonly variant = input<'button' | 'card'>('button');
   readonly connected = output<void>();
 
   protected readonly loading = signal(false);

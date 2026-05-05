@@ -133,6 +133,13 @@
             </div>
           </div>
         }
+        <app-account-connect
+          label="Connect another bank"
+          loadingLabel="Connecting…"
+          icon="add"
+          variant="card"
+          (connected)="reloadAccounts()"
+        />
       </div>
     }
   </div>

@@ -1,9 +1,12 @@
 <button
   type="button"
   class="connect-btn"
+  [class.connect-btn--card]="variant() === 'card'"
   [disabled]="loading()"
   (click)="connect()"
 >
-  <span class="material-icons" aria-hidden="true">add_card</span>
-  <span>{{ loading() ? 'Connecting…' : 'Connect a bank' }}</span>
+  <span class="connect-btn__icon">
+    <span class="material-icons" aria-hidden="true">{{ icon() }}</span>
+  </span>
+  <span>{{ loading() ? loadingLabel() : label() }}</span>
 </button>

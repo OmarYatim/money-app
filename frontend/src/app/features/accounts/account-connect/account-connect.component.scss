@@ -12,10 +12,6 @@
   transition: all 0.15s;
   border: none;
 
-  .material-icons {
-    font-size: 16px;
-  }
-
   &:hover:not(:disabled) {
     opacity: 0.9;
   }
@@ -23,5 +19,46 @@
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+  }
+}
+
+.connect-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  .material-icons {
+    font-size: 16px;
+  }
+}
+
+.connect-btn--card {
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  min-height: 204px;
+  border: 1px dashed var(--lavender-100);
+  border-radius: 12px;
+  padding: 18px 20px;
+  background: var(--lavender-50);
+  color: var(--indigo-500);
+  font-size: 13px;
+
+  .connect-btn__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 8px 24px rgba(91, 95, 239, 0.12);
+  }
+
+  .material-icons {
+    font-size: 22px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--indigo-400);
+    opacity: 1;
   }
 }
