@@ -164,6 +164,11 @@
 
 // ---- Period tabs ----
 
+.period-tabs-wrap {
+  position: relative;
+  align-self: flex-start;
+}
+
 .period-tabs {
   display: flex;
   gap: 2px;
@@ -171,10 +176,12 @@
   border: 1px solid var(--line);
   padding: 4px;
   border-radius: 10px;
-  align-self: flex-start;
 }
 
 .period-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   padding: 7px 12px;
   border-radius: 6px;
   font-size: 12px;
@@ -191,6 +198,109 @@
   &:hover:not(.period-tab--active) {
     background: var(--ink-100);
     color: var(--ink-700);
+  }
+}
+
+.period-tab__icon {
+  font-size: 13px !important;
+  width: 13px !important;
+  height: 13px !important;
+  flex-shrink: 0;
+}
+
+// ---- Custom date-range panel ----
+
+.date-range-panel {
+  position: absolute;
+  z-index: 60;
+  top: calc(100% + 6px);
+  right: 0;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 8px 28px rgba(20, 22, 58, 0.12);
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.date-range-panel__row {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+}
+
+.date-range-panel__field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+}
+
+.date-range-panel__label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--ink-400);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.date-range-panel__input {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--ink-900);
+  background: white;
+  outline: none;
+  width: 100%;
+
+  &:focus {
+    border-color: var(--indigo-400);
+  }
+}
+
+.date-range-panel__sep {
+  font-size: 16px;
+  color: var(--ink-300);
+  padding-bottom: 8px;
+  flex-shrink: 0;
+}
+
+.date-range-panel__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.date-range-panel__btn {
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &--cancel {
+    background: transparent;
+    color: var(--ink-500);
+    border: 1px solid var(--line);
+
+    &:hover {
+      background: var(--ink-100);
+    }
+  }
+
+  &--apply {
+    background: var(--ink-900);
+    color: white;
+    border: 1px solid transparent;
+
+    &:hover {
+      background: var(--ink-700);
+    }
   }
 }
 

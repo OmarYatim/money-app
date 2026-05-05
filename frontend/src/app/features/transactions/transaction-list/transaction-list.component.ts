@@ -124,7 +124,21 @@ export class TransactionListComponent {
     { id: 'year', label: 'This year' },
     { id: 'future', label: 'Future' },
     { id: 'all', label: 'All' },
+    { id: 'custom', label: 'Custom' },
   ];
+  protected readonly customDateOpen = signal(false);
+  protected readonly customMinDate = signal('');
+  protected readonly customMaxDate = signal('');
+  protected readonly customDateLabel = computed(() => {
+    const min = this.customMinDate();
+    const max = this.customMaxDate();
+    if (!min && !max) return null;
+    const fmt = (d: string) =>
+      new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    if (min && max) return `${fmt(min)} – ${fmt(max)}`;
+    if (min) return `From ${fmt(min)}`;
+    return `To ${fmt(max)}`;
+  });
   protected readonly activeFilterCount = signal(0);
   protected readonly reviewingAll = signal(false);
   protected readonly filterForm = new FormGroup<TransactionFilterForm>({
@@ -268,6 +282,7 @@ export class TransactionListComponent {
   }
 
   protected toggleFilterMenu(menu: FilterMenu): void {
+    this.customDateOpen.set(false);
     this.filterMenuOpen.update((openMenu) => (openMenu === menu ? null : menu));
   }
 
@@ -377,6 +392,15 @@ export class TransactionListComponent {
   }
 
   protected setPeriod(period: string): void {
+    if (period === 'custom') {
+      this.selectedPeriod.set('custom');
+      this.customMinDate.set(this.filterForm.controls.minDate.value);
+      this.customMaxDate.set(this.filterForm.controls.maxDate.value);
+      this.customDateOpen.set(true);
+      return;
+    }
+
+    this.customDateOpen.set(false);
     this.selectedPeriod.set(period);
     const now = new Date();
     const today = this.isoDate(now);
@@ -404,6 +428,30 @@ export class TransactionListComponent {
 
     this.filterForm.patchValue({ minDate, maxDate }, { emitEvent: false });
     void this.reloadTransactions();
+  }
+
+  protected applyCustomDate(): void {
+    this.filterForm.patchValue(
+      { minDate: this.customMinDate(), maxDate: this.customMaxDate() },
+      { emitEvent: false },
+    );
+    this.customDateOpen.set(false);
+    void this.reloadTransactions();
+  }
+
+  protected cancelCustomDate(): void {
+    this.customDateOpen.set(false);
+    if (!this.filterForm.controls.minDate.value && !this.filterForm.controls.maxDate.value) {
+      this.selectedPeriod.set('all');
+    }
+  }
+
+  protected setCustomMinDate(event: Event): void {
+    this.customMinDate.set((event.target as HTMLInputElement).value);
+  }
+
+  protected setCustomMaxDate(event: Event): void {
+    this.customMaxDate.set((event.target as HTMLInputElement).value);
   }
 
   protected async applyFilters(): Promise<void> {
@@ -667,6 +715,9 @@ export class TransactionListComponent {
 
   protected async clearFilters(): Promise<void> {
     this.filterMenuOpen.set(null);
+    this.customDateOpen.set(false);
+    this.customMinDate.set('');
+    this.customMaxDate.set('');
     this.selectedPeriod.set('all');
     this.statusFilter.set('all');
     this.transferFilter.set('all');

@@ -44,15 +44,56 @@
         }
       </form>
 
-      <!-- Period tabs -->
-      <div class="period-tabs" role="group" aria-label="Time period">
-        @for (tab of periodTabs; track tab.id) {
-          <button
-            class="period-tab"
-            type="button"
-            [class.period-tab--active]="selectedPeriod() === tab.id"
-            (click)="setPeriod(tab.id)"
-          >{{ tab.label }}</button>
+      <!-- Period tabs with custom date picker -->
+      <div class="period-tabs-wrap">
+        <div class="period-tabs" role="group" aria-label="Time period">
+          @for (tab of periodTabs; track tab.id) {
+            <button
+              class="period-tab"
+              type="button"
+              [class.period-tab--active]="selectedPeriod() === tab.id"
+              (click)="setPeriod(tab.id)"
+            >
+              @if (tab.id === 'custom') {
+                <mat-icon class="period-tab__icon" aria-hidden="true">date_range</mat-icon>
+              }
+              {{ tab.id === 'custom' && customDateLabel() ? customDateLabel() : tab.label }}
+            </button>
+          }
+        </div>
+
+        @if (customDateOpen()) {
+          <div class="date-range-panel" role="dialog" aria-label="Select date range">
+            <div class="date-range-panel__row">
+              <div class="date-range-panel__field">
+                <label class="date-range-panel__label" for="custom-from">From</label>
+                <input
+                  class="date-range-panel__input"
+                  id="custom-from"
+                  type="date"
+                  [value]="customMinDate()"
+                  (change)="setCustomMinDate($event)"
+                />
+              </div>
+              <span class="date-range-panel__sep" aria-hidden="true">→</span>
+              <div class="date-range-panel__field">
+                <label class="date-range-panel__label" for="custom-to">To</label>
+                <input
+                  class="date-range-panel__input"
+                  id="custom-to"
+                  type="date"
+                  [value]="customMaxDate()"
+                  (change)="setCustomMaxDate($event)"
+                />
+              </div>
+            </div>
+            <div class="date-range-panel__actions">
+              <button class="date-range-panel__btn date-range-panel__btn--cancel" type="button"
+                      (click)="cancelCustomDate()">Cancel</button>
+              <button class="date-range-panel__btn date-range-panel__btn--apply" type="button"
+                      (click)="applyCustomDate()">Apply</button>
+            </div>
+          </div>
         }
       </div>
     </div>
