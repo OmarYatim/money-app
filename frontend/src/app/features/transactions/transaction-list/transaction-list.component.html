@@ -132,7 +132,7 @@
               class="totals-strip__review-all"
               type="button"
               [disabled]="reviewingAll()"
-              (click)="markLoadedTransactionsReviewed()"
+              (click)="markAllMatchingTransactionsReviewed()"
             >
               <mat-icon aria-hidden="true">check</mat-icon>
               {{ reviewingAll() ? 'Reviewing…' : 'Mark all reviewed' }}

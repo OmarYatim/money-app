@@ -45,6 +45,7 @@ interface TransactionDetailModalState {
 }
 
 const PAGE_SIZE = 20;
+const REVIEW_ALL_PAGE_SIZE = 100;
 
 interface TransactionFilterForm {
   keyword: FormControl<string>;
@@ -351,16 +352,14 @@ export class TransactionListComponent {
     }
   }
 
-  protected async markLoadedTransactionsReviewed(): Promise<void> {
-    const unreviewedTransactions = this.state().transactions.filter(
-      (transaction) => !transaction.reviewed,
-    );
-    if (unreviewedTransactions.length === 0 || this.reviewingAll()) return;
+  protected async markAllMatchingTransactionsReviewed(): Promise<void> {
+    if (this.unreviewedCount() === 0 || this.reviewingAll()) return;
 
     this.reviewingAll.set(true);
     this.state.update((current) => ({ ...current, error: null }));
 
     try {
+      const unreviewedTransactions = await this.loadAllMatchingUnreviewedTransactions();
       const updatedTransactions = await Promise.all(
         unreviewedTransactions.map((transaction) =>
           firstValueFrom(this.transactionService.updateReviewed(transaction.id, true)),
@@ -398,6 +397,31 @@ export class TransactionListComponent {
     } finally {
       this.reviewingAll.set(false);
     }
+  }
+
+  private async loadAllMatchingUnreviewedTransactions(): Promise<Transaction[]> {
+    const query = this.currentQuery();
+    const firstPage = await firstValueFrom(
+      this.transactionService.getTransactions({
+        ...query,
+        page: 0,
+        size: REVIEW_ALL_PAGE_SIZE,
+      }),
+    );
+    const additionalPages = await Promise.all(
+      Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) =>
+        firstValueFrom(
+          this.transactionService.getTransactions({
+            ...query,
+            page: index + 1,
+            size: REVIEW_ALL_PAGE_SIZE,
+          }),
+        ),
+      ),
+    );
+    return [firstPage, ...additionalPages]
+      .flatMap((page) => page.content)
+      .filter((transaction) => !transaction.reviewed);
   }
 
   protected toggleCategoryMenu(): void {
