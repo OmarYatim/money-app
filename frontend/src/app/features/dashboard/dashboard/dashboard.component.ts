@@ -128,17 +128,35 @@ export class DashboardComponent {
     this.buildNetWorthData(this.accounts(), this.chartTransactions()),
   );
 
-  protected readonly spendingData: SpendingItem[] = [
-    { label: 'Housing', color: '#7c80f5', amount: 890 },
-    { label: 'Groceries', color: '#5b5fef', amount: 320 },
-    { label: 'Dining', color: '#d99838', amount: 184 },
-    { label: 'Shopping', color: '#c8366f', amount: 152 },
-    { label: 'Transport', color: '#3aa8c4', amount: 96 },
-    { label: 'Utilities', color: '#9396a8', amount: 87 },
-    { label: 'Subscription', color: '#7c80f5', amount: 31 },
-    { label: 'Entertainment', color: '#e04a62', amount: 14 },
-  ];
-  protected readonly spendingTotal = this.spendingData.reduce((s, d) => s + d.amount, 0);
+  protected readonly spendingData = computed<SpendingItem[]>(() => {
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const totals = new Map<string, number>();
+
+    this.chartTransactions()
+      .filter((tx) => !tx.internalTransfer && tx.value < 0)
+      .filter((tx) => {
+        const date = new Date(tx.date);
+        return date >= monthStart && date < nextMonth;
+      })
+      .forEach((tx) => {
+        const cat = tx.category.toUpperCase();
+        totals.set(cat, (totals.get(cat) ?? 0) + Math.abs(tx.value));
+      });
+
+    return Array.from(totals.entries())
+      .map(([category, amount]) => ({
+        label: this.categoryLabel(category),
+        color: this.categoryIconColor(category),
+        amount: Math.round(amount),
+      }))
+      .sort((a, b) => b.amount - a.amount);
+  });
+
+  protected readonly spendingTotal = computed(() =>
+    this.spendingData().reduce((s, d) => s + d.amount, 0),
+  );
 
   protected readonly goals: GoalItem[] = [
     { label: 'Emergency fund', current: 5640, target: 9000, color: '#5b5fef' },

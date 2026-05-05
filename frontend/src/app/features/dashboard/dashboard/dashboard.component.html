@@ -213,33 +213,37 @@
             <div class="card__header">
               <div>
                 <div class="card__title">Spending breakdown</div>
-                <div class="card__sub">This month · €{{ spendingTotal }} total</div>
+                <div class="card__sub">This month · {{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} total</div>
               </div>
               <a routerLink="/transactions" class="card__link">
                 Details <mat-icon aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
-            <!-- Stacked bar -->
-            <div class="spending-bar">
-              @for (item of spendingData; track item.label) {
-                <div
-                  class="spending-bar__segment"
-                  [style.width.%]="(item.amount / spendingTotal) * 100"
-                  [style.background]="item.color"
-                  [title]="item.label"
-                ></div>
-              }
-            </div>
-            <div class="spending-list">
-              @for (item of spendingData; track item.label) {
-                <div class="spending-row">
-                  <span class="spending-row__dot" [style.background]="item.color"></span>
-                  <span class="spending-row__label">{{ item.label }}</span>
-                  <span class="spending-row__pct">{{ ((item.amount / spendingTotal) * 100).toFixed(0) }}%</span>
-                  <span class="spending-row__amount">€{{ item.amount }}</span>
-                </div>
-              }
-            </div>
+            @if (spendingData().length === 0) {
+              <div class="spending-empty">No expenses recorded this month</div>
+            } @else {
+              <!-- Stacked bar -->
+              <div class="spending-bar">
+                @for (item of spendingData(); track item.label) {
+                  <div
+                    class="spending-bar__segment"
+                    [style.width.%]="(item.amount / spendingTotal()) * 100"
+                    [style.background]="item.color"
+                    [title]="item.label"
+                  ></div>
+                }
+              </div>
+              <div class="spending-list">
+                @for (item of spendingData(); track item.label) {
+                  <div class="spending-row">
+                    <span class="spending-row__dot" [style.background]="item.color"></span>
+                    <span class="spending-row__label">{{ item.label }}</span>
+                    <span class="spending-row__pct">{{ ((item.amount / spendingTotal()) * 100).toFixed(0) }}%</span>
+                    <span class="spending-row__amount">{{ item.amount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+                  </div>
+                }
+              </div>
+            }
           </div>
         </section>
 
