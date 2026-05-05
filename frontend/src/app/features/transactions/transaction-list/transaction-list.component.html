@@ -128,6 +128,15 @@
           <div class="totals-strip__spacer"></div>
           @if (unreviewedCount() > 0) {
             <span class="totals-strip__unreviewed">{{ unreviewedCount() }} need review</span>
+            <button
+              class="totals-strip__review-all"
+              type="button"
+              [disabled]="reviewingAll()"
+              (click)="markLoadedTransactionsReviewed()"
+            >
+              <mat-icon aria-hidden="true">check</mat-icon>
+              {{ reviewingAll() ? 'Reviewing…' : 'Mark all reviewed' }}
+            </button>
           }
         </section>
       }

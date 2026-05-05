@@ -360,6 +360,30 @@
   color: var(--ink-400);
 }
 
+.totals-strip__review-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 12px;
+  background: white;
+  color: var(--ink-700);
+  font-size: 12px;
+  font-weight: 500;
+
+  mat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+}
+
 // ---- List card ----
 
 .list-card {

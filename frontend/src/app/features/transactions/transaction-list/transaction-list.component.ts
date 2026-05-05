@@ -92,6 +92,7 @@ export class TransactionListComponent {
     { id: 'all', label: 'All' },
   ];
   protected readonly activeFilterCount = signal(0);
+  protected readonly reviewingAll = signal(false);
   protected readonly filterForm = new FormGroup<TransactionFilterForm>({
     keyword: new FormControl('', { nonNullable: true }),
     accountId: new FormControl<number | null>(null),
@@ -347,6 +348,55 @@ export class TransactionListComponent {
         ...current,
         error: 'Unable to update reviewed state.',
       }));
+    }
+  }
+
+  protected async markLoadedTransactionsReviewed(): Promise<void> {
+    const unreviewedTransactions = this.state().transactions.filter(
+      (transaction) => !transaction.reviewed,
+    );
+    if (unreviewedTransactions.length === 0 || this.reviewingAll()) return;
+
+    this.reviewingAll.set(true);
+    this.state.update((current) => ({ ...current, error: null }));
+
+    try {
+      const updatedTransactions = await Promise.all(
+        unreviewedTransactions.map((transaction) =>
+          firstValueFrom(this.transactionService.updateReviewed(transaction.id, true)),
+        ),
+      );
+      const updatedById = new Map(
+        updatedTransactions.map((transaction) => [transaction.id, transaction]),
+      );
+      this.state.update((current) => ({
+        ...current,
+        transactions: current.transactions.map(
+          (transaction) => updatedById.get(transaction.id) ?? transaction,
+        ),
+      }));
+
+      const currentDetail = this.detailState().transaction;
+      if (currentDetail) {
+        const updatedDetail = updatedById.get(currentDetail.id);
+        if (updatedDetail) {
+          this.detailState.set({
+            transaction: updatedDetail,
+            loading: false,
+            saving: false,
+            error: null,
+          });
+        }
+      }
+
+      this.unreviewedTransactionCountService.refresh();
+    } catch {
+      this.state.update((current) => ({
+        ...current,
+        error: 'Unable to mark all loaded transactions as reviewed.',
+      }));
+    } finally {
+      this.reviewingAll.set(false);
     }
   }
 
