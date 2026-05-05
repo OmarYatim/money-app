@@ -83,3 +83,152 @@ a {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--ink-300);
 }
+
+// ---- Topbar (shared across all pages) ----
+
+.topbar {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 24px 36px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper);
+  flex-shrink: 0;
+}
+
+.topbar__left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.topbar__crumb {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--ink-400);
+  font-size: 12px;
+  margin-bottom: 6px;
+
+  mat-icon {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+  }
+}
+
+.topbar__crumb-current {
+  color: var(--ink-700);
+}
+
+.topbar__title {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.1;
+  color: var(--ink-900);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.topbar__subtitle {
+  font-size: 13.5px;
+  color: var(--ink-500);
+  margin: 4px 0 0;
+}
+
+.topbar__right {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.topbar__action-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+  font-size: 12.5px;
+  color: var(--ink-700);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+
+  &:hover {
+    background: var(--ink-100);
+  }
+}
+
+// ---- Notice card + utility buttons ----
+
+.notice-card {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 440px;
+
+  p {
+    font-size: 14px;
+    color: var(--ink-700);
+    margin: 0;
+  }
+}
+
+.btn-ghost {
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-700);
+  border: 1px solid var(--line);
+  background: white;
+  cursor: pointer;
+  align-self: flex-start;
+
+  &:hover {
+    background: var(--ink-100);
+  }
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  padding: 9px 16px;
+  border-radius: 8px;
+  background: var(--ink-900);
+  color: white;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  align-self: flex-start;
+  text-decoration: none;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}
+
+@media (max-width: 48rem) {
+  .topbar {
+    padding: 16px 16px 14px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

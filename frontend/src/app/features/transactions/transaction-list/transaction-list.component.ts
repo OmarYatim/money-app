@@ -1,4 +1,4 @@
-import { CurrencyPipe, DatePipe } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -17,11 +17,11 @@ import type { Account } from '../../../shared/models/account.model';
 import { CATEGORY_TYPES, type CategoryType } from '../../../shared/models/category.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
 import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
-import { CategoryColorPipe } from '../../../shared/pipes/category-color.pipe';
 import { AccountService } from '../../accounts/account.service';
 import { TransactionService, type TransactionQuery } from '../transaction.service';
 import { UnreviewedTransactionCountService } from '../unreviewed-transaction-count.service';
 import { TransactionModalComponent } from '../transaction-modal/transaction-modal.component';
+import { TransactionRowComponent } from '../transaction-row/transaction-row.component';
 
 interface TransactionListState {
   sourceTransactions: Transaction[];
@@ -71,13 +71,12 @@ interface Option<T extends string> {
   selector: 'app-transaction-list',
   imports: [
     CurrencyPipe,
-    DatePipe,
     ReactiveFormsModule,
     MatIconModule,
     MatProgressSpinnerModule,
     PageActionsComponent,
-    CategoryColorPipe,
     TransactionModalComponent,
+    TransactionRowComponent,
   ],
   templateUrl: './transaction-list.component.html',
   styleUrl: './transaction-list.component.scss',
@@ -345,37 +344,6 @@ export class TransactionListComponent {
       .join(' ');
   }
 
-  protected categoryIcon(category: string): string {
-    const map: Record<string, string> = {
-      GROCERIES: 'local_grocery_store',
-      INCOME: 'payments',
-      SAVINGS: 'savings',
-      DINING: 'restaurant',
-      SHOPPING: 'shopping_bag',
-      SUBSCRIPTION: 'subscriptions',
-      TRANSPORT: 'directions_bus',
-      TRAVEL: 'flight',
-      TRANSFER: 'sync_alt',
-      UTILITIES: 'bolt',
-      RENT: 'home',
-      HEALTH: 'local_hospital',
-      ENTERTAINMENT: 'movie',
-      EDUCATION: 'school',
-      OTHER: 'more_horiz',
-    };
-    return map[category.toUpperCase()] ?? 'receipt';
-  }
-
-  protected categoryIconBg(category: string): string {
-    const cat = category.toUpperCase();
-    if (['GROCERIES', 'INCOME', 'SAVINGS'].includes(cat)) return 'rgba(44,173,106,0.14)';
-    if (['DINING', 'SHOPPING', 'SUBSCRIPTION'].includes(cat)) return 'rgba(124,58,237,0.12)';
-    if (['TRANSPORT', 'TRAVEL', 'TRANSFER'].includes(cat)) return 'rgba(91,95,239,0.12)';
-    if (['UTILITIES', 'RENT', 'HEALTH', 'ENTERTAINMENT', 'EDUCATION'].includes(cat))
-      return 'rgba(217,152,56,0.14)';
-    return 'rgba(147,150,168,0.14)';
-  }
-
   protected categoryIconColor(category: string): string {
     const cat = category.toUpperCase();
     if (['GROCERIES', 'INCOME', 'SAVINGS'].includes(cat)) return '#2cad6a';
@@ -492,11 +460,6 @@ export class TransactionListComponent {
     }
   }
 
-  protected openTransactionFromKeyboard(event: Event, transaction: Transaction): void {
-    event.preventDefault();
-    void this.openTransaction(transaction);
-  }
-
   protected closeTransaction(): void {
     this.filterMenuOpen.set(null);
     this.detailState.set({
@@ -507,9 +470,7 @@ export class TransactionListComponent {
     });
   }
 
-  protected async toggleRowReviewed(event: MouseEvent, transaction: Transaction): Promise<void> {
-    event.stopPropagation();
-
+  protected async toggleRowReviewed(transaction: Transaction): Promise<void> {
     try {
       const updated = await firstValueFrom(
         this.transactionService.updateReviewed(transaction.id, !transaction.reviewed),

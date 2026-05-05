@@ -25,61 +25,6 @@
   min-height: 12rem;
 }
 
-// ---- Topbar ----
-
-.topbar {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  padding: 24px 36px 18px;
-  border-bottom: 1px solid var(--line);
-  background: var(--paper);
-  flex-shrink: 0;
-}
-
-.topbar__left {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.topbar__crumb {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  color: var(--ink-400);
-  font-size: 12px;
-  margin-bottom: 6px;
-}
-
-.topbar__crumb-current {
-  color: var(--ink-700);
-}
-
-.topbar__title {
-  font-family: 'Instrument Serif', Georgia, serif;
-  font-weight: 400;
-  font-size: 36px;
-  line-height: 1.1;
-  color: var(--ink-900);
-  margin: 0;
-  letter-spacing: -0.01em;
-}
-
-.topbar__subtitle {
-  font-size: 13.5px;
-  color: var(--ink-500);
-  margin: 4px 0 0;
-}
-
-.topbar__right {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-shrink: 0;
-}
-
 // ---- Warning banner ----
 
 .warning-banner {

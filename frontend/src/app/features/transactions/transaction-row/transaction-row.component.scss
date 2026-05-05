@@ -1,0 +1,204 @@
+// ---- Transaction row ----
+
+.tx-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 20px;
+  border-top: 1px solid var(--ink-100);
+  background: white;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  text-decoration: none;
+  transition: background 0.1s;
+
+  &:hover {
+    background: var(--lavender-50);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--indigo-400);
+    outline-offset: -2px;
+  }
+}
+
+.tx-row__review-btn {
+  display: flex;
+  flex-shrink: 0;
+  color: var(--ink-300);
+
+  mat-icon {
+    width: 18px;
+    height: 18px;
+    font-size: 18px;
+  }
+
+  &:hover {
+    color: var(--ink-500);
+  }
+
+  &:focus-visible {
+    border-radius: 50%;
+    outline: 2px solid var(--indigo-400);
+    outline-offset: 3px;
+  }
+}
+
+.tx-row__review-icon--active {
+  color: var(--green-500);
+}
+
+.tx-icon {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+
+  mat-icon {
+    width: 17px;
+    height: 17px;
+    font-size: 17px;
+  }
+}
+
+.tx-row__meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.tx-row__label {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  overflow: hidden;
+  color: var(--ink-900);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tx-row__new-dot {
+  display: inline-block;
+  flex-shrink: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--indigo-500);
+  vertical-align: middle;
+}
+
+.tx-row__sub {
+  overflow: hidden;
+  margin-top: 1px;
+  color: var(--ink-400);
+  font-size: 11.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tx-row__account {
+  flex-shrink: 0;
+  min-width: 120px;
+  text-align: right;
+}
+
+.tx-row__account-name {
+  color: var(--ink-700);
+  font-size: 11.5px;
+  font-weight: 500;
+}
+
+.tx-row__date {
+  color: var(--ink-400);
+  font-size: 10.5px;
+}
+
+.tx-row__cat {
+  border-radius: 12px;
+  padding: 3px 9px;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.tx-row__amount {
+  flex-shrink: 0;
+  min-width: 90px;
+  color: var(--ink-900);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: right;
+
+  &.tx-row__amount--positive {
+    color: var(--green-600);
+  }
+
+  &.tx-row__amount--negative {
+    color: var(--ink-900);
+  }
+}
+
+// ---- Category badges ----
+
+.category-badge {
+  border: 1px solid currentColor;
+  border-radius: 999rem;
+  padding: 0.25rem 0.625rem;
+  font: var(--mat-sys-label-medium, 500 11px/1 'Inter');
+}
+
+.category-badge--groceries,
+.category-badge--income,
+.category-badge--savings {
+  border-color: transparent;
+  background: var(--green-100);
+  color: var(--green-600);
+}
+
+.category-badge--dining,
+.category-badge--shopping,
+.category-badge--subscription {
+  border-color: transparent;
+  background: #ede9ff;
+  color: #7c3aed;
+}
+
+.category-badge--transport,
+.category-badge--travel,
+.category-badge--transfer {
+  border-color: transparent;
+  background: var(--lavender-50);
+  color: var(--indigo-500);
+}
+
+.category-badge--utilities,
+.category-badge--rent,
+.category-badge--health,
+.category-badge--entertainment,
+.category-badge--education {
+  border-color: transparent;
+  background: var(--amber-100);
+  color: #b45309;
+}
+
+.category-badge--other {
+  border-color: transparent;
+  background: var(--ink-100);
+  color: var(--ink-500);
+}
+
+@media (max-width: 48rem) {
+  .tx-row__account,
+  .tx-row__cat {
+    display: none;
+  }
+}
