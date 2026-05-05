@@ -264,7 +264,7 @@
                 <div class="tx-list__empty">No recent transactions</div>
               }
               @for (tx of recentTransactions(); track tx.id) {
-                <a class="tx-row" [routerLink]="['/transactions', tx.id]">
+                <a class="tx-row" [routerLink]="['/transactions']" [queryParams]="{ transactionId: tx.id }">
                   <div class="tx-icon"
                     [style.background]="categoryIconBg(tx.category)"
                     [style.color]="categoryIconColor(tx.category)"
