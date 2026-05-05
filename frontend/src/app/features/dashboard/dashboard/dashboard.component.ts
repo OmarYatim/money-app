@@ -104,6 +104,12 @@ export class DashboardComponent {
     const nw = this.state().summary?.netWorth ?? 0;
     return Math.abs(Math.round((nw - Math.trunc(nw)) * 100)).toString().padStart(2, '0');
   });
+  protected readonly savingsRate = computed(() => {
+    const summary = this.state().summary;
+    if (!summary || summary.monthlyIncome <= 0) return 0;
+
+    return Math.round(((summary.monthlyIncome - summary.monthlyExpenses) / summary.monthlyIncome) * 100);
+  });
 
   protected readonly heroAccounts = computed<HeroAccount[]>(() =>
     this.accounts().map((account, index) => ({
