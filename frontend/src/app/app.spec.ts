@@ -19,8 +19,9 @@ describe('App', () => {
 
   it('should render brand', async () => {
     const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('mat-toolbar')?.textContent).toContain('Money App');
+    expect(compiled.querySelector('.sidebar__brand')?.textContent).toContain('Nexioo');
   });
 });

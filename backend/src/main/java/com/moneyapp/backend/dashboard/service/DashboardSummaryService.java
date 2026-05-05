@@ -23,6 +23,7 @@ public class DashboardSummaryService {
   private static final Set<String> ASSET_TYPES = Set.of("checking", "savings");
   private static final Set<String> LIABILITY_TYPES = Set.of("credit", "loan");
   private static final int EXPENSE_LOOKBACK_DAYS = 30;
+  private static final int FUTURE_BALANCE_LOOKAHEAD_DAYS = 30;
 
   private final CurrentAppUserService currentAppUserService;
   private final AccountRepository accountRepository;
@@ -37,6 +38,7 @@ public class DashboardSummaryService {
     List<Transaction> monthlyTransactions = findRecentExpenseWindowTransactions(appUser.getId());
     List<Transaction> dailyTransactions =
         transactionRepository.findByUserIdAndDate(appUser.getId(), today);
+    List<Transaction> futureTransactions = findUpcomingTransactions(appUser.getId(), today);
 
     BigDecimal totalAssets = sumAssets(accounts);
     BigDecimal totalLiabilities = sumLiabilities(accounts);
@@ -45,7 +47,7 @@ public class DashboardSummaryService {
         totalAssets.subtract(totalLiabilities),
         totalAssets,
         totalLiabilities,
-        sumFutureBalance(accounts),
+        sumFutureBalance(totalAssets.subtract(totalLiabilities), futureTransactions),
         sumMonthlyIncome(monthlyTransactions),
         sumMonthlyExpenses(monthlyTransactions),
         sumDailySpending(dailyTransactions),
@@ -56,6 +58,11 @@ public class DashboardSummaryService {
     LocalDate today = LocalDate.now();
     return transactionRepository.findByUserIdAndDateBetween(
         userId, today.minusDays(EXPENSE_LOOKBACK_DAYS - 1L), today);
+  }
+
+  private List<Transaction> findUpcomingTransactions(Long userId, LocalDate today) {
+    return transactionRepository.findByUserIdAndDateBetween(
+        userId, today, today.plusDays(FUTURE_BALANCE_LOOKAHEAD_DAYS - 1L));
   }
 
   private BigDecimal sumAssets(List<Account> accounts) {
@@ -73,10 +80,13 @@ public class DashboardSummaryService {
         .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
-  private BigDecimal sumFutureBalance(List<Account> accounts) {
-    return accounts.stream()
-        .map(account -> account.getBalance().add(account.getComing()))
-        .reduce(BigDecimal.ZERO, BigDecimal::add);
+  private BigDecimal sumFutureBalance(BigDecimal currentBalance, List<Transaction> transactions) {
+    BigDecimal upcomingNet =
+        transactions.stream()
+            .filter(t -> !t.isInternalTransfer())
+            .map(Transaction::getValue)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    return currentBalance.add(upcomingNet);
   }
 
   private BigDecimal sumMonthlyIncome(List<Transaction> transactions) {

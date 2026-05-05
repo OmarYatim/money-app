@@ -32,11 +32,23 @@ export const routes: Routes = [
       ),
   },
   {
-    path: 'transactions/:id',
+    path: 'goals',
     canActivate: [authGuard],
     loadComponent: () =>
-      import('./features/transactions/transaction-detail/transaction-detail.component').then(
-        (component) => component.TransactionDetailComponent,
+      import('./features/goals/goals.component').then((c) => c.GoalsComponent),
+  },
+  {
+    path: 'reports',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/reports/reports.component').then((c) => c.ReportsComponent),
+  },
+  {
+    path: 'account-settings',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/account-settings/account-settings.component').then(
+        (c) => c.AccountSettingsComponent,
       ),
   },
   {

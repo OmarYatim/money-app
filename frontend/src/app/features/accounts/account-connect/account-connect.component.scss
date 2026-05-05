@@ -1,4 +1,70 @@
-.account-connect__button {
-  min-inline-size: 12rem;
-  min-block-size: 2.75rem;
+:host {
+  display: block;
+  height: 100%;
+}
+
+.connect-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  background: var(--ink-900);
+  color: white;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none;
+
+  &:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.connect-btn__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  .material-icons {
+    font-size: 16px;
+  }
+}
+
+.connect-btn--card {
+  justify-content: center;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  height: 100%;
+  min-height: 220px;
+  border: 1px dashed var(--lavender-100);
+  border-radius: 12px;
+  padding: 18px 20px;
+  background: var(--lavender-50);
+  color: var(--indigo-500);
+  font-size: 13px;
+
+  .connect-btn__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: white;
+    box-shadow: 0 8px 24px rgba(91, 95, 239, 0.12);
+  }
+
+  .material-icons {
+    font-size: 22px;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: var(--indigo-400);
+    opacity: 1;
+  }
 }

@@ -45,7 +45,7 @@ class DashboardSummaryServiceTest {
   }
 
   @Test
-  void computeCalculatesNetWorthAndFutureBalanceFromAccounts() {
+  void computeCalculatesNetWorthAndFutureBalanceFromAccountsAndUpcomingTransactions() {
     AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
     LocalDateTime newestSync = LocalDateTime.of(2026, 5, 3, 9, 30);
     accountRepository.save(account(appUser.getId(), 1L, "checking", "1500", "0", newestSync));
@@ -53,8 +53,10 @@ class DashboardSummaryServiceTest {
         account(appUser.getId(), 2L, "savings", "3000", "0", newestSync.minusHours(1)));
     accountRepository.save(account(appUser.getId(), 3L, "credit", "-800", "0", newestSync));
     accountRepository.save(account(appUser.getId(), 4L, "loan", "-5000", "0", newestSync));
-    accountRepository.save(account(appUser.getId(), 5L, "checking", "2000", "-300", newestSync));
+    accountRepository.save(account(appUser.getId(), 5L, "checking", "2000", "0", newestSync));
     accountRepository.save(account(appUser.getId(), 6L, "checking", "999", "0", newestSync, true));
+    transactionRepository.save(
+        transaction(appUser.getId(), 1L, LocalDate.now().plusDays(1), "Upcoming debit", "-300"));
 
     DashboardSummaryResponse summary = dashboardSummaryService.compute(appUser.getEmail());
 

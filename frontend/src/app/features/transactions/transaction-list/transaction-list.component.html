@@ -1,158 +1,509 @@
-<section class="transaction-list">
-  <header class="transaction-list__header">
-    <div>
-      <h1 class="transaction-list__title">Transactions</h1>
-      <p class="transaction-list__subtitle">Recent imported bank activity.</p>
-    </div>
-    <div class="transaction-list__actions">
-      <button mat-stroked-button type="button" (click)="toggleFilters()">
-        <mat-icon aria-hidden="true">tune</mat-icon>
-        Filters
-        @if (activeFilterCount() > 0) {
-          <span class="transaction-list__filter-count">{{ activeFilterCount() }}</span>
+<div class="transaction-list">
+  <header class="topbar">
+    <div class="topbar__left">
+      <nav class="topbar__crumb" aria-label="Breadcrumb">
+        <span class="material-icons" style="font-size: 12px;">home</span>
+        <span>Workspace</span>
+        <span class="material-icons" style="font-size: 12px;">chevron_right</span>
+        <span class="topbar__crumb-current">Transactions</span>
+      </nav>
+      <h1 class="topbar__title">Transactions</h1>
+      <p class="topbar__subtitle">
+        {{ state().totalElements }} transactions
+        @if (unreviewedCount() > 0) {
+          · {{ unreviewedCount() }} unreviewed
         }
-      </button>
-      <button mat-stroked-button type="button" (click)="reloadTransactions()">
+      </p>
+    </div>
+    <div class="topbar__right">
+      <app-page-actions />
+      <button class="topbar__action-btn" type="button" (click)="applyFilters()">
         <mat-icon aria-hidden="true">refresh</mat-icon>
-        Refresh
+        <span>Refresh</span>
       </button>
     </div>
   </header>
 
-  <form class="transaction-list__search" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-    <mat-form-field appearance="outline" class="transaction-list__search-field">
-      <mat-label>Search transactions</mat-label>
-      <input matInput formControlName="keyword" type="search" />
-      <mat-icon matPrefix aria-hidden="true">search</mat-icon>
-    </mat-form-field>
+  <div class="transaction-list__body">
+    <div class="transaction-toolbar">
+      <!-- Search bar -->
+      <form class="search-bar" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+        <mat-icon class="search-bar__icon" aria-hidden="true">search</mat-icon>
+        <input
+          class="search-bar__input"
+          type="search"
+          formControlName="keyword"
+          placeholder="Search merchants, descriptions…"
+          aria-label="Search transactions"
+        />
+        @if (filterForm.controls.keyword.value) {
+          <button class="search-bar__clear" type="button"
+            (click)="filterForm.controls.keyword.setValue('')">
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        }
+      </form>
 
-    <button mat-flat-button type="submit">
-      <mat-icon aria-hidden="true">search</mat-icon>
-      Search
-    </button>
-  </form>
-
-  @if (filtersOpen()) {
-    <form class="transaction-list__filters" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-      <mat-form-field appearance="outline">
-        <mat-label>Account</mat-label>
-        <mat-select formControlName="accountId">
-          <mat-option [value]="null">All accounts</mat-option>
-          @for (account of accounts(); track account.id) {
-            <mat-option [value]="account.id">{{ account.name }}</mat-option>
+      <!-- Period tabs with custom date picker -->
+      <div class="period-tabs-wrap">
+        <div class="period-tabs" role="group" aria-label="Time period">
+          @for (tab of periodTabs; track tab.id) {
+            <button
+              class="period-tab"
+              type="button"
+              [class.period-tab--active]="selectedPeriod() === tab.id"
+              (click)="setPeriod(tab.id)"
+            >
+              @if (tab.id === 'custom') {
+                <mat-icon class="period-tab__icon" aria-hidden="true">date_range</mat-icon>
+              }
+              {{ tab.id === 'custom' && customDateLabel() ? customDateLabel() : tab.label }}
+            </button>
           }
-        </mat-select>
-      </mat-form-field>
+        </div>
 
-      <mat-form-field appearance="outline">
-        <mat-label>Category</mat-label>
-        <mat-select formControlName="category">
-          <mat-option value="">All categories</mat-option>
-          @for (category of categories; track category) {
-            <mat-option [value]="category">{{ categoryLabel(category) }}</mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>From date</mat-label>
-        <input matInput formControlName="minDate" type="date" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>To date</mat-label>
-        <input matInput formControlName="maxDate" type="date" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Minimum amount</mat-label>
-        <input matInput formControlName="minAmount" type="number" step="0.01" />
-      </mat-form-field>
-
-      <mat-form-field appearance="outline">
-        <mat-label>Maximum amount</mat-label>
-        <input matInput formControlName="maxAmount" type="number" step="0.01" />
-      </mat-form-field>
-
-      <div class="transaction-list__filter-actions">
-        <button mat-flat-button type="submit">Apply</button>
-        <button mat-button type="button" (click)="clearFilters()">Clear</button>
+        @if (customDateOpen()) {
+          <div class="date-range-panel" role="dialog" aria-label="Select date range">
+            <div class="date-range-panel__row">
+              <div class="date-range-panel__field">
+                <label class="date-range-panel__label" for="custom-from">From</label>
+                <input
+                  class="date-range-panel__input"
+                  id="custom-from"
+                  type="date"
+                  [value]="customMinDate()"
+                  (change)="setCustomMinDate($event)"
+                />
+              </div>
+              <span class="date-range-panel__sep" aria-hidden="true">→</span>
+              <div class="date-range-panel__field">
+                <label class="date-range-panel__label" for="custom-to">To</label>
+                <input
+                  class="date-range-panel__input"
+                  id="custom-to"
+                  type="date"
+                  [value]="customMaxDate()"
+                  (change)="setCustomMaxDate($event)"
+                />
+              </div>
+            </div>
+            <div class="date-range-panel__actions">
+              <button class="date-range-panel__btn date-range-panel__btn--cancel" type="button"
+                      (click)="cancelCustomDate()">Cancel</button>
+              <button class="date-range-panel__btn date-range-panel__btn--apply" type="button"
+                      (click)="applyCustomDate()">Apply</button>
+            </div>
+          </div>
+        }
       </div>
-    </form>
-  }
-
-  @if (state().loadingInitial) {
-    <div class="transaction-list__loading" aria-live="polite">
-      <mat-spinner diameter="36" />
     </div>
-  } @else if (state().error) {
-    <mat-card appearance="outlined" class="transaction-list__notice">
-      <mat-card-content>{{ state().error }}</mat-card-content>
-      <mat-card-actions>
-        <button mat-button type="button" (click)="reloadTransactions()">Retry</button>
-      </mat-card-actions>
-    </mat-card>
-  } @else if (state().transactions.length === 0) {
-    <mat-card appearance="outlined" class="transaction-list__notice">
-      <mat-card-content>No transactions imported yet.</mat-card-content>
-    </mat-card>
-  } @else {
-    <div class="transaction-list__rows">
-      @for (transaction of state().transactions; track transaction.id) {
-        <a class="transaction-row" [routerLink]="['/transactions', transaction.id]">
-          <div class="transaction-row__meta">
-            <div class="transaction-row__eyebrow">
-              <time class="transaction-row__date" [attr.datetime]="transaction.date">
-                {{ transaction.date | date: 'dd MMM yyyy' }}
-              </time>
-              @if (transaction.accountName) {
-                <span class="transaction-row__account">{{ transaction.accountName }}</span>
+
+    <!-- Filter strip -->
+    <section class="filter-strip" [formGroup]="filterForm">
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'account'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('account')"
+        >
+          <span class="filter-pill__label">Account</span>
+          <span class="filter-pill__value">{{ selectedAccountLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'account') {
+          <div class="filter-menu__panel" role="listbox" aria-label="Account filter">
+            <button
+              class="filter-menu__option"
+              type="button"
+              role="option"
+              [class.filter-menu__option--active]="filterForm.controls.accountId.value === null"
+              [attr.aria-selected]="filterForm.controls.accountId.value === null"
+              (click)="selectAccount(null)"
+            >
+              <span class="filter-menu__option-label">All accounts</span>
+              @if (filterForm.controls.accountId.value === null) {
+                <mat-icon aria-hidden="true">check</mat-icon>
+              }
+            </button>
+            @for (account of accounts(); track account.id) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="filterForm.controls.accountId.value === account.id"
+                [attr.aria-selected]="filterForm.controls.accountId.value === account.id"
+                (click)="selectAccount(account.id)"
+              >
+                <span class="filter-menu__option-label">{{ account.institutionName ?? account.name }}</span>
+                @if (filterForm.controls.accountId.value === account.id) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'transfer'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('transfer')"
+        >
+          <span class="filter-pill__label">Transfer</span>
+          <span class="filter-pill__value">{{ selectedTransferLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'transfer') {
+          <div class="filter-menu__panel" role="listbox" aria-label="Internal transfer filter">
+            @for (option of transferOptions; track option.value) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="transferFilter() === option.value"
+                [attr.aria-selected]="transferFilter() === option.value"
+                (click)="selectTransfer(option.value)"
+              >
+                <span class="filter-menu__option-label">{{ option.label }}</span>
+                @if (transferFilter() === option.value) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'category'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('category')"
+        >
+          <span class="filter-pill__label">Category</span>
+          <span class="filter-pill__value">{{ selectedCategoryLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'category') {
+          <div class="filter-menu__panel" role="listbox" aria-label="Category filter">
+            <button
+              class="filter-menu__option"
+              type="button"
+              role="option"
+              [class.filter-menu__option--active]="filterForm.controls.category.value === ''"
+              [attr.aria-selected]="filterForm.controls.category.value === ''"
+              (click)="selectCategory('')"
+            >
+              <span class="filter-menu__option-label">All categories</span>
+              @if (filterForm.controls.category.value === '') {
+                <mat-icon aria-hidden="true">check</mat-icon>
+              }
+            </button>
+            @for (cat of categories; track cat) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="filterForm.controls.category.value === cat"
+                [attr.aria-selected]="filterForm.controls.category.value === cat"
+                (click)="selectCategory(cat)"
+              >
+                <span
+                  class="filter-menu__dot"
+                  [style.background]="categoryIconColor(cat)"
+                  aria-hidden="true"
+                ></span>
+                <span class="filter-menu__option-label">{{ categoryLabel(cat) }}</span>
+                @if (filterForm.controls.category.value === cat) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'status'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('status')"
+        >
+          <span class="filter-pill__label">Status</span>
+          <span class="filter-pill__value">{{ selectedStatusLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'status') {
+          <div class="filter-menu__panel filter-menu__panel--compact" role="listbox" aria-label="Status filter">
+            @for (option of statusOptions; track option.value) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="statusFilter() === option.value"
+                [attr.aria-selected]="statusFilter() === option.value"
+                (click)="selectStatus(option.value)"
+              >
+                <span class="filter-menu__option-label">{{ option.label }}</span>
+                @if (statusFilter() === option.value) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'group'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('group')"
+        >
+          <span class="filter-pill__label">Group by</span>
+          <span class="filter-pill__value">{{ selectedGroupLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'group') {
+          <div class="filter-menu__panel filter-menu__panel--compact" role="listbox" aria-label="Group transactions by">
+            @for (option of groupOptions; track option.value) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="groupBy() === option.value"
+                [attr.aria-selected]="groupBy() === option.value"
+                (click)="selectGroupBy(option.value)"
+              >
+                <span class="filter-menu__option-label">{{ option.label }}</span>
+                @if (groupBy() === option.value) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'sort'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('sort')"
+        >
+          <span class="filter-pill__label">Sort</span>
+          <span class="filter-pill__value">{{ selectedSortLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'sort') {
+          <div class="filter-menu__panel" role="listbox" aria-label="Sort transactions">
+            @for (option of sortOptions; track option.value) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="sortBy() === option.value"
+                [attr.aria-selected]="sortBy() === option.value"
+                (click)="selectSort(option.value)"
+              >
+                <span class="filter-menu__option-label">{{ option.label }}</span>
+                @if (sortBy() === option.value) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filter-spacer"></div>
+
+      @if (activeFilterCount() > 0) {
+        <button class="filter-clear-btn" type="button" (click)="clearFilters()">
+          Clear filters
+        </button>
+      }
+
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'rows'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('rows')"
+        >
+          <span class="filter-pill__label">Rows</span>
+          <span class="filter-pill__value filter-pill__value--compact">{{ pageSize() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'rows') {
+          <div class="filter-menu__panel filter-menu__panel--compact" role="listbox" aria-label="Rows per page">
+            @for (size of pageSizeOptions; track size) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="pageSize() === size"
+                [attr.aria-selected]="pageSize() === size"
+                (click)="selectPageSize(size)"
+              >
+                <span class="filter-menu__option-label">{{ size }}</span>
+                @if (pageSize() === size) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    @if (state().loadingInitial) {
+      <div class="list__loading" aria-live="polite">
+        <mat-spinner diameter="36" />
+      </div>
+    } @else if (state().error) {
+      <div class="notice-card">
+        <p>{{ state().error }}</p>
+        <button class="btn-ghost" type="button" (click)="applyFilters()">Retry</button>
+      </div>
+    } @else {
+      <!-- Summary strip -->
+      @if (state().transactions.length > 0) {
+        <section class="totals-strip">
+          <div class="totals-strip__item">
+            <div class="totals-strip__label">In</div>
+            <div class="totals-strip__value totals-strip__value--in">
+              +{{ totals().totalIn | currency: 'EUR' : 'symbol' : '1.2-2' }}
+            </div>
+          </div>
+          <div class="totals-strip__item">
+            <div class="totals-strip__label">Out</div>
+            <div class="totals-strip__value">
+              −{{ totals().totalOut | currency: 'EUR' : 'symbol' : '1.2-2' }}
+            </div>
+          </div>
+          <div class="totals-strip__item">
+            <div class="totals-strip__label">Net</div>
+            <div class="totals-strip__value"
+              [class.totals-strip__value--in]="totals().net >= 0"
+              [class.totals-strip__value--out]="totals().net < 0">
+              {{ totals().net >= 0 ? '+' : '−' }}{{ (totals().net < 0 ? -totals().net : totals().net) | currency: 'EUR' : 'symbol' : '1.2-2' }}
+            </div>
+          </div>
+          <div class="totals-strip__spacer"></div>
+          @if (unreviewedCount() > 0) {
+            <span class="totals-strip__unreviewed">{{ unreviewedCount() }} need review</span>
+            <button
+              class="totals-strip__review-all"
+              type="button"
+              [disabled]="reviewingAll()"
+              (click)="markAllMatchingTransactionsReviewed()"
+            >
+              <mat-icon aria-hidden="true">check</mat-icon>
+              {{ reviewingAll() ? 'Reviewing…' : 'Mark all reviewed' }}
+            </button>
+          }
+        </section>
+      }
+
+      <!-- Transaction list -->
+      <section class="list-card">
+        @if (state().transactions.length === 0) {
+          <div class="list-empty">
+            <mat-icon aria-hidden="true">receipt_long</mat-icon>
+            <div class="list-empty__title">No transactions found</div>
+            <div class="list-empty__sub">Try clearing some filters or expanding the period.</div>
+          </div>
+        } @else {
+          @for (group of groupedTransactions(); track group.key) {
+            <div class="list-group">
+              <div class="list-group__header">
+                <span class="list-group__date">{{ group.label }}</span>
+                <span class="list-group__line"></span>
+                <span class="list-group__summary">
+                  {{ group.items.length }} txn{{ group.items.length !== 1 ? 's' : '' }}
+                </span>
+              </div>
+
+              @for (transaction of group.items; track transaction.id) {
+                <app-transaction-row
+                  [transaction]="transaction"
+                  (selected)="openTransaction($event)"
+                  (reviewToggled)="toggleRowReviewed($event)"
+                />
               }
             </div>
-            <h2 class="transaction-row__label">
-              <mat-icon
-                class="transaction-row__reviewed-icon"
-                [class.transaction-row__reviewed-icon--active]="transaction.reviewed"
-                [attr.aria-label]="transaction.reviewed ? 'Reviewed' : 'Not reviewed'"
-              >
-                {{ transaction.reviewed ? 'task_alt' : 'radio_button_unchecked' }}
-              </mat-icon>
-              {{ transaction.label }}
-            </h2>
-            @if (transaction.wording) {
-              <p class="transaction-row__wording">{{ transaction.wording }}</p>
-            }
-          </div>
+          }
+        }
+      </section>
 
-          <div class="transaction-row__summary">
-            @if (transaction.internalTransfer) {
-              <span class="transaction-row__internal-badge">Internal transfer</span>
-            }
-            <span [class]="transaction.category | categoryColor">
-              {{ categoryLabel(transaction.category) }}
-            </span>
-            <span
-              class="transaction-row__amount"
-              [class.transaction-row__amount--positive]="transaction.value > 0"
-              [class.transaction-row__amount--negative]="transaction.value < 0"
+      @if (state().totalPages > 1) {
+        <nav class="pagination" aria-label="Transaction pages">
+          <div class="pagination__summary">
+            Page {{ state().page + 1 }} of {{ state().totalPages }}
+          </div>
+          <div class="pagination__controls">
+            <button
+              class="pagination__btn"
+              type="button"
+              [disabled]="state().page <= 0 || state().loadingInitial"
+              (click)="goToPreviousPage()"
             >
-              {{ transaction.value | currency: 'EUR' : 'symbol' : '1.2-2' }}
-            </span>
+              <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              Previous
+            </button>
+            @for (page of visiblePages(); track page) {
+              <button
+                class="pagination__page"
+                type="button"
+                [class.pagination__page--active]="page === state().page"
+                [attr.aria-current]="page === state().page ? 'page' : null"
+                [disabled]="state().loadingInitial"
+                (click)="goToPage(page)"
+              >
+                {{ page + 1 }}
+              </button>
+            }
+            <button
+              class="pagination__btn"
+              type="button"
+              [disabled]="state().page + 1 >= state().totalPages || state().loadingInitial"
+              (click)="goToNextPage()"
+            >
+              Next
+              <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </button>
           </div>
-        </a>
+        </nav>
       }
-    </div>
-
-    <div #loadMoreSentinel class="transaction-list__sentinel" aria-hidden="true"></div>
-
-    @if (state().loadingMore) {
-      <div class="transaction-list__loading-more" aria-live="polite">
-        <mat-spinner diameter="28" />
-      </div>
-    } @else if (state().page + 1 < state().totalPages) {
-      <button mat-button type="button" class="transaction-list__load-more" (click)="loadNextPage()">
-        Load more
-      </button>
     }
+  </div>
+
+  @if (detailState().transaction !== null || detailState().loading) {
+    <app-transaction-modal
+      [transaction]="detailState().transaction"
+      [loading]="detailState().loading"
+      [saving]="detailState().saving"
+      [error]="detailState().error"
+      [categories]="categories"
+      (closed)="closeTransaction()"
+      (reviewedToggled)="toggleDetailReviewed()"
+      (categoryChanged)="updateDetailCategory($event)"
+      (internalTransferToggled)="toggleDetailInternalTransfer()"
+    />
   }
-</section>
+</div>

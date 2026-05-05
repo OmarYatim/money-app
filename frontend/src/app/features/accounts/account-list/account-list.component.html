@@ -1,55 +1,146 @@
-<section class="account-list">
-  <header class="account-list__header">
-    <div>
-      <h1 class="account-list__title">Accounts</h1>
-      <p class="account-list__subtitle">Connected bank accounts and credit cards.</p>
-    </div>
-    <app-account-connect (connected)="reloadAccounts()" />
-  </header>
-
-  @if (actionConnections().length > 0) {
-    <button type="button" class="account-list__warning" (click)="reconnect()">
-      <mat-icon aria-hidden="true">warning</mat-icon>
-      <span>One of your bank connections needs attention.</span>
-    </button>
-  }
-
-  @if (state().loading) {
-    <div class="account-list__loading" aria-live="polite">
-      <mat-spinner diameter="36" />
-    </div>
-  } @else if (state().error) {
-    <mat-card appearance="outlined" class="account-list__notice">
-      <mat-card-content>{{ state().error }}</mat-card-content>
-      <mat-card-actions>
-        <button mat-button type="button" (click)="reloadAccounts()">Retry</button>
-      </mat-card-actions>
-    </mat-card>
-  } @else if (state().accounts.length === 0) {
-    <mat-card appearance="outlined" class="account-list__notice">
-      <mat-card-content>No connected accounts yet.</mat-card-content>
-    </mat-card>
-  } @else {
-    <div class="account-list__grid">
-      @for (account of state().accounts; track account.id) {
-        <mat-card appearance="outlined" class="account-list__card">
-          <mat-card-header>
-            <mat-icon mat-card-avatar aria-hidden="true">account_balance</mat-icon>
-            <mat-card-title>{{ account.institutionName ?? account.name }}</mat-card-title>
-            <mat-card-subtitle>
-              {{ account.type ?? 'account' }}
-              @if (account.accountNumberLastFour) {
-                <span>ending {{ account.accountNumberLastFour }}</span>
-              }
-            </mat-card-subtitle>
-          </mat-card-header>
-          <mat-card-content>
-            <p class="account-list__balance">
-              {{ account.balance | currency: account.currency : 'symbol' : '1.2-2' }}
-            </p>
-          </mat-card-content>
-        </mat-card>
+<div class="account-list">
+  <header class="topbar">
+    <div class="topbar__left">
+      <nav class="topbar__crumb" aria-label="Breadcrumb">
+        <span class="material-icons" style="font-size: 12px;">home</span>
+        <span>Workspace</span>
+        <span class="material-icons" style="font-size: 12px;">chevron_right</span>
+        <span class="topbar__crumb-current">Accounts</span>
+      </nav>
+      <h1 class="topbar__title">Accounts</h1>
+      @if (state().accounts.length > 0) {
+        <p class="topbar__subtitle">{{ state().accounts.length }} connected</p>
       }
     </div>
-  }
-</section>
+    <div class="topbar__right">
+      <app-page-actions />
+      <app-account-connect (connected)="reloadAccounts()" />
+    </div>
+  </header>
+
+  <div class="account-list__body">
+
+    @if (actionConnections().length > 0) {
+      <button type="button" class="warning-banner" (click)="reconnect()">
+        <span class="material-icons" style="font-size: 18px;">warning</span>
+        <span>One of your bank connections needs attention. Click to re-authenticate.</span>
+      </button>
+    }
+
+    @if (state().loading) {
+      <div class="account-list__loading" aria-live="polite">
+        <mat-spinner diameter="36" />
+      </div>
+    } @else if (state().error) {
+      <div class="notice-card">
+        <p>{{ state().error }}</p>
+        <button class="btn-ghost" type="button" (click)="reloadAccounts()">Retry</button>
+      </div>
+    } @else if (state().accounts.length === 0) {
+      <div class="notice-card">
+        <p>No connected accounts yet. Connect your first bank to get started.</p>
+      </div>
+    } @else {
+      <!-- Summary strip -->
+      <section class="summary-strip">
+        <div class="summary-strip__item">
+          <div class="summary-strip__label">Total assets</div>
+          <div class="summary-strip__value">
+            {{ totals().totalAssets | currency: 'EUR' : 'symbol' : '1.2-2' }}
+          </div>
+        </div>
+        <div class="summary-strip__divider"></div>
+        <div class="summary-strip__item">
+          <div class="summary-strip__label">Total liabilities</div>
+          <div class="summary-strip__value summary-strip__value--negative">
+            {{ totals().totalLiabilities > 0 ? '−' : '' }}{{ totals().totalLiabilities | currency: 'EUR' : 'symbol' : '1.2-2' }}
+          </div>
+        </div>
+        <div class="summary-strip__divider"></div>
+        <div class="summary-strip__item">
+          <div class="summary-strip__label">Net worth</div>
+          <div class="summary-strip__value">
+            {{ totals().netWorth | currency: 'EUR' : 'symbol' : '1.2-2' }}
+          </div>
+        </div>
+        <div class="summary-strip__divider"></div>
+        <div class="summary-strip__item">
+          <div class="summary-strip__label">Connections</div>
+          <div class="summary-strip__health">
+            <div class="summary-strip__health-bar">
+              <div class="summary-strip__health-fill"></div>
+            </div>
+            <span class="summary-strip__health-text">{{ state().accounts.length }}/{{ state().accounts.length }} healthy</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Filter tabs -->
+      <div class="filter-row">
+        <div class="filter-tabs">
+          @for (tab of accountTypeTabs; track tab.id) {
+            <button
+              class="filter-tab"
+              type="button"
+              [class.filter-tab--active]="filterType() === tab.id"
+              (click)="filterType.set(tab.id)"
+            >
+              {{ tab.label }}
+              <span class="filter-tab__count">{{ tab.count(state().accounts) }}</span>
+            </button>
+          }
+        </div>
+        <button class="icon-chip" type="button" (click)="reloadAccounts()" title="Refresh">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+
+      <!-- Account cards grid -->
+      <div class="account-grid">
+        @for (account of filteredAccounts(); track account.id) {
+          <div class="account-card">
+            <div class="account-card__accent" [style.background]="accountTypeAccent(account.type)"></div>
+            <div class="account-card__head">
+              <div class="account-card__icon">
+                <mat-icon aria-hidden="true">{{ accountTypeIcon(account.type) }}</mat-icon>
+              </div>
+              <span class="account-card__status">
+                <span class="account-card__status-dot"></span>
+                Synced
+              </span>
+            </div>
+            <div class="account-card__body">
+              <div class="account-card__name">
+                {{ account.institutionName ?? account.name }}
+              </div>
+              <div class="account-card__meta">
+                {{ account.type ?? 'account' }}
+                @if (account.accountNumberLastFour) {
+                  · ending {{ account.accountNumberLastFour }}
+                }
+              </div>
+            </div>
+            <div class="account-card__balance"
+              [class.account-card__balance--negative]="account.balance < 0">
+              {{ account.balance | currency: account.currency : 'symbol' : '1.2-2' }}
+            </div>
+            <div class="account-card__foot">
+              <span>{{ account.currency }}</span>
+              <a [routerLink]="['/transactions']" [queryParams]="{ accountId: account.id }" class="account-card__view-btn">
+                View activity
+                <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </a>
+            </div>
+          </div>
+        }
+        <app-account-connect
+          label="Connect another bank"
+          loadingLabel="Connecting…"
+          icon="add"
+          variant="card"
+          (connected)="reloadAccounts()"
+        />
+      </div>
+    }
+  </div>
+</div>

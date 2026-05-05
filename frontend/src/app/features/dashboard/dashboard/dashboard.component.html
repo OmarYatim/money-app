@@ -1,51 +1,313 @@
-<section class="dashboard">
-  <header class="dashboard__header">
-    <div>
-      <h1 class="dashboard__title">Dashboard</h1>
-      <p class="dashboard__subtitle">Net worth, cash flow, and daily spending.</p>
-    </div>
-    <button mat-stroked-button type="button" (click)="reloadSummary()">
-      <mat-icon aria-hidden="true">refresh</mat-icon>
-      Refresh
-    </button>
-  </header>
-
-  @if (state().loading) {
-    <div class="dashboard__loading" aria-live="polite">
-      <mat-spinner diameter="36" />
-    </div>
-  } @else if (state().error) {
-    <mat-card appearance="outlined" class="dashboard__notice">
-      <mat-card-content>{{ state().error }}</mat-card-content>
-      <mat-card-actions>
-        <button mat-button type="button" (click)="reloadSummary()">Retry</button>
-      </mat-card-actions>
-    </mat-card>
-  } @else if (state().summary) {
-    <div class="dashboard__sync" aria-live="polite">
-      <mat-icon aria-hidden="true">sync</mat-icon>
-      <span>Last synced: {{ lastSyncedLabel() }}</span>
-    </div>
-
-    <div class="dashboard__metrics">
-      @for (metric of metrics(); track metric.label) {
-        <app-summary-card
-          [label]="metric.label"
-          [value]="metric.value"
-          [icon]="metric.icon"
-          [tone]="metric.tone"
-          [showSign]="metric.showSign"
-        />
+<div class="dashboard">
+  <header class="topbar">
+    <div class="topbar__left">
+      <nav class="topbar__crumb" aria-label="Breadcrumb">
+        <span class="material-icons" style="font-size: 12px;">home</span>
+        <span>Workspace</span>
+        <span class="material-icons" style="font-size: 12px;">chevron_right</span>
+        <span class="topbar__crumb-current">Dashboard</span>
+      </nav>
+      <h1 class="topbar__title">Dashboard</h1>
+      @if (state().summary) {
+        <p class="topbar__subtitle">Last synced {{ lastSyncedLabel() }}</p>
       }
     </div>
+    <div class="topbar__right">
+      <app-page-actions />
+      <button class="topbar__action-btn" type="button" (click)="reloadSummary()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        <span>Refresh</span>
+      </button>
+    </div>
+  </header>
 
-    @if (emptySummary()) {
-      <mat-card appearance="outlined" class="dashboard__notice">
-        <mat-card-content>Connect your first bank account to get started.</mat-card-content>
-        <mat-card-actions>
-          <a mat-button routerLink="/accounts">Go to accounts</a>
-        </mat-card-actions>
-      </mat-card>
+  <div class="dashboard__body">
+    @if (state().loading) {
+      <div class="dashboard__loading" aria-live="polite">
+        <mat-spinner diameter="36" />
+      </div>
+    } @else if (state().error) {
+      <div class="notice-card">
+        <p>{{ state().error }}</p>
+        <button class="btn-ghost" type="button" (click)="reloadSummary()">Retry</button>
+      </div>
+    } @else if (state().summary; as summary) {
+      @if (emptySummary()) {
+        <div class="notice-card">
+          <p>Connect your first bank account to get started.</p>
+          <a class="btn-primary" routerLink="/accounts">Go to accounts</a>
+        </div>
+      } @else {
+
+        <!-- Hero: net worth + sparkline -->
+        <section class="hero">
+          <div class="hero__left">
+            <div class="hero__label">
+              <span class="hero__dot"></span>
+              Net worth · live
+            </div>
+            <div class="hero__figure">
+              <span class="hero__num">{{ netWorthInt() | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+              <span class="hero__dec">.{{ netWorthDec() }}</span>
+            </div>
+            <div class="hero__deltas">
+              <span class="hero__delta-up">
+                <mat-icon aria-hidden="true">trending_up</mat-icon>
+                +{{ summary.monthlyIncome | currency: 'EUR' : 'symbol' : '1.0-0' }}
+              </span>
+              <span class="hero__delta-time">this month</span>
+            </div>
+            <div class="hero__accounts-row">
+              @for (account of heroAccounts(); track account.label) {
+                <div class="hero__account-chip">
+                  <span class="hero__chip-dot" [style.background]="account.color"></span>
+                  <span>{{ account.label }}</span>
+                  <span class="hero__chip-amount">{{ account.balance | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+                </div>
+              }
+              <a routerLink="/accounts" class="hero__chip-more">
+                View all <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </a>
+            </div>
+          </div>
+
+          <div class="hero__right">
+            <div class="hero__chart-header">
+              <span class="hero__chart-label">12-month evolution</span>
+              <div class="hero__time-tabs">
+                @for (period of chartPeriods; track period) {
+                  <button
+                    type="button"
+                    class="hero__time-tab"
+                    [class.hero__time-tab--active]="selectedChartPeriod() === period"
+                    (click)="selectedChartPeriod.set(period)"
+                  >{{ period }}</button>
+                }
+              </div>
+            </div>
+            <!-- Net worth SVG chart -->
+            <svg [attr.viewBox]="'0 0 ' + netWorthChart().w + ' ' + netWorthChart().h"
+                 style="width: 100%; height: 140px; display: block;">
+              <defs>
+                <linearGradient id="nwGrad" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#5b5fef" stop-opacity="0.25"/>
+                  <stop offset="100%" stop-color="#5b5fef" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              @for (y of netWorthChart().gridLines; track y) {
+                <line [attr.x1]="netWorthChart().pad" [attr.x2]="netWorthChart().w - netWorthChart().pad"
+                      [attr.y1]="y" [attr.y2]="y" stroke="#e8e8ed" stroke-dasharray="2 4"/>
+              }
+              <path [attr.d]="netWorthChart().area" fill="url(#nwGrad)"/>
+              <path [attr.d]="netWorthChart().path" fill="none" stroke="#5b5fef"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              @for (pt of netWorthChart().points; track $index; let last = $last) {
+                @if (last) {
+                  <circle [attr.cx]="pt[0]" [attr.cy]="pt[1]" r="6" fill="#5b5fef" opacity="0.18"/>
+                  <circle [attr.cx]="pt[0]" [attr.cy]="pt[1]" r="3.5" fill="#5b5fef"/>
+                  <circle [attr.cx]="pt[0]" [attr.cy]="pt[1]" r="1.5" fill="white"/>
+                }
+              }
+              @for (d of netWorthChart().data; track $index) {
+                @if ($index % 2 === 0) {
+                  <text [attr.x]="netWorthChart().pad + $index * (netWorthChart().w - netWorthChart().pad * 2) / (netWorthChart().data.length - 1)"
+                        [attr.y]="netWorthChart().h + 1"
+                        font-size="9" fill="#9396a8" text-anchor="middle">{{ d.month }}</text>
+                }
+              }
+            </svg>
+          </div>
+        </section>
+
+        <!-- KPI grid -->
+        <section class="kpi-grid">
+          <div class="kpi">
+            <div class="kpi__head">
+              <span class="kpi__icon"><mat-icon aria-hidden="true">account_balance_wallet</mat-icon></span>
+              <span class="kpi__label">Cash available</span>
+            </div>
+            <div class="kpi__value">{{ cashAvailable() | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
+            <div class="kpi__sub">Current balances only</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__head">
+              <span class="kpi__icon"><mat-icon aria-hidden="true">calendar_month</mat-icon></span>
+              <span class="kpi__label">Future balance</span>
+            </div>
+            <div class="kpi__value">{{ summary.futureBalance | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
+            <div class="kpi__sub">After scheduled debits · 30d</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__head">
+              <span class="kpi__icon kpi__icon--up"><mat-icon aria-hidden="true">trending_up</mat-icon></span>
+              <span class="kpi__label">Income · this month</span>
+            </div>
+            <div class="kpi__value kpi__value--up">{{ summary.monthlyIncome | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
+            <div class="kpi__sub kpi__sub--up">↑ vs last month</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__head">
+              <span class="kpi__icon kpi__icon--down"><mat-icon aria-hidden="true">trending_down</mat-icon></span>
+              <span class="kpi__label">Expenses · this month</span>
+            </div>
+            <div class="kpi__value kpi__value--down">{{ summary.monthlyExpenses | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
+            <div class="kpi__sub kpi__sub--down">↓ vs last month</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__head">
+              <span class="kpi__icon"><mat-icon aria-hidden="true">payments</mat-icon></span>
+              <span class="kpi__label">Today's spending</span>
+            </div>
+            <div class="kpi__value">{{ summary.dailySpending | currency: 'EUR' : 'symbol' : '1.2-2' }}</div>
+            <div class="kpi__sub">Today's transactions</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi__head">
+              <span class="kpi__icon kpi__icon--up"><mat-icon aria-hidden="true">savings</mat-icon></span>
+              <span class="kpi__label">Savings rate</span>
+            </div>
+            <div class="kpi__value">{{ savingsRate() }}%</div>
+            <div class="kpi__sub">Income kept this month</div>
+          </div>
+        </section>
+
+        <!-- Row 2: Cash flow + Spending breakdown -->
+        <section class="row2">
+          <div class="card">
+            <div class="card__header">
+              <div>
+                <div class="card__title">Cash flow</div>
+                <div class="card__sub">Last 30 days · daily in/out</div>
+              </div>
+              <div class="legend">
+                <span class="legend__item">
+                  <span class="legend__dot" style="background: #2cad6a"></span> In
+                </span>
+                <span class="legend__item">
+                  <span class="legend__dot" style="background: #c5c7d4"></span> Out
+                </span>
+              </div>
+            </div>
+            @let cashFlow = cashFlowChart();
+            <svg [attr.viewBox]="'0 0 ' + cashFlow.w + ' ' + cashFlow.h"
+                 style="width: 100%; height: 180px; display: block;">
+              @for (gl of cashFlow.gridLines; track $index) {
+                <line [attr.x1]="cashFlow.padL" [attr.x2]="cashFlow.w - cashFlow.padR"
+                      [attr.y1]="gl.y" [attr.y2]="gl.y" stroke="#e8e8ed"
+                      [attr.stroke-dasharray]="gl.dashed ? '2 4' : '0'"/>
+                <text [attr.x]="cashFlow.padL - 4" [attr.y]="gl.y + 3"
+                      font-size="9" fill="#9396a8" text-anchor="end">{{ gl.label }}</text>
+              }
+              @for (bar of cashFlow.bars; track $index) {
+                @if (bar.hasIn) {
+                  <rect [attr.x]="bar.x" [attr.y]="bar.inY" [attr.width]="bar.wB" [attr.height]="bar.inH"
+                        fill="#2cad6a" rx="1"/>
+                }
+                <rect [attr.x]="bar.x" [attr.y]="bar.outY" [attr.width]="bar.wB" [attr.height]="bar.outH"
+                      fill="#c5c7d4" rx="1"/>
+              }
+            </svg>
+          </div>
+
+          <div class="card">
+            <div class="card__header">
+              <div>
+                <div class="card__title">Spending breakdown</div>
+                <div class="card__sub">This month · {{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} total</div>
+              </div>
+              <a routerLink="/transactions" class="card__link">
+                Details <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </a>
+            </div>
+            @if (spendingData().length === 0) {
+              <div class="spending-empty">No expenses recorded this month</div>
+            } @else {
+              <!-- Stacked bar -->
+              <div class="spending-bar">
+                @for (item of spendingData(); track item.label) {
+                  <div
+                    class="spending-bar__segment"
+                    [style.width.%]="(item.amount / spendingTotal()) * 100"
+                    [style.background]="item.color"
+                    [title]="item.label"
+                  ></div>
+                }
+              </div>
+              <div class="spending-list">
+                @for (item of spendingData(); track item.label) {
+                  <div class="spending-row">
+                    <span class="spending-row__dot" [style.background]="item.color"></span>
+                    <span class="spending-row__label">{{ item.label }}</span>
+                    <span class="spending-row__pct">{{ ((item.amount / spendingTotal()) * 100).toFixed(0) }}%</span>
+                    <span class="spending-row__amount">{{ item.amount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        </section>
+
+        <!-- Row 3: Recent activity + Goals -->
+        <section class="row3">
+          <div class="card card--wide">
+            <div class="card__header">
+              <div>
+                <div class="card__title">Recent activity</div>
+                <div class="card__sub">Latest transactions</div>
+              </div>
+              <a routerLink="/transactions" class="card__link">
+                See all transactions <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </a>
+            </div>
+            <div class="tx-list">
+              @if (recentTransactions().length === 0) {
+                <div class="tx-list__empty">No recent transactions</div>
+              }
+              @for (tx of recentTransactions(); track tx.id) {
+                <a class="tx-row" [routerLink]="['/transactions']" [queryParams]="{ transactionId: tx.id }">
+                  <div class="tx-icon"
+                    [style.background]="categoryIconBg(tx.category)"
+                    [style.color]="categoryIconColor(tx.category)"
+                    aria-hidden="true">
+                    <mat-icon>{{ categoryIcon(tx.category) }}</mat-icon>
+                  </div>
+                  <div class="tx-row__meta">
+                    <div class="tx-row__label">{{ tx.label }}</div>
+                    <div class="tx-row__sub">
+                      @if (tx.accountName) { {{ tx.accountName }} · }
+                      {{ tx.date | date: 'dd MMM' }} · {{ categoryLabel(tx.category) }}
+                    </div>
+                  </div>
+                  <div class="tx-row__right">
+                    <span class="tx-row__amount" [class.tx-row__amount--pos]="tx.value > 0">
+                      {{ tx.value | currency: 'EUR' : 'symbol' : '1.2-2' }}
+                    </span>
+                    @if (!tx.reviewed) {
+                      <span class="tx-row__unreviewed" title="Unreviewed"></span>
+                    }
+                  </div>
+                </a>
+              }
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card__header">
+              <div>
+                <div class="card__title">Goals</div>
+                <div class="card__sub">Coming soon</div>
+              </div>
+              <a routerLink="/goals" class="card__icon-link" title="Goals">
+                <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </a>
+            </div>
+            <div class="goals-soon">
+              <mat-icon class="goals-soon__icon" aria-hidden="true">flag</mat-icon>
+              <p class="goals-soon__text">Track savings goals, target amounts, and progress over time.</p>
+            </div>
+          </div>
+        </section>
+      }
     }
-  }
-</section>
+  </div>
+</div>
