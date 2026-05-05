@@ -110,6 +110,11 @@ export class DashboardComponent {
 
     return Math.round(((summary.monthlyIncome - summary.monthlyExpenses) / summary.monthlyIncome) * 100);
   });
+  protected readonly cashAvailable = computed(() =>
+    this.accounts()
+      .filter((account) => ['checking', 'savings'].includes((account.type ?? '').toLowerCase()))
+      .reduce((sum, account) => sum + account.balance, 0),
+  );
 
   protected readonly heroAccounts = computed<HeroAccount[]>(() =>
     this.accounts().map((account, index) => ({

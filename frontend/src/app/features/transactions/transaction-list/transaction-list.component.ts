@@ -122,6 +122,7 @@ export class TransactionListComponent {
     { id: '30d', label: '30D' },
     { id: 'month', label: 'This month' },
     { id: 'year', label: 'This year' },
+    { id: 'future', label: 'Future' },
     { id: 'all', label: 'All' },
   ];
   protected readonly activeFilterCount = signal(0);
@@ -378,22 +379,25 @@ export class TransactionListComponent {
   protected setPeriod(period: string): void {
     this.selectedPeriod.set(period);
     const now = new Date();
-    const today = now.toISOString().split('T')[0];
+    const today = this.isoDate(now);
     let minDate = '';
     let maxDate = today;
 
     if (period === '7d') {
       const d = new Date(now);
       d.setDate(d.getDate() - 7);
-      minDate = d.toISOString().split('T')[0];
+      minDate = this.isoDate(d);
     } else if (period === '30d') {
       const d = new Date(now);
       d.setDate(d.getDate() - 30);
-      minDate = d.toISOString().split('T')[0];
+      minDate = this.isoDate(d);
     } else if (period === 'month') {
       minDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
     } else if (period === 'year') {
       minDate = `${now.getFullYear()}-01-01`;
+    } else if (period === 'future') {
+      minDate = today;
+      maxDate = '';
     } else {
       maxDate = '';
     }
@@ -802,6 +806,14 @@ export class TransactionListComponent {
 
   private transactionTime(transaction: Transaction): number {
     return new Date(transaction.date).getTime();
+  }
+
+  private isoDate(date: Date): string {
+    return [
+      date.getFullYear(),
+      String(date.getMonth() + 1).padStart(2, '0'),
+      String(date.getDate()).padStart(2, '0'),
+    ].join('-');
   }
 
   private currentQuery(): TransactionQuery {

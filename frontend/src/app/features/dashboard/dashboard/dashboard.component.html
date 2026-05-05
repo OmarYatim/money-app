@@ -126,8 +126,8 @@
               <span class="kpi__icon"><mat-icon aria-hidden="true">account_balance_wallet</mat-icon></span>
               <span class="kpi__label">Cash available</span>
             </div>
-            <div class="kpi__value">{{ summary.totalAssets | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
-            <div class="kpi__sub">Across your accounts</div>
+            <div class="kpi__value">{{ cashAvailable() | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
+            <div class="kpi__sub">Current balances only</div>
           </div>
           <div class="kpi">
             <div class="kpi__head">
