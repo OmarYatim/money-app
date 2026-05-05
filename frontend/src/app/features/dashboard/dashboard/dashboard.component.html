@@ -188,16 +188,17 @@
                 </span>
               </div>
             </div>
-            <svg [attr.viewBox]="'0 0 ' + cashFlowChart().w + ' ' + cashFlowChart().h"
+            @let cashFlow = cashFlowChart();
+            <svg [attr.viewBox]="'0 0 ' + cashFlow.w + ' ' + cashFlow.h"
                  style="width: 100%; height: 180px; display: block;">
-              @for (gl of cashFlowChart().gridLines; track $index) {
-                <line [attr.x1]="cashFlowChart().padL" [attr.x2]="cashFlowChart().w - cashFlowChart().padR"
+              @for (gl of cashFlow.gridLines; track $index) {
+                <line [attr.x1]="cashFlow.padL" [attr.x2]="cashFlow.w - cashFlow.padR"
                       [attr.y1]="gl.y" [attr.y2]="gl.y" stroke="#e8e8ed"
                       [attr.stroke-dasharray]="gl.dashed ? '2 4' : '0'"/>
-                <text [attr.x]="cashFlowChart().padL - 4" [attr.y]="gl.y + 3"
+                <text [attr.x]="cashFlow.padL - 4" [attr.y]="gl.y + 3"
                       font-size="9" fill="#9396a8" text-anchor="end">{{ gl.label }}</text>
               }
-              @for (bar of cashFlowChart().bars; track $index) {
+              @for (bar of cashFlow.bars; track $index) {
                 @if (bar.hasIn) {
                   <rect [attr.x]="bar.x" [attr.y]="bar.inY" [attr.width]="bar.wB" [attr.height]="bar.inH"
                         fill="#2cad6a" rx="1"/>
