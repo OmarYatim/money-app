@@ -9,6 +9,7 @@ import { catchError, forkJoin, map, of, startWith, Subject, switchMap } from 'rx
 
 import type { Account } from '../../../shared/models/account.model';
 import type { SyncStatus } from '../../../shared/models/sync-status.model';
+import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
 import { AccountConnectComponent } from '../account-connect/account-connect.component';
 import { AccountService } from '../account.service';
 
@@ -30,6 +31,7 @@ const EMPTY_SYNC_STATUS: SyncStatus = {
     MatIconModule,
     MatProgressSpinnerModule,
     RouterLink,
+    PageActionsComponent,
     AccountConnectComponent,
   ],
   templateUrl: './account-list.component.html',

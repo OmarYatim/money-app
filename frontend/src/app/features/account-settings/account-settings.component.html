@@ -10,10 +10,13 @@
       <h1 class="topbar__title">Account settings</h1>
       <p class="topbar__subtitle">Manage your profile, login methods, privacy and data</p>
     </div>
-    <a class="topbar__action-btn" routerLink="/dashboard">
-      <mat-icon aria-hidden="true">arrow_back</mat-icon>
-      <span>Back to dashboard</span>
-    </a>
+    <div class="topbar__right">
+      <app-page-actions />
+      <a class="topbar__action-btn" routerLink="/dashboard">
+        <mat-icon aria-hidden="true">arrow_back</mat-icon>
+        <span>Back to dashboard</span>
+      </a>
+    </div>
   </header>
 
   <div class="account-settings__body">

@@ -9,6 +9,7 @@ import type { Observable } from 'rxjs';
 
 import type { DashboardSummary } from '../../../shared/models/dashboard.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
+import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
 import { DashboardService } from '../dashboard.service';
 import { TransactionService } from '../../transactions/transaction.service';
 
@@ -31,6 +32,7 @@ interface CashFlowBar { x: number; wB: number; inY: number; inH: number; outY: n
     MatIconModule,
     MatProgressSpinnerModule,
     RouterLink,
+    PageActionsComponent,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',

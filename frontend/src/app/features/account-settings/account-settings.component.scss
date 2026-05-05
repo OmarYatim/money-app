@@ -64,6 +64,13 @@
   font-size: 13.5px;
 }
 
+.topbar__right {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 10px;
+}
+
 .topbar__action-btn {
   display: inline-flex;
   align-items: center;

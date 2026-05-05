@@ -21,6 +21,7 @@ import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 import type { Account } from '../../../shared/models/account.model';
 import { CATEGORY_TYPES, type CategoryType } from '../../../shared/models/category.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
+import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
 import { CategoryColorPipe } from '../../../shared/pipes/category-color.pipe';
 import { AccountService } from '../../accounts/account.service';
 import { TransactionService, type TransactionQuery } from '../transaction.service';
@@ -62,6 +63,7 @@ interface TransactionFilterForm {
     ReactiveFormsModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    PageActionsComponent,
     CategoryColorPipe,
   ],
   templateUrl: './transaction-list.component.html',

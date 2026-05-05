@@ -50,6 +50,13 @@
   letter-spacing: -0.01em;
 }
 
+.topbar__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .coming-soon__body {
   flex: 1;
   display: flex;

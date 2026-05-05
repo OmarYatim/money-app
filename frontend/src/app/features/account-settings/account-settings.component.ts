@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
+import { PageActionsComponent } from '../../shared/components/page-actions/page-actions.component';
 
 type SettingsTab = 'profile' | 'security' | 'email' | 'privacy' | 'delete';
 type RetentionPeriod = '6m' | '24m' | '60m';
@@ -23,7 +24,7 @@ interface RetentionOption {
 
 @Component({
   selector: 'app-account-settings',
-  imports: [MatIconModule, ReactiveFormsModule, RouterLink],
+  imports: [MatIconModule, ReactiveFormsModule, RouterLink, PageActionsComponent],
   templateUrl: './account-settings.component.html',
   styleUrl: './account-settings.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
