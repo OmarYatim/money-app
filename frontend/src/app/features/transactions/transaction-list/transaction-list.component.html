@@ -59,28 +59,101 @@
 
     <!-- Filter strip -->
     <section class="filter-strip" [formGroup]="filterForm">
-      <div class="filter-pill">
-        <span class="filter-pill__label">Account</span>
-        <select class="filter-pill__select" formControlName="accountId"
-          (change)="applyFilters()">
-          <option [ngValue]="null">All accounts</option>
-          @for (account of accounts(); track account.id) {
-            <option [ngValue]="account.id">{{ account.institutionName ?? account.name }}</option>
-          }
-        </select>
-        <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'account'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('account')"
+        >
+          <span class="filter-pill__label">Account</span>
+          <span class="filter-pill__value">{{ selectedAccountLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'account') {
+          <div class="filter-menu__panel" role="listbox" aria-label="Account filter">
+            <button
+              class="filter-menu__option"
+              type="button"
+              role="option"
+              [class.filter-menu__option--active]="filterForm.controls.accountId.value === null"
+              [attr.aria-selected]="filterForm.controls.accountId.value === null"
+              (click)="selectAccount(null)"
+            >
+              <span class="filter-menu__option-label">All accounts</span>
+              @if (filterForm.controls.accountId.value === null) {
+                <mat-icon aria-hidden="true">check</mat-icon>
+              }
+            </button>
+            @for (account of accounts(); track account.id) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="filterForm.controls.accountId.value === account.id"
+                [attr.aria-selected]="filterForm.controls.accountId.value === account.id"
+                (click)="selectAccount(account.id)"
+              >
+                <span class="filter-menu__option-label">{{ account.institutionName ?? account.name }}</span>
+                @if (filterForm.controls.accountId.value === account.id) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
       </div>
 
-      <div class="filter-pill">
-        <span class="filter-pill__label">Category</span>
-        <select class="filter-pill__select" formControlName="category"
-          (change)="applyFilters()">
-          <option value="">All categories</option>
-          @for (cat of categories; track cat) {
-            <option [value]="cat">{{ categoryLabel(cat) }}</option>
-          }
-        </select>
-        <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'category'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('category')"
+        >
+          <span class="filter-pill__label">Category</span>
+          <span class="filter-pill__value">{{ selectedCategoryLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'category') {
+          <div class="filter-menu__panel" role="listbox" aria-label="Category filter">
+            <button
+              class="filter-menu__option"
+              type="button"
+              role="option"
+              [class.filter-menu__option--active]="filterForm.controls.category.value === ''"
+              [attr.aria-selected]="filterForm.controls.category.value === ''"
+              (click)="selectCategory('')"
+            >
+              <span class="filter-menu__option-label">All categories</span>
+              @if (filterForm.controls.category.value === '') {
+                <mat-icon aria-hidden="true">check</mat-icon>
+              }
+            </button>
+            @for (cat of categories; track cat) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="filterForm.controls.category.value === cat"
+                [attr.aria-selected]="filterForm.controls.category.value === cat"
+                (click)="selectCategory(cat)"
+              >
+                <span
+                  class="filter-menu__dot"
+                  [style.background]="categoryIconColor(cat)"
+                  aria-hidden="true"
+                ></span>
+                <span class="filter-menu__option-label">{{ categoryLabel(cat) }}</span>
+                @if (filterForm.controls.category.value === cat) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
       </div>
 
       <div class="filter-spacer"></div>
@@ -91,20 +164,38 @@
         </button>
       }
 
-      <label class="filter-pill">
-        <span class="filter-pill__label">Rows</span>
-        <select
-          class="filter-pill__select filter-pill__select--compact"
-          [value]="pageSize()"
-          (change)="changePageSize($event)"
-          aria-label="Transactions per page"
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'rows'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('rows')"
         >
-          @for (size of pageSizeOptions; track size) {
-            <option [value]="size">{{ size }}</option>
-          }
-        </select>
-        <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
-      </label>
+          <span class="filter-pill__label">Rows</span>
+          <span class="filter-pill__value filter-pill__value--compact">{{ pageSize() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'rows') {
+          <div class="filter-menu__panel filter-menu__panel--compact" role="listbox" aria-label="Rows per page">
+            @for (size of pageSizeOptions; track size) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="pageSize() === size"
+                [attr.aria-selected]="pageSize() === size"
+                (click)="selectPageSize(size)"
+              >
+                <span class="filter-menu__option-label">{{ size }}</span>
+                @if (pageSize() === size) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
     </section>
 
     @if (state().loadingInitial) {

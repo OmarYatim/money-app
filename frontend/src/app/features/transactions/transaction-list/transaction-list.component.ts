@@ -52,6 +52,8 @@ interface TransactionFilterForm {
   maxAmount: FormControl<string>;
 }
 
+type FilterMenu = 'account' | 'category' | 'rows';
+
 @Component({
   selector: 'app-transaction-list',
   imports: [
@@ -111,6 +113,7 @@ export class TransactionListComponent {
     saving: false,
     error: null,
   });
+  protected readonly filterMenuOpen = signal<FilterMenu | null>(null);
   protected readonly categoryMenuOpen = signal(false);
 
   protected readonly groupedTransactions = computed(() => {
@@ -142,6 +145,18 @@ export class TransactionListComponent {
     const end = Math.min(totalPages, start + 5);
     return Array.from({ length: end - start }, (_, index) => start + index);
   });
+  protected selectedAccountLabel(): string {
+    const selectedAccountId = this.filterForm.controls.accountId.value;
+    if (selectedAccountId === null) return 'All accounts';
+
+    const account = this.accounts().find((item) => item.id === selectedAccountId);
+    return account ? this.accountLabel(account) : 'All accounts';
+  }
+
+  protected selectedCategoryLabel(): string {
+    const category = this.filterForm.controls.category.value;
+    return category ? this.categoryLabel(category) : 'All categories';
+  }
 
   constructor() {
     this.filterForm.controls.keyword.valueChanges
@@ -190,8 +205,24 @@ export class TransactionListComponent {
     await this.goToPage(this.state().page + 1);
   }
 
-  protected async changePageSize(event: Event): Promise<void> {
-    const size = Number((event.target as HTMLSelectElement).value);
+  protected toggleFilterMenu(menu: FilterMenu): void {
+    this.filterMenuOpen.update((openMenu) => (openMenu === menu ? null : menu));
+  }
+
+  protected async selectAccount(accountId: number | null): Promise<void> {
+    this.filterMenuOpen.set(null);
+    this.filterForm.patchValue({ accountId }, { emitEvent: false });
+    await this.applyFilters();
+  }
+
+  protected async selectCategory(category: CategoryType | ''): Promise<void> {
+    this.filterMenuOpen.set(null);
+    this.filterForm.patchValue({ category }, { emitEvent: false });
+    await this.applyFilters();
+  }
+
+  protected async selectPageSize(size: number): Promise<void> {
+    this.filterMenuOpen.set(null);
     if (size === this.pageSize()) return;
 
     this.pageSize.set(size);
@@ -286,10 +317,12 @@ export class TransactionListComponent {
   }
 
   protected async applyFilters(): Promise<void> {
+    this.filterMenuOpen.set(null);
     await this.reloadTransactions();
   }
 
   protected async openTransaction(transaction: Transaction): Promise<void> {
+    this.filterMenuOpen.set(null);
     this.categoryMenuOpen.set(false);
     this.detailState.set({
       transaction,
@@ -322,6 +355,7 @@ export class TransactionListComponent {
   }
 
   protected closeTransaction(): void {
+    this.filterMenuOpen.set(null);
     this.categoryMenuOpen.set(false);
     this.detailState.set({
       transaction: null,
@@ -432,6 +466,7 @@ export class TransactionListComponent {
   }
 
   protected toggleCategoryMenu(): void {
+    this.filterMenuOpen.set(null);
     if (this.detailState().saving) return;
     this.categoryMenuOpen.update((open) => !open);
   }
@@ -540,6 +575,7 @@ export class TransactionListComponent {
   }
 
   protected async clearFilters(): Promise<void> {
+    this.filterMenuOpen.set(null);
     this.selectedPeriod.set('all');
     this.filterForm.reset(
       {
@@ -595,6 +631,10 @@ export class TransactionListComponent {
     } catch {
       this.accounts.set([]);
     }
+  }
+
+  private accountLabel(account: Account): string {
+    return account.institutionName ?? account.name;
   }
 
   private currentQuery(): TransactionQuery {
