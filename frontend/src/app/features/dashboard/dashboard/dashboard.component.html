@@ -58,11 +58,13 @@
               <span class="hero__delta-time">this month</span>
             </div>
             <div class="hero__accounts-row">
-              <div class="hero__account-chip">
-                <span class="hero__chip-dot" style="background: #5b5fef"></span>
-                <span>Checking</span>
-                <span class="hero__chip-amount">{{ summary.totalAssets | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
-              </div>
+              @for (account of heroAccounts(); track account.label) {
+                <div class="hero__account-chip">
+                  <span class="hero__chip-dot" [style.background]="account.color"></span>
+                  <span>{{ account.label }}</span>
+                  <span class="hero__chip-amount">{{ account.balance | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+                </div>
+              }
               <a routerLink="/accounts" class="hero__chip-more">
                 View all <mat-icon aria-hidden="true">arrow_forward</mat-icon>
               </a>
@@ -84,7 +86,7 @@
               </div>
             </div>
             <!-- Net worth SVG chart -->
-            <svg [attr.viewBox]="'0 0 ' + netWorthChart.w + ' ' + netWorthChart.h"
+            <svg [attr.viewBox]="'0 0 ' + netWorthChart().w + ' ' + netWorthChart().h"
                  style="width: 100%; height: 140px; display: block;">
               <defs>
                 <linearGradient id="nwGrad" x1="0" x2="0" y1="0" y2="1">
@@ -92,24 +94,24 @@
                   <stop offset="100%" stop-color="#5b5fef" stop-opacity="0"/>
                 </linearGradient>
               </defs>
-              @for (y of netWorthChart.gridLines; track y) {
-                <line [attr.x1]="netWorthChart.pad" [attr.x2]="netWorthChart.w - netWorthChart.pad"
+              @for (y of netWorthChart().gridLines; track y) {
+                <line [attr.x1]="netWorthChart().pad" [attr.x2]="netWorthChart().w - netWorthChart().pad"
                       [attr.y1]="y" [attr.y2]="y" stroke="#e8e8ed" stroke-dasharray="2 4"/>
               }
-              <path [attr.d]="netWorthChart.area" fill="url(#nwGrad)"/>
-              <path [attr.d]="netWorthChart.path" fill="none" stroke="#5b5fef"
+              <path [attr.d]="netWorthChart().area" fill="url(#nwGrad)"/>
+              <path [attr.d]="netWorthChart().path" fill="none" stroke="#5b5fef"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              @for (pt of netWorthChart.points; track $index; let last = $last) {
+              @for (pt of netWorthChart().points; track $index; let last = $last) {
                 @if (last) {
                   <circle [attr.cx]="pt[0]" [attr.cy]="pt[1]" r="6" fill="#5b5fef" opacity="0.18"/>
                   <circle [attr.cx]="pt[0]" [attr.cy]="pt[1]" r="3.5" fill="#5b5fef"/>
                   <circle [attr.cx]="pt[0]" [attr.cy]="pt[1]" r="1.5" fill="white"/>
                 }
               }
-              @for (d of netWorthChart.data; track $index) {
+              @for (d of netWorthChart().data; track $index) {
                 @if ($index % 2 === 0) {
-                  <text [attr.x]="netWorthChart.pad + $index * (netWorthChart.w - netWorthChart.pad * 2) / (netWorthChart.data.length - 1)"
-                        [attr.y]="netWorthChart.h + 1"
+                  <text [attr.x]="netWorthChart().pad + $index * (netWorthChart().w - netWorthChart().pad * 2) / (netWorthChart().data.length - 1)"
+                        [attr.y]="netWorthChart().h + 1"
                         font-size="9" fill="#9396a8" text-anchor="middle">{{ d.month }}</text>
                 }
               }

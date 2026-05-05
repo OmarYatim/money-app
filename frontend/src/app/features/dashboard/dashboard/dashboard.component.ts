@@ -7,9 +7,11 @@ import { RouterLink } from '@angular/router';
 import { catchError, concat, map, of, startWith, Subject, switchMap } from 'rxjs';
 import type { Observable } from 'rxjs';
 
+import type { Account } from '../../../shared/models/account.model';
 import type { DashboardSummary } from '../../../shared/models/dashboard.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
 import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
+import { AccountService } from '../../accounts/account.service';
 import { DashboardService } from '../dashboard.service';
 import { TransactionService } from '../../transactions/transaction.service';
 
@@ -23,6 +25,7 @@ interface NetWorthPoint { month: string; value: number; }
 interface SpendingItem { label: string; color: string; amount: number; }
 interface GoalItem { label: string; current: number; target: number; color: string; }
 interface CashFlowBar { x: number; wB: number; inY: number; inH: number; outY: number; outH: number; hasIn: boolean; }
+interface HeroAccount { label: string; balance: number; color: string; }
 
 @Component({
   selector: 'app-dashboard',
@@ -41,6 +44,7 @@ interface CashFlowBar { x: number; wB: number; inY: number; inH: number; outY: n
 export class DashboardComponent {
   private readonly dashboardService = inject(DashboardService);
   private readonly transactionService = inject(TransactionService);
+  private readonly accountService = inject(AccountService);
   private readonly refreshSummary$ = new Subject<boolean>();
 
   protected readonly selectedChartPeriod = signal('1Y');
@@ -69,6 +73,14 @@ export class DashboardComponent {
     ),
     { initialValue: [] as Transaction[] },
   );
+  protected readonly accounts = toSignal(
+    this.accountService.getAccounts().pipe(catchError(() => of([] as Account[]))),
+    { initialValue: [] as Account[] },
+  );
+  protected readonly chartTransactions = toSignal(
+    this.loadChartTransactions().pipe(catchError(() => of([] as Transaction[]))),
+    { initialValue: [] as Transaction[] },
+  );
 
   protected readonly lastSyncedLabel = computed(() => {
     const lastSyncedAt = this.state().summary?.lastSyncedAt;
@@ -93,15 +105,17 @@ export class DashboardComponent {
     return Math.abs(Math.round((nw - Math.trunc(nw)) * 100)).toString().padStart(2, '0');
   });
 
-  // Static chart data
-  protected readonly netWorthData: NetWorthPoint[] = [
-    { month: 'Jun', value: 14200 }, { month: 'Jul', value: 14850 },
-    { month: 'Aug', value: 15420 }, { month: 'Sep', value: 15100 },
-    { month: 'Oct', value: 15980 }, { month: 'Nov', value: 16420 },
-    { month: 'Dec', value: 16890 }, { month: 'Jan', value: 17240 },
-    { month: 'Feb', value: 17680 }, { month: 'Mar', value: 18120 },
-    { month: 'Apr', value: 18540 }, { month: 'May', value: 19134 },
-  ];
+  protected readonly heroAccounts = computed<HeroAccount[]>(() =>
+    this.accounts().map((account, index) => ({
+      label: account.institutionName ?? account.name,
+      balance: account.balance,
+      color: this.accountColor(index),
+    })),
+  );
+
+  protected readonly netWorthData = computed(() =>
+    this.buildNetWorthData(this.accounts(), this.chartTransactions()),
+  );
 
   protected readonly spendingData: SpendingItem[] = [
     { label: 'Housing', color: '#7c80f5', amount: 890 },
@@ -122,7 +136,7 @@ export class DashboardComponent {
   ];
 
   // SVG chart calculations
-  protected readonly netWorthChart = this.buildNetWorthChart();
+  protected readonly netWorthChart = computed(() => this.buildNetWorthChart(this.netWorthData()));
   protected readonly cashFlowChart = this.buildCashFlowChart();
 
   protected reloadSummary(): void {
@@ -172,19 +186,57 @@ export class DashboardComponent {
     return this.dashboardService.syncNow().pipe(switchMap(() => this.dashboardService.getSummary()));
   }
 
-  private buildNetWorthChart() {
-    const data = this.netWorthData;
+  private loadChartTransactions(): Observable<Transaction[]> {
+    return this.transactionService.getTransactions({ size: 1000 }).pipe(map((page) => page.content));
+  }
+
+  private buildNetWorthData(accounts: Account[], transactions: Transaction[]): NetWorthPoint[] {
+    const now = new Date();
+    const months = this.chartMonthCount();
+    const currentNetWorth = accounts.reduce((sum, account) => sum + account.balance, 0);
+
+    return Array.from({ length: months }, (_, index) => {
+      const pointDate = new Date(now.getFullYear(), now.getMonth() - (months - index - 1), 1);
+      const nextMonth = new Date(pointDate.getFullYear(), pointDate.getMonth() + 1, 1);
+      const laterTransactionValue = transactions
+        .filter((transaction) => !transaction.internalTransfer)
+        .filter((transaction) => new Date(transaction.date) >= nextMonth)
+        .reduce((sum, transaction) => sum + transaction.value, 0);
+      return {
+        month: pointDate.toLocaleDateString('en-GB', { month: 'short' }),
+        value: currentNetWorth - laterTransactionValue,
+      };
+    });
+  }
+
+  private chartMonthCount(): number {
+    if (this.selectedChartPeriod() === '1M') return 2;
+    if (this.selectedChartPeriod() === '3M') return 4;
+    if (this.selectedChartPeriod() === '6M') return 7;
+    return 12;
+  }
+
+  private buildNetWorthChart(data: NetWorthPoint[]) {
     const w = 520, h = 140, pad = 8;
+    if (data.length === 0) {
+      return { path: '', area: '', points: [] as [number, number][], data, gridLines: [], w, h, pad };
+    }
     const min = Math.min(...data.map((d) => d.value));
     const max = Math.max(...data.map((d) => d.value));
-    const xStep = (w - pad * 2) / (data.length - 1);
-    const yScale = (v: number) => h - pad - ((v - min) / (max - min)) * (h - pad * 2);
+    const range = max - min || 1;
+    const xStep = data.length === 1 ? 0 : (w - pad * 2) / (data.length - 1);
+    const yScale = (v: number) => h - pad - ((v - min) / range) * (h - pad * 2);
     const points = data.map((d, i): [number, number] => [pad + i * xStep, yScale(d.value)]);
     const path = points.map((p, i) => (i === 0 ? `M${p[0].toFixed(1)},${p[1].toFixed(1)}` : `L${p[0].toFixed(1)},${p[1].toFixed(1)}`)).join(' ');
     const last = points[points.length - 1];
     const area = `${path} L${last[0].toFixed(1)},${h} L${pad},${h} Z`;
     const gridLines = [0, 1, 2, 3].map((i) => pad + i * (h - pad * 2) / 3);
     return { path, area, points, data, gridLines, w, h, pad };
+  }
+
+  private accountColor(index: number): string {
+    const colors = ['#5b5fef', '#2cad6a', '#d99838', '#7c3aed', '#3aa8c4', '#c8366f'];
+    return colors[index % colors.length];
   }
 
   private buildCashFlowChart() {
