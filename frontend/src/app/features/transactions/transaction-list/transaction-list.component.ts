@@ -55,8 +55,9 @@ interface TransactionFilterForm {
   maxAmount: FormControl<string>;
 }
 
-type FilterMenu = 'account' | 'category' | 'status' | 'group' | 'sort' | 'rows';
+type FilterMenu = 'account' | 'category' | 'status' | 'transfer' | 'group' | 'sort' | 'rows';
 type StatusFilter = 'all' | 'reviewed' | 'unreviewed';
+type TransferFilter = 'all' | 'internal' | 'regular';
 type GroupByFilter = 'date' | 'bank' | 'category';
 type SortFilter = 'newest' | 'oldest' | 'largest' | 'smallest';
 
@@ -91,6 +92,7 @@ export class TransactionListComponent {
   protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
   protected readonly pageSize = signal<number>(PAGE_SIZE);
   protected readonly statusFilter = signal<StatusFilter>('all');
+  protected readonly transferFilter = signal<TransferFilter>('all');
   protected readonly groupBy = signal<GroupByFilter>('date');
   protected readonly sortBy = signal<SortFilter>('newest');
   protected readonly statusOptions: Option<StatusFilter>[] = [
@@ -108,6 +110,11 @@ export class TransactionListComponent {
     { value: 'oldest', label: 'Oldest' },
     { value: 'largest', label: 'Largest amount' },
     { value: 'smallest', label: 'Smallest amount' },
+  ];
+  protected readonly transferOptions: Option<TransferFilter>[] = [
+    { value: 'all', label: 'All' },
+    { value: 'internal', label: 'Internal only' },
+    { value: 'regular', label: 'Exclude internal' },
   ];
   protected readonly selectedPeriod = signal<string>('all');
   protected readonly periodTabs = [
@@ -198,6 +205,10 @@ export class TransactionListComponent {
     return this.optionLabel(this.statusOptions, this.statusFilter());
   }
 
+  protected selectedTransferLabel(): string {
+    return this.optionLabel(this.transferOptions, this.transferFilter());
+  }
+
   protected selectedGroupLabel(): string {
     return this.optionLabel(this.groupOptions, this.groupBy());
   }
@@ -282,6 +293,13 @@ export class TransactionListComponent {
   protected async selectStatus(status: StatusFilter): Promise<void> {
     this.filterMenuOpen.set(null);
     this.statusFilter.set(status);
+    this.activeFilterCount.set(this.countActiveFilters());
+    this.applyClientView(0);
+  }
+
+  protected async selectTransfer(transfer: TransferFilter): Promise<void> {
+    this.filterMenuOpen.set(null);
+    this.transferFilter.set(transfer);
     this.activeFilterCount.set(this.countActiveFilters());
     this.applyClientView(0);
   }
@@ -647,6 +665,7 @@ export class TransactionListComponent {
     this.filterMenuOpen.set(null);
     this.selectedPeriod.set('all');
     this.statusFilter.set('all');
+    this.transferFilter.set('all');
     this.groupBy.set('date');
     this.sortBy.set('newest');
     this.filterForm.reset(
@@ -710,7 +729,7 @@ export class TransactionListComponent {
 
   private applyClientView(page: number): void {
     const filteredTransactions = this.sortTransactions(
-      this.filterByStatus(this.state().sourceTransactions),
+      this.filterByTransfer(this.filterByStatus(this.state().sourceTransactions)),
     );
     const totalPages = Math.ceil(filteredTransactions.length / this.pageSize());
     const safePage = totalPages === 0 ? 0 : Math.min(Math.max(page, 0), totalPages - 1);
@@ -730,6 +749,17 @@ export class TransactionListComponent {
     const status = this.statusFilter();
     if (status === 'reviewed') return transactions.filter((transaction) => transaction.reviewed);
     if (status === 'unreviewed') return transactions.filter((transaction) => !transaction.reviewed);
+    return transactions;
+  }
+
+  private filterByTransfer(transactions: Transaction[]): Transaction[] {
+    const transfer = this.transferFilter();
+    if (transfer === 'internal') {
+      return transactions.filter((transaction) => transaction.internalTransfer);
+    }
+    if (transfer === 'regular') {
+      return transactions.filter((transaction) => !transaction.internalTransfer);
+    }
     return transactions;
   }
 
@@ -799,6 +829,7 @@ export class TransactionListComponent {
       value.maxAmount,
       value.keyword.trim(),
       this.statusFilter() === 'all' ? '' : this.statusFilter(),
+      this.transferFilter() === 'all' ? '' : this.transferFilter(),
     ].filter(Boolean).length;
   }
 

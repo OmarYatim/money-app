@@ -109,6 +109,39 @@
         <button
           class="filter-pill"
           type="button"
+          [attr.aria-expanded]="filterMenuOpen() === 'transfer'"
+          aria-haspopup="listbox"
+          (click)="toggleFilterMenu('transfer')"
+        >
+          <span class="filter-pill__label">Transfer</span>
+          <span class="filter-pill__value">{{ selectedTransferLabel() }}</span>
+          <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+        </button>
+        @if (filterMenuOpen() === 'transfer') {
+          <div class="filter-menu__panel" role="listbox" aria-label="Internal transfer filter">
+            @for (option of transferOptions; track option.value) {
+              <button
+                class="filter-menu__option"
+                type="button"
+                role="option"
+                [class.filter-menu__option--active]="transferFilter() === option.value"
+                [attr.aria-selected]="transferFilter() === option.value"
+                (click)="selectTransfer(option.value)"
+              >
+                <span class="filter-menu__option-label">{{ option.label }}</span>
+                @if (transferFilter() === option.value) {
+                  <mat-icon aria-hidden="true">check</mat-icon>
+                }
+              </button>
+            }
+          </div>
+        }
+      </div>
+
+      <div class="filter-menu">
+        <button
+          class="filter-pill"
+          type="button"
           [attr.aria-expanded]="filterMenuOpen() === 'category'"
           aria-haspopup="listbox"
           (click)="toggleFilterMenu('category')"
