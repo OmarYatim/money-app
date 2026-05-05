@@ -90,6 +90,21 @@
           Clear filters
         </button>
       }
+
+      <label class="filter-pill">
+        <span class="filter-pill__label">Rows</span>
+        <select
+          class="filter-pill__select filter-pill__select--compact"
+          [value]="pageSize()"
+          (change)="changePageSize($event)"
+          aria-label="Transactions per page"
+        >
+          @for (size of pageSizeOptions; track size) {
+            <option [value]="size">{{ size }}</option>
+          }
+        </select>
+        <mat-icon class="filter-pill__chevron" aria-hidden="true">expand_more</mat-icon>
+      </label>
     </section>
 
     @if (state().loadingInitial) {
@@ -229,12 +244,44 @@
         }
       </section>
 
-      <div #loadMoreSentinel class="list__sentinel" aria-hidden="true"></div>
-
-      @if (state().loadingMore) {
-        <div class="list__loading-more" aria-live="polite">
-          <mat-spinner diameter="28" />
-        </div>
+      @if (state().totalPages > 1) {
+        <nav class="pagination" aria-label="Transaction pages">
+          <div class="pagination__summary">
+            Page {{ state().page + 1 }} of {{ state().totalPages }}
+          </div>
+          <div class="pagination__controls">
+            <button
+              class="pagination__btn"
+              type="button"
+              [disabled]="state().page <= 0 || state().loadingInitial"
+              (click)="goToPreviousPage()"
+            >
+              <mat-icon aria-hidden="true">chevron_left</mat-icon>
+              Previous
+            </button>
+            @for (page of visiblePages(); track page) {
+              <button
+                class="pagination__page"
+                type="button"
+                [class.pagination__page--active]="page === state().page"
+                [attr.aria-current]="page === state().page ? 'page' : null"
+                [disabled]="state().loadingInitial"
+                (click)="goToPage(page)"
+              >
+                {{ page + 1 }}
+              </button>
+            }
+            <button
+              class="pagination__btn"
+              type="button"
+              [disabled]="state().page + 1 >= state().totalPages || state().loadingInitial"
+              (click)="goToNextPage()"
+            >
+              Next
+              <mat-icon aria-hidden="true">chevron_right</mat-icon>
+            </button>
+          </div>
+        </nav>
       }
     }
   </div>

@@ -1,15 +1,10 @@
-import { CurrencyPipe, DatePipe, isPlatformBrowser } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import {
-  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
-  ElementRef,
   inject,
-  PLATFORM_ID,
   signal,
-  viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -30,7 +25,6 @@ import { UnreviewedTransactionCountService } from '../unreviewed-transaction-cou
 interface TransactionListState {
   transactions: Transaction[];
   loadingInitial: boolean;
-  loadingMore: boolean;
   error: string | null;
   page: number;
   totalPages: number;
@@ -46,6 +40,7 @@ interface TransactionDetailModalState {
 
 const PAGE_SIZE = 20;
 const REVIEW_ALL_PAGE_SIZE = 100;
+const PAGE_SIZE_OPTIONS = [20, 50, 100] as const;
 
 interface TransactionFilterForm {
   keyword: FormControl<string>;
@@ -77,13 +72,11 @@ export class TransactionListComponent {
   private readonly transactionService = inject(TransactionService);
   private readonly unreviewedTransactionCountService = inject(UnreviewedTransactionCountService);
   private readonly route = inject(ActivatedRoute);
-  private readonly platformId = inject(PLATFORM_ID);
-  private readonly destroyRef = inject(DestroyRef);
-  private readonly sentinel = viewChild<ElementRef<HTMLElement>>('loadMoreSentinel');
-  private observer: IntersectionObserver | null = null;
 
   protected readonly categories = CATEGORY_TYPES;
   protected readonly accounts = signal<Account[]>([]);
+  protected readonly pageSizeOptions = PAGE_SIZE_OPTIONS;
+  protected readonly pageSize = signal<number>(PAGE_SIZE);
   protected readonly selectedPeriod = signal<string>('all');
   protected readonly periodTabs = [
     { id: '7d', label: '7D' },
@@ -107,7 +100,6 @@ export class TransactionListComponent {
   protected readonly state = signal<TransactionListState>({
     transactions: [],
     loadingInitial: true,
-    loadingMore: false,
     error: null,
     page: -1,
     totalPages: 0,
@@ -142,6 +134,14 @@ export class TransactionListComponent {
   protected readonly unreviewedCount = computed(
     () => this.state().transactions.filter((t) => !t.reviewed).length,
   );
+  protected readonly visiblePages = computed(() => {
+    const { page, totalPages } = this.state();
+    if (totalPages <= 1) return [];
+
+    const start = Math.max(0, Math.min(page - 2, totalPages - 5));
+    const end = Math.min(totalPages, start + 5);
+    return Array.from({ length: end - start }, (_, index) => start + index);
+  });
 
   constructor() {
     this.filterForm.controls.keyword.valueChanges
@@ -157,14 +157,6 @@ export class TransactionListComponent {
 
     void this.loadAccounts();
     void this.reloadTransactions();
-
-    afterNextRender(() => {
-      this.observeSentinel();
-    });
-
-    this.destroyRef.onDestroy(() => {
-      this.observer?.disconnect();
-    });
   }
 
   protected async reloadTransactions(): Promise<void> {
@@ -172,7 +164,6 @@ export class TransactionListComponent {
     this.state.set({
       transactions: [],
       loadingInitial: true,
-      loadingMore: false,
       error: null,
       page: -1,
       totalPages: 0,
@@ -182,13 +173,29 @@ export class TransactionListComponent {
     await this.loadPage(0);
   }
 
-  protected async loadNextPage(): Promise<void> {
+  protected async goToPage(page: number): Promise<void> {
     const state = this.state();
-    if (state.loadingInitial || state.loadingMore || state.page + 1 >= state.totalPages) {
+    if (state.loadingInitial || page < 0 || page >= state.totalPages || page === state.page) {
       return;
     }
 
-    await this.loadPage(state.page + 1);
+    await this.loadPage(page);
+  }
+
+  protected async goToPreviousPage(): Promise<void> {
+    await this.goToPage(this.state().page - 1);
+  }
+
+  protected async goToNextPage(): Promise<void> {
+    await this.goToPage(this.state().page + 1);
+  }
+
+  protected async changePageSize(event: Event): Promise<void> {
+    const size = Number((event.target as HTMLSelectElement).value);
+    if (size === this.pageSize()) return;
+
+    this.pageSize.set(size);
+    await this.reloadTransactions();
   }
 
   protected categoryLabel(category: string): string {
@@ -553,7 +560,6 @@ export class TransactionListComponent {
     this.state.update((current) => ({
       ...current,
       loadingInitial: page === 0 && current.transactions.length === 0,
-      loadingMore: page > 0,
       error: null,
     }));
 
@@ -562,13 +568,13 @@ export class TransactionListComponent {
         this.transactionService.getTransactions({
           ...this.currentQuery(),
           page,
-          size: PAGE_SIZE,
+          size: this.pageSize(),
         }),
       );
       this.state.update((current) => ({
-        transactions: page === 0 ? result.content : [...current.transactions, ...result.content],
+        ...current,
+        transactions: result.content,
         loadingInitial: false,
-        loadingMore: false,
         error: null,
         page: result.number,
         totalPages: result.totalPages,
@@ -578,28 +584,9 @@ export class TransactionListComponent {
       this.state.update((current) => ({
         ...current,
         loadingInitial: false,
-        loadingMore: false,
         error: 'Unable to load transactions.',
       }));
     }
-  }
-
-  private observeSentinel(): void {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-
-    const sentinel = this.sentinel()?.nativeElement;
-    if (!sentinel) {
-      return;
-    }
-
-    this.observer = new IntersectionObserver((entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        void this.loadNextPage();
-      }
-    });
-    this.observer.observe(sentinel);
   }
 
   private async loadAccounts(): Promise<void> {
