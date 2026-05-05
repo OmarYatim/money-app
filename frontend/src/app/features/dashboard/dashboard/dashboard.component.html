@@ -295,28 +295,15 @@
             <div class="card__header">
               <div>
                 <div class="card__title">Goals</div>
-                <div class="card__sub">{{ goals.length }} active</div>
+                <div class="card__sub">Coming soon</div>
               </div>
-              <a routerLink="/goals" class="card__icon-link" title="Manage goals">
+              <a routerLink="/goals" class="card__icon-link" title="Goals">
                 <mat-icon aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
-            <div class="goals-list">
-              @for (goal of goals; track goal.label) {
-                <div class="goal">
-                  <div class="goal__top">
-                    <span class="goal__label">{{ goal.label }}</span>
-                    <span class="goal__pct">{{ goalPct(goal) }}%</span>
-                  </div>
-                  <div class="goal__track">
-                    <div class="goal__fill" [style.width.%]="goalPct(goal)" [style.background]="goal.color"></div>
-                  </div>
-                  <div class="goal__amounts">
-                    <span>€{{ goal.current.toLocaleString() }}</span>
-                    <span>€{{ goal.target.toLocaleString() }}</span>
-                  </div>
-                </div>
-              }
+            <div class="goals-soon">
+              <mat-icon class="goals-soon__icon" aria-hidden="true">flag</mat-icon>
+              <p class="goals-soon__text">Track savings goals, target amounts, and progress over time.</p>
             </div>
           </div>
         </section>

@@ -23,7 +23,6 @@ interface DashboardState {
 
 interface NetWorthPoint { month: string; value: number; }
 interface SpendingItem { label: string; color: string; amount: number; }
-interface GoalItem { label: string; current: number; target: number; color: string; }
 interface CashFlowBar { x: number; wB: number; inY: number; inH: number; outY: number; outH: number; hasIn: boolean; }
 interface HeroAccount { label: string; balance: number; color: string; }
 
@@ -158,12 +157,6 @@ export class DashboardComponent {
     this.spendingData().reduce((s, d) => s + d.amount, 0),
   );
 
-  protected readonly goals: GoalItem[] = [
-    { label: 'Emergency fund', current: 5640, target: 9000, color: '#5b5fef' },
-    { label: 'Trip to Japan', current: 1840, target: 4500, color: '#d99838' },
-    { label: 'New laptop', current: 620, target: 2400, color: '#2cad6a' },
-  ];
-
   // SVG chart calculations
   protected readonly netWorthChart = computed(() => this.buildNetWorthChart(this.netWorthData()));
   protected readonly cashFlowChart = computed(() => this.buildCashFlowChart(this.chartTransactions()));
@@ -204,10 +197,6 @@ export class DashboardComponent {
   protected categoryLabel(category: string): string {
     return category.toLowerCase().split('_')
       .map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  }
-
-  protected goalPct(goal: GoalItem): number {
-    return Math.round((goal.current / goal.target) * 100);
   }
 
   private loadSummary(syncFirst: boolean): Observable<DashboardSummary> {
