@@ -24,34 +24,36 @@
   </header>
 
   <div class="transaction-list__body">
-    <!-- Search bar -->
-    <form class="search-bar" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-      <mat-icon class="search-bar__icon" aria-hidden="true">search</mat-icon>
-      <input
-        class="search-bar__input"
-        type="search"
-        formControlName="keyword"
-        placeholder="Search merchants, descriptions…"
-        aria-label="Search transactions"
-      />
-      @if (filterForm.controls.keyword.value) {
-        <button class="search-bar__clear" type="button"
-          (click)="filterForm.controls.keyword.setValue('')">
-          <mat-icon aria-hidden="true">close</mat-icon>
-        </button>
-      }
-    </form>
+    <div class="transaction-toolbar">
+      <!-- Search bar -->
+      <form class="search-bar" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+        <mat-icon class="search-bar__icon" aria-hidden="true">search</mat-icon>
+        <input
+          class="search-bar__input"
+          type="search"
+          formControlName="keyword"
+          placeholder="Search merchants, descriptions…"
+          aria-label="Search transactions"
+        />
+        @if (filterForm.controls.keyword.value) {
+          <button class="search-bar__clear" type="button"
+            (click)="filterForm.controls.keyword.setValue('')">
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        }
+      </form>
 
-    <!-- Period tabs -->
-    <div class="period-tabs" role="group" aria-label="Time period">
-      @for (tab of periodTabs; track tab.id) {
-        <button
-          class="period-tab"
-          type="button"
-          [class.period-tab--active]="selectedPeriod() === tab.id"
-          (click)="setPeriod(tab.id)"
-        >{{ tab.label }}</button>
-      }
+      <!-- Period tabs -->
+      <div class="period-tabs" role="group" aria-label="Time period">
+        @for (tab of periodTabs; track tab.id) {
+          <button
+            class="period-tab"
+            type="button"
+            [class.period-tab--active]="selectedPeriod() === tab.id"
+            (click)="setPeriod(tab.id)"
+          >{{ tab.label }}</button>
+        }
+      </div>
     </div>
 
     <!-- Filter strip -->
