@@ -135,7 +135,7 @@ Persist `auth_token` as `AppUser.powensToken` and `id_user` as `AppUser.powensUs
      ?connection_id=14         ← singular for one connection
      ?connection_ids=14,15     ← plural for multiple — accept both forms
      &state=...
-7. Backend callback handler stores connection IDs and fetches accounts
+7. Backend callback handler stores connection IDs, fetches accounts/transactions, then redirects the browser to `{APP_FRONTEND_URL}/accounts?connected=true`
 ```
 
 Do NOT build the webview URL on `https://{POWENS_DOMAIN}/auth/webview/connect` — that path 301-redirects to a broken target inside `webview.powens.com` and the SPA renders "Missing or invalid 'client_id' parameter" no matter what you pass.
