@@ -19,6 +19,7 @@ class BankConnectionControllerRedirectTest {
   private static final AppProperties APP_PROPERTIES =
       new AppProperties(
           "https://app.example",
+          List.of("https://app.example"),
           new JwtProperties("test-secret-key-must-be-at-least-32-chars!!", 900000));
 
   private final StubBankConnectionService bankConnectionService = new StubBankConnectionService();

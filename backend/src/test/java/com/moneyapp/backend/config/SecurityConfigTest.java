@@ -1,6 +1,8 @@
 package com.moneyapp.backend.config;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -29,5 +31,16 @@ class SecurityConfigTest {
   @Test
   void healthEndpointIsPublic() throws Exception {
     mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
+  }
+
+  @Test
+  void corsAllowsConfiguredFrontendOrigin() throws Exception {
+    mockMvc
+        .perform(
+            options("/api/auth/register")
+                .header("Origin", "http://localhost:4200")
+                .header("Access-Control-Request-Method", "POST"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:4200"));
   }
 }
