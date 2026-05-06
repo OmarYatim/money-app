@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.moneyapp.backend.config.AppProperties;
 import com.moneyapp.backend.config.AppProperties.JwtProperties;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 
@@ -14,7 +15,10 @@ class JwtServiceTest {
 
   private final JwtService jwtService =
       new JwtService(
-          new AppProperties("http://localhost:4200", new JwtProperties(SECRET, EXPIRATION_MS)));
+          new AppProperties(
+              "http://localhost:4200",
+              List.of("http://localhost:4200"),
+              new JwtProperties(SECRET, EXPIRATION_MS)));
 
   @Test
   void generateTokenReturnsNonBlankJwt() {
