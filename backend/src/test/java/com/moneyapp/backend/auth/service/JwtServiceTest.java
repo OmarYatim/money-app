@@ -13,7 +13,8 @@ class JwtServiceTest {
   private static final long EXPIRATION_MS = 900_000L;
 
   private final JwtService jwtService =
-      new JwtService(new AppProperties(new JwtProperties(SECRET, EXPIRATION_MS)));
+      new JwtService(
+          new AppProperties("http://localhost:4200", new JwtProperties(SECRET, EXPIRATION_MS)));
 
   @Test
   void generateTokenReturnsNonBlankJwt() {
