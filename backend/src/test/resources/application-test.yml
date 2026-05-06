@@ -9,3 +9,6 @@ spring:
       ddl-auto: create-drop
   flyway:
     enabled: false   # H2 handles schema creation via ddl-auto — skip Flyway in tests
+
+app:
+  frontend-url: http://localhost:4200

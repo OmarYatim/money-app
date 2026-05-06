@@ -64,6 +64,7 @@ This flag keeps backend reads/writes pinned to the single seeded local app user 
 DB_URL              jdbc:postgresql://host:5432/moneyapp
 DB_USERNAME
 DB_PASSWORD
+APP_FRONTEND_URL    https://nexioo.me
 JWT_SECRET          minimum 256-bit random string
 POWENS_DOMAIN       myapp-sandbox.biapi.pro
 POWENS_CLIENT_ID
@@ -138,6 +139,7 @@ POWENS_CLIENT_ID
 POWENS_CLIENT_SECRET
 POWENS_MANAGE_TOKEN
 POWENS_REDIRECT_URL
+APP_FRONTEND_URL
 GHCR_TOKEN                    GitHub Personal Access Token (read:packages + write:packages)
 RENDER_DEPLOY_HOOK_URL        From Render dashboard → Settings → Deploy Hook
 AZURE_WEBAPP_PUBLISH_PROFILE  From Azure App Service → Deployment Center (end of project only)
