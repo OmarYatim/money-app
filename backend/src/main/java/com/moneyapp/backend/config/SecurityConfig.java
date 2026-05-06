@@ -40,6 +40,8 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers("/api/auth/**")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/actuator/health")
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/bank/callback")
                     .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**")
