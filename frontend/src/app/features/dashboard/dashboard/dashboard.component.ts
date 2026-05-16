@@ -4,11 +4,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
-import { catchError, concat, map, of, startWith, Subject, switchMap } from 'rxjs';
+import { catchError, concat, firstValueFrom, map, of, startWith, Subject, switchMap, timer } from 'rxjs';
 import type { Observable } from 'rxjs';
 
 import type { Account } from '../../../shared/models/account.model';
 import type { DashboardSummary } from '../../../shared/models/dashboard.model';
+import type { SyncStatus } from '../../../shared/models/sync-status.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
 import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
 import { AccountService } from '../../accounts/account.service';
@@ -25,6 +26,12 @@ interface NetWorthPoint { month: string; value: number; }
 interface SpendingItem { label: string; color: string; amount: number; }
 interface CashFlowBar { x: number; wB: number; inY: number; inH: number; outY: number; outH: number; hasIn: boolean; }
 interface HeroAccount { label: string; balance: number; color: string; }
+
+const EMPTY_SYNC_STATUS: SyncStatus = {
+  lastSyncedAt: null,
+  connectionsRequiringAction: [],
+  hasSyncError: false,
+};
 
 @Component({
   selector: 'app-dashboard',
@@ -48,6 +55,7 @@ export class DashboardComponent {
 
   protected readonly selectedChartPeriod = signal('1Y');
   protected readonly chartPeriods = ['1M', '3M', '6M', '1Y', 'All'];
+  protected readonly syncActionError = signal<string | null>(null);
 
   protected readonly state = toSignal(
     this.refreshSummary$.pipe(
@@ -76,19 +84,39 @@ export class DashboardComponent {
     this.accountService.getAccounts().pipe(catchError(() => of([] as Account[]))),
     { initialValue: [] as Account[] },
   );
+  protected readonly syncStatus = toSignal(
+    timer(0, 60000).pipe(
+      switchMap(() => this.accountService.getSyncStatus()),
+      catchError(() => of(EMPTY_SYNC_STATUS)),
+    ),
+    { initialValue: EMPTY_SYNC_STATUS },
+  );
   protected readonly chartTransactions = toSignal(
     this.loadChartTransactions().pipe(catchError(() => of([] as Transaction[]))),
     { initialValue: [] as Transaction[] },
   );
 
   protected readonly lastSyncedLabel = computed(() => {
-    const lastSyncedAt = this.state().summary?.lastSyncedAt;
+    const lastSyncedAt = this.syncStatus().lastSyncedAt ?? this.state().summary?.lastSyncedAt;
     if (!lastSyncedAt) return 'Never synced';
     const elapsedMinutes = Math.floor((Date.now() - new Date(lastSyncedAt).getTime()) / 60000);
     if (elapsedMinutes <= 0) return 'just now';
     if (elapsedMinutes < 60) return `${elapsedMinutes} min ago`;
     const elapsedHours = Math.floor(elapsedMinutes / 60);
     return elapsedHours === 1 ? '1 hour ago' : `${elapsedHours} hours ago`;
+  });
+  protected readonly hasSyncAlert = computed(
+    () => this.syncStatus().hasSyncError || this.syncStatus().connectionsRequiringAction.length > 0,
+  );
+  protected readonly syncBannerText = computed(() => {
+    const actionCount = this.syncStatus().connectionsRequiringAction.length;
+    if (actionCount > 0) {
+      return actionCount === 1
+        ? 'One bank connection needs attention. Click to re-authenticate.'
+        : `${actionCount} bank connections need attention. Click to re-authenticate.`;
+    }
+
+    return 'The last bank sync failed. Click to reconnect and refresh your data.';
   });
 
   protected readonly emptySummary = computed(() => {
@@ -163,6 +191,16 @@ export class DashboardComponent {
 
   protected reloadSummary(): void {
     this.refreshSummary$.next(true);
+  }
+
+  protected async resolveSyncIssue(): Promise<void> {
+    this.syncActionError.set(null);
+    try {
+      const response = await firstValueFrom(this.accountService.connectBank());
+      window.location.href = response.webviewUrl;
+    } catch {
+      this.syncActionError.set('Unable to open bank re-authentication.');
+    }
   }
 
   protected categoryIcon(category: string): string {

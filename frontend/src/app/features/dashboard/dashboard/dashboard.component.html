@@ -22,6 +22,29 @@
   </header>
 
   <div class="dashboard__body">
+    @if (hasSyncAlert()) {
+      <button type="button" class="sync-banner" (click)="resolveSyncIssue()">
+        <span class="sync-banner__icon">
+          <mat-icon aria-hidden="true">warning</mat-icon>
+        </span>
+        <span class="sync-banner__content">
+          <span class="sync-banner__title">{{ syncBannerText() }}</span>
+          <span class="sync-banner__meta">Last synced {{ lastSyncedLabel() }}</span>
+        </span>
+        <mat-icon class="sync-banner__chevron" aria-hidden="true">arrow_forward</mat-icon>
+      </button>
+    }
+    @if (syncActionError()) {
+      <div class="sync-banner sync-banner--error" role="alert">
+        <span class="sync-banner__icon">
+          <mat-icon aria-hidden="true">error</mat-icon>
+        </span>
+        <span class="sync-banner__content">
+          <span class="sync-banner__title">{{ syncActionError() }}</span>
+        </span>
+      </div>
+    }
+
     @if (state().loading) {
       <div class="dashboard__loading" aria-live="polite">
         <mat-spinner diameter="36" />

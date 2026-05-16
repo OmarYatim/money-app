@@ -21,7 +21,9 @@ interface AccountListState {
 }
 
 const EMPTY_SYNC_STATUS: SyncStatus = {
+  lastSyncedAt: null,
   connectionsRequiringAction: [],
+  hasSyncError: false,
 };
 
 @Component({

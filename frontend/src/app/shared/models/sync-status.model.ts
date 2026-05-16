@@ -4,5 +4,7 @@ export interface ConnectionRequiringAction {
 }
 
 export interface SyncStatus {
+  lastSyncedAt: string | null;
   connectionsRequiringAction: ConnectionRequiringAction[];
+  hasSyncError: boolean;
 }
