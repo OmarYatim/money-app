@@ -30,6 +30,7 @@ public final class AccountMapper {
     return ConnectionRequiringActionResponse.builder()
         .connectionId(userConnection.getConnectionId())
         .state(userConnection.getState())
+        .errorMessage(null)
         .build();
   }
 }

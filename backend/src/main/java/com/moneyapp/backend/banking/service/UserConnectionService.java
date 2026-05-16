@@ -43,8 +43,7 @@ public class UserConnectionService {
 
   @Transactional(readOnly = true)
   public List<UserConnection> findConnectionsRequiringAction(Long userId) {
-    return userConnectionRepository.findByUserIdAndStatus(
-        userId, UserConnection.STATUS_REQUIRING_ACTION);
+    return userConnectionRepository.findByUserIdAndStateIsNotNull(userId);
   }
 
   private UserConnection upsertActiveConnection(Long userId, Long connectionId) {
