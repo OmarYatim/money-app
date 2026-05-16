@@ -2,11 +2,17 @@ package com.moneyapp.backend.banking.service;
 
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.service.CurrentAppUserService;
+import com.moneyapp.backend.banking.dto.ConnectionRequiringActionResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionResponse;
 import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.SyncStatusResponse;
 import com.moneyapp.backend.banking.mapper.AccountMapper;
-import com.moneyapp.backend.transaction.service.TransactionService;
+import com.moneyapp.backend.sync.entity.SyncEvent;
+import com.moneyapp.backend.sync.enums.SyncEventStatus;
+import com.moneyapp.backend.sync.enums.SyncEventTrigger;
+import com.moneyapp.backend.sync.repository.SyncEventRepository;
+import com.moneyapp.backend.sync.service.DataSyncService;
+import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,8 +25,8 @@ public class ConnectionStatusService {
   private final CurrentAppUserService currentAppUserService;
   private final PowensClient powensClient;
   private final UserConnectionService userConnectionService;
-  private final AccountService accountService;
-  private final TransactionService transactionService;
+  private final SyncEventRepository syncEventRepository;
+  private final DataSyncService dataSyncService;
 
   @Transactional
   public SyncStatusResponse getStatus(String email) {
@@ -31,8 +37,7 @@ public class ConnectionStatusService {
   public SyncStatusResponse syncNow(String email) {
     AppUser appUser = currentAppUserService.resolveExisting(email);
     if (!isBlank(appUser.getPowensToken())) {
-      AccountService.AccountSyncResult syncResult = accountService.syncAccounts(appUser);
-      transactionService.syncTransactions(appUser, syncResult.ibans());
+      dataSyncService.sync(appUser, SyncEventTrigger.MANUAL, null);
     }
 
     return refreshAndBuildStatus(appUser);
@@ -40,16 +45,36 @@ public class ConnectionStatusService {
 
   private SyncStatusResponse refreshAndBuildStatus(AppUser appUser) {
     if (isBlank(appUser.getPowensToken())) {
-      return SyncStatusResponse.builder().connectionsRequiringAction(List.of()).build();
+      return SyncStatusResponse.builder()
+          .connectionsRequiringAction(List.of())
+          .hasSyncError(false)
+          .build();
     }
 
     refreshConnectionStates(appUser);
+    List<ConnectionRequiringActionResponse> connectionsRequiringAction =
+        userConnectionService.findConnectionsRequiringAction(appUser.getId()).stream()
+            .map(AccountMapper::toConnectionRequiringActionResponse)
+            .toList();
     return SyncStatusResponse.builder()
-        .connectionsRequiringAction(
-            userConnectionService.findConnectionsRequiringAction(appUser.getId()).stream()
-                .map(AccountMapper::toConnectionRequiringActionResponse)
-                .toList())
+        .lastSyncedAt(lastSuccessfulSync(appUser.getId()))
+        .connectionsRequiringAction(connectionsRequiringAction)
+        .hasSyncError(!connectionsRequiringAction.isEmpty() || latestSyncFailed(appUser.getId()))
         .build();
+  }
+
+  private Instant lastSuccessfulSync(Long userId) {
+    return syncEventRepository
+        .findFirstByUserIdAndStatusOrderByTriggeredAtDesc(userId, SyncEventStatus.SUCCESS)
+        .map(SyncEvent::getCompletedAt)
+        .orElse(null);
+  }
+
+  private boolean latestSyncFailed(Long userId) {
+    return syncEventRepository
+        .findFirstByUserIdOrderByTriggeredAtDesc(userId)
+        .map(syncEvent -> SyncEventStatus.FAILED.equals(syncEvent.getStatus()))
+        .orElse(false);
   }
 
   private void refreshConnectionStates(AppUser appUser) {

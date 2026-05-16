@@ -12,4 +12,6 @@ public interface SyncEventRepository extends JpaRepository<SyncEvent, Long> {
 
   Optional<SyncEvent> findFirstByUserIdAndStatusOrderByTriggeredAtDesc(
       Long userId, SyncEventStatus status);
+
+  Optional<SyncEvent> findFirstByUserIdOrderByTriggeredAtDesc(Long userId);
 }
