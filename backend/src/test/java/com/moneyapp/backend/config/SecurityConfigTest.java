@@ -2,6 +2,7 @@ package com.moneyapp.backend.config;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,6 +32,13 @@ class SecurityConfigTest {
   @Test
   void healthEndpointIsPublic() throws Exception {
     mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
+  }
+
+  @Test
+  void powensWebhookEndpointIsPublic() throws Exception {
+    mockMvc
+        .perform(post("/webhooks/powens").contentType("application/json").content("{}"))
+        .andExpect(status().isOk());
   }
 
   @Test

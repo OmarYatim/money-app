@@ -45,6 +45,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/bank/callback")
                     .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/webhooks/powens")
+                    .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**")
                     .permitAll()
                     .anyRequest()
