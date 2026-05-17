@@ -42,6 +42,16 @@ class SecurityConfigTest {
   }
 
   @Test
+  void powensWebhookEndpointAcceptsMissingContentType() throws Exception {
+    mockMvc
+        .perform(
+            post("/webhooks/powens")
+                .content(
+                    "{\"event\":\"CONNECTION_SYNCED\",\"user_id\":\"debug\",\"connection_id\":123}"))
+        .andExpect(status().isOk());
+  }
+
+  @Test
   void corsAllowsConfiguredFrontendOrigin() throws Exception {
     mockMvc
         .perform(
