@@ -16,8 +16,7 @@ class PowensWebviewServiceTest {
                 "client-123",
                 "secret",
                 "manage-token",
-                "https://local.nexioo.me/api/bank/callback",
-                "webhook-token"));
+                "https://local.nexioo.me/api/bank/callback"));
 
     String url = service.buildConnectUrl("temporary-code", "csrf-state");
 

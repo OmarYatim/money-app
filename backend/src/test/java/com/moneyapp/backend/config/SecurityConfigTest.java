@@ -27,8 +27,6 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 class SecurityConfigTest {
 
-  private static final String POWENS_WEBHOOK_AUTHORIZATION = "Bearer test-webhook-token";
-
   @Autowired private MockMvc mockMvc;
 
   @Test
@@ -44,49 +42,27 @@ class SecurityConfigTest {
   }
 
   @Test
-  void powensWebhookEndpointRejectsWrongBearerToken() throws Exception {
+  void powensWebhookEndpointAcceptsMissingContentTypeBeforeUserTokenValidation() throws Exception {
     mockMvc
         .perform(
             post("/webhooks/powens")
-                .header("Authorization", "Bearer wrong-token")
-                .contentType("application/json")
-                .content("{}"))
+                .header("Authorization", "Bearer any-token")
+                .content(
+                    "{\"event\":\"CONNECTION_SYNCED\",\"user_id\":\"unknown-user\",\"connection_id\":123}"))
         .andExpect(status().isUnauthorized());
   }
 
   @Test
-  void powensWebhookEndpointAcceptsValidBearerToken() throws Exception {
+  void powensWebhookEndpointIgnoresPowensOriginHeaderBeforeUserTokenValidation() throws Exception {
     mockMvc
         .perform(
             post("/webhooks/powens")
-                .header("Authorization", POWENS_WEBHOOK_AUTHORIZATION)
-                .contentType("application/json")
-                .content("{}"))
-        .andExpect(status().isOk());
-  }
-
-  @Test
-  void powensWebhookEndpointAcceptsMissingContentType() throws Exception {
-    mockMvc
-        .perform(
-            post("/webhooks/powens")
-                .header("Authorization", POWENS_WEBHOOK_AUTHORIZATION)
-                .content(
-                    "{\"event\":\"CONNECTION_SYNCED\",\"user_id\":\"debug\",\"connection_id\":123}"))
-        .andExpect(status().isOk());
-  }
-
-  @Test
-  void powensWebhookEndpointIgnoresPowensOriginHeader() throws Exception {
-    mockMvc
-        .perform(
-            post("/webhooks/powens")
-                .header("Authorization", POWENS_WEBHOOK_AUTHORIZATION)
+                .header("Authorization", "Bearer any-token")
                 .header("Origin", "poc4oy-sandbox.biapi.pro")
                 .contentType("application/json")
                 .content(
-                    "{\"event\":\"CONNECTION_SYNCED\",\"user_id\":\"debug\",\"connection_id\":123}"))
-        .andExpect(status().isOk());
+                    "{\"event\":\"CONNECTION_SYNCED\",\"user_id\":\"unknown-user\",\"connection_id\":123}"))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test

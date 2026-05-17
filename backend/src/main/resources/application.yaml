@@ -30,4 +30,3 @@ powens:
   client-secret: ${POWENS_CLIENT_SECRET}
   manage-token: ${POWENS_MANAGE_TOKEN}
   redirect-url: ${POWENS_REDIRECT_URL}
-  webhook-token: ${POWENS_WEBHOOK_TOKEN}
