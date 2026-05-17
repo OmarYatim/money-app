@@ -52,6 +52,18 @@ class SecurityConfigTest {
   }
 
   @Test
+  void powensWebhookEndpointIgnoresPowensOriginHeader() throws Exception {
+    mockMvc
+        .perform(
+            post("/webhooks/powens")
+                .header("Origin", "poc4oy-sandbox.biapi.pro")
+                .contentType("application/json")
+                .content(
+                    "{\"event\":\"CONNECTION_SYNCED\",\"user_id\":\"debug\",\"connection_id\":123}"))
+        .andExpect(status().isOk());
+  }
+
+  @Test
   void corsAllowsConfiguredFrontendOrigin() throws Exception {
     mockMvc
         .perform(

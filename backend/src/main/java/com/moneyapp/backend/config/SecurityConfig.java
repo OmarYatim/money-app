@@ -5,6 +5,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -25,6 +26,24 @@ public class SecurityConfig {
   private final AppProperties appProperties;
 
   @Bean
+  @Order(1)
+  SecurityFilterChain powensWebhookSecurityFilterChain(HttpSecurity http) throws Exception {
+    return http.securityMatcher("/webhooks/powens")
+        .csrf(AbstractHttpConfigurer::disable)
+        .cors(AbstractHttpConfigurer::disable)
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers(HttpMethod.POST, "/webhooks/powens")
+                    .permitAll()
+                    .anyRequest()
+                    .denyAll())
+        .build();
+  }
+
+  @Bean
+  @Order(2)
   SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
     return http.csrf(
             AbstractHttpConfigurer
@@ -44,8 +63,6 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.GET, "/actuator/health")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/api/bank/callback")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/webhooks/powens")
                     .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**")
                     .permitAll()
