@@ -27,6 +27,8 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 class SecurityConfigTest {
 
+  private static final String POWENS_WEBHOOK_AUTHORIZATION = "Bearer test-webhook-token";
+
   @Autowired private MockMvc mockMvc;
 
   @Test
@@ -35,9 +37,31 @@ class SecurityConfigTest {
   }
 
   @Test
-  void powensWebhookEndpointIsPublic() throws Exception {
+  void powensWebhookEndpointRequiresBearerToken() throws Exception {
     mockMvc
         .perform(post("/webhooks/powens").contentType("application/json").content("{}"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void powensWebhookEndpointRejectsWrongBearerToken() throws Exception {
+    mockMvc
+        .perform(
+            post("/webhooks/powens")
+                .header("Authorization", "Bearer wrong-token")
+                .contentType("application/json")
+                .content("{}"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void powensWebhookEndpointAcceptsValidBearerToken() throws Exception {
+    mockMvc
+        .perform(
+            post("/webhooks/powens")
+                .header("Authorization", POWENS_WEBHOOK_AUTHORIZATION)
+                .contentType("application/json")
+                .content("{}"))
         .andExpect(status().isOk());
   }
 
@@ -46,6 +70,7 @@ class SecurityConfigTest {
     mockMvc
         .perform(
             post("/webhooks/powens")
+                .header("Authorization", POWENS_WEBHOOK_AUTHORIZATION)
                 .content(
                     "{\"event\":\"CONNECTION_SYNCED\",\"user_id\":\"debug\",\"connection_id\":123}"))
         .andExpect(status().isOk());
@@ -56,6 +81,7 @@ class SecurityConfigTest {
     mockMvc
         .perform(
             post("/webhooks/powens")
+                .header("Authorization", POWENS_WEBHOOK_AUTHORIZATION)
                 .header("Origin", "poc4oy-sandbox.biapi.pro")
                 .contentType("application/json")
                 .content(

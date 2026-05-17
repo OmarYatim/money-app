@@ -17,7 +17,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
+  private static final String POWENS_WEBHOOK_PATH = "/webhooks/powens";
+
   private final JwtService jwtService;
+
+  @Override
+  protected boolean shouldNotFilter(HttpServletRequest request) {
+    return POWENS_WEBHOOK_PATH.equals(request.getRequestURI());
+  }
 
   @Override
   protected void doFilterInternal(

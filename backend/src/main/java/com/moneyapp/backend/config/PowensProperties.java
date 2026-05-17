@@ -11,4 +11,5 @@ public record PowensProperties(
     @NotBlank String clientId,
     @NotBlank String clientSecret,
     @NotBlank String manageToken,
-    @NotBlank String redirectUrl) {}
+    @NotBlank String redirectUrl,
+    @NotBlank String webhookToken) {}
