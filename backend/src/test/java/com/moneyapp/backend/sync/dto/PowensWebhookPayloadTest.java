@@ -32,4 +32,33 @@ class PowensWebhookPayloadTest {
     assertThat(payload.powensUserId()).isEqualTo("powens-user-2");
     assertThat(payload.connectionId()).isEqualTo(16L);
   }
+
+  @Test
+  void parsesConnectionSyncedPayloadFromPowensWebhookData() {
+    PowensWebhookPayload payload =
+        PowensWebhookPayload.from(
+            Map.of(
+                "connection",
+                Map.of("id", 47, "id_user", 23),
+                "push_type",
+                "partial_history",
+                "user",
+                Map.of("id", 23),
+                "id_webhook_data",
+                81));
+
+    assertThat(payload.isConnectionSynced()).isTrue();
+    assertThat(payload.powensUserId()).isEqualTo("23");
+    assertThat(payload.connectionId()).isEqualTo(47L);
+  }
+
+  @Test
+  void parsesConnectionSyncedPayloadUserIdFromUserWhenConnectionOmitsIt() {
+    PowensWebhookPayload payload =
+        PowensWebhookPayload.from(Map.of("connection", Map.of("id", 48), "user", Map.of("id", 24)));
+
+    assertThat(payload.isConnectionSynced()).isTrue();
+    assertThat(payload.powensUserId()).isEqualTo("24");
+    assertThat(payload.connectionId()).isEqualTo(48L);
+  }
 }
