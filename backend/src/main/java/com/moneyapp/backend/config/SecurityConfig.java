@@ -29,7 +29,7 @@ public class SecurityConfig {
   @Order(1)
   SecurityFilterChain powensWebhookSecurityFilterChain(HttpSecurity http) throws Exception {
     return http.securityMatcher("/webhooks/powens")
-        .csrf(AbstractHttpConfigurer::disable)
+        .csrf(csrf -> csrf.ignoringRequestMatchers("/webhooks/powens"))
         .cors(AbstractHttpConfigurer::disable)
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
