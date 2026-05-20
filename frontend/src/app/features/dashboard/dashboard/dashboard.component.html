@@ -22,6 +22,29 @@
   </header>
 
   <div class="dashboard__body">
+    @if (hasSyncAlert()) {
+      <button type="button" class="sync-banner" (click)="resolveSyncIssue()">
+        <span class="sync-banner__icon">
+          <mat-icon class="icon-18" aria-hidden="true">warning</mat-icon>
+        </span>
+        <span class="sync-banner__content">
+          <span class="sync-banner__title">{{ syncBannerText() }}</span>
+          <span class="sync-banner__meta">Last synced {{ lastSyncedLabel() }}</span>
+        </span>
+        <mat-icon class="sync-banner__chevron icon-18" aria-hidden="true">arrow_forward</mat-icon>
+      </button>
+    }
+    @if (syncActionError()) {
+      <div class="sync-banner sync-banner--error" role="alert">
+        <span class="sync-banner__icon">
+          <mat-icon class="icon-18" aria-hidden="true">error</mat-icon>
+        </span>
+        <span class="sync-banner__content">
+          <span class="sync-banner__title">{{ syncActionError() }}</span>
+        </span>
+      </div>
+    }
+
     @if (state().loading) {
       <div class="dashboard__loading" aria-live="polite">
         <mat-spinner diameter="36" />
@@ -52,7 +75,7 @@
             </div>
             <div class="hero__deltas">
               <span class="hero__delta-up">
-                <mat-icon aria-hidden="true">trending_up</mat-icon>
+                <mat-icon class="icon-14" aria-hidden="true">trending_up</mat-icon>
                 +{{ summary.monthlyIncome | currency: 'EUR' : 'symbol' : '1.0-0' }}
               </span>
               <span class="hero__delta-time">this month</span>
@@ -66,7 +89,7 @@
                 </div>
               }
               <a routerLink="/accounts" class="hero__chip-more">
-                View all <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                View all <mat-icon class="icon-12" aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
           </div>
@@ -123,7 +146,7 @@
         <section class="kpi-grid">
           <div class="kpi">
             <div class="kpi__head">
-              <span class="kpi__icon"><mat-icon aria-hidden="true">account_balance_wallet</mat-icon></span>
+              <span class="kpi__icon"><mat-icon class="icon-14" aria-hidden="true">account_balance_wallet</mat-icon></span>
               <span class="kpi__label">Cash available</span>
             </div>
             <div class="kpi__value">{{ cashAvailable() | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
@@ -131,7 +154,7 @@
           </div>
           <div class="kpi">
             <div class="kpi__head">
-              <span class="kpi__icon"><mat-icon aria-hidden="true">calendar_month</mat-icon></span>
+              <span class="kpi__icon"><mat-icon class="icon-14" aria-hidden="true">calendar_month</mat-icon></span>
               <span class="kpi__label">Future balance</span>
             </div>
             <div class="kpi__value">{{ summary.futureBalance | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
@@ -139,7 +162,7 @@
           </div>
           <div class="kpi">
             <div class="kpi__head">
-              <span class="kpi__icon kpi__icon--up"><mat-icon aria-hidden="true">trending_up</mat-icon></span>
+              <span class="kpi__icon kpi__icon--up"><mat-icon class="icon-14" aria-hidden="true">trending_up</mat-icon></span>
               <span class="kpi__label">Income · this month</span>
             </div>
             <div class="kpi__value kpi__value--up">{{ summary.monthlyIncome | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
@@ -147,7 +170,7 @@
           </div>
           <div class="kpi">
             <div class="kpi__head">
-              <span class="kpi__icon kpi__icon--down"><mat-icon aria-hidden="true">trending_down</mat-icon></span>
+              <span class="kpi__icon kpi__icon--down"><mat-icon class="icon-14" aria-hidden="true">trending_down</mat-icon></span>
               <span class="kpi__label">Expenses · this month</span>
             </div>
             <div class="kpi__value kpi__value--down">{{ summary.monthlyExpenses | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
@@ -155,7 +178,7 @@
           </div>
           <div class="kpi">
             <div class="kpi__head">
-              <span class="kpi__icon"><mat-icon aria-hidden="true">payments</mat-icon></span>
+              <span class="kpi__icon"><mat-icon class="icon-14" aria-hidden="true">payments</mat-icon></span>
               <span class="kpi__label">Today's spending</span>
             </div>
             <div class="kpi__value">{{ summary.dailySpending | currency: 'EUR' : 'symbol' : '1.2-2' }}</div>
@@ -163,7 +186,7 @@
           </div>
           <div class="kpi">
             <div class="kpi__head">
-              <span class="kpi__icon kpi__icon--up"><mat-icon aria-hidden="true">savings</mat-icon></span>
+              <span class="kpi__icon kpi__icon--up"><mat-icon class="icon-14" aria-hidden="true">savings</mat-icon></span>
               <span class="kpi__label">Savings rate</span>
             </div>
             <div class="kpi__value">{{ savingsRate() }}%</div>
@@ -216,7 +239,7 @@
                 <div class="card__sub">This month · {{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} total</div>
               </div>
               <a routerLink="/transactions" class="card__link">
-                Details <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                Details <mat-icon class="icon-14" aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
             @if (spendingData().length === 0) {
@@ -256,7 +279,7 @@
                 <div class="card__sub">Latest transactions</div>
               </div>
               <a routerLink="/transactions" class="card__link">
-                See all transactions <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                See all transactions <mat-icon class="icon-14" aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
             <div class="tx-list">
@@ -269,7 +292,7 @@
                     [style.background]="categoryIconBg(tx.category)"
                     [style.color]="categoryIconColor(tx.category)"
                     aria-hidden="true">
-                    <mat-icon>{{ categoryIcon(tx.category) }}</mat-icon>
+                    <mat-icon class="icon-15">{{ categoryIcon(tx.category) }}</mat-icon>
                   </div>
                   <div class="tx-row__meta">
                     <div class="tx-row__label">{{ tx.label }}</div>
@@ -298,7 +321,7 @@
                 <div class="card__sub">Coming soon</div>
               </div>
               <a routerLink="/goals" class="card__icon-link" title="Goals">
-                <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                <mat-icon class="icon-15" aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
             <div class="goals-soon">

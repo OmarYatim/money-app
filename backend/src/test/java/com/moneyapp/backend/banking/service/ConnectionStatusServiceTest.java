@@ -12,6 +12,8 @@ import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.dto.SyncStatusResponse;
 import com.moneyapp.backend.banking.repository.UserConnectionRepository;
+import com.moneyapp.backend.sync.repository.SyncEventRepository;
+import com.moneyapp.backend.sync.service.DataSyncService;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
 import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.service.TransactionService;
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest(
@@ -40,12 +43,15 @@ class ConnectionStatusServiceTest {
 
   @Autowired private UserConnectionRepository userConnectionRepository;
 
+  @Autowired private SyncEventRepository syncEventRepository;
+
   @Autowired private UserConnectionService userConnectionService;
 
   @Autowired private CurrentAppUserService currentAppUserService;
 
   @BeforeEach
   void setUp() {
+    syncEventRepository.deleteAll();
     userConnectionRepository.deleteAll();
     appUserRepository.deleteAll();
   }
@@ -66,8 +72,8 @@ class ConnectionStatusServiceTest {
                 new PowensConnectionsResponse(
                     List.of(new PowensConnectionResponse(123L, "wrongpass")))),
             userConnectionService,
-            new FakeAccountService(),
-            new FakeTransactionService());
+            syncEventRepository,
+            null);
 
     SyncStatusResponse response = service.getStatus(appUser.getEmail());
 
@@ -87,17 +93,26 @@ class ConnectionStatusServiceTest {
                 .build());
     FakeAccountService accountService = new FakeAccountService();
     FakeTransactionService transactionService = new FakeTransactionService();
+    DataSyncService dataSyncService =
+        new DataSyncService(
+            syncEventRepository,
+            userConnectionRepository,
+            accountService,
+            transactionService,
+            new ConcurrentTaskScheduler());
     ConnectionStatusService service =
         new ConnectionStatusService(
             currentAppUserService,
             new StubPowensClient(new PowensConnectionsResponse(List.of())),
             userConnectionService,
-            accountService,
-            transactionService);
+            syncEventRepository,
+            dataSyncService);
 
     SyncStatusResponse response = service.syncNow(appUser.getEmail());
 
     assertThat(response.connectionsRequiringAction()).isEmpty();
+    assertThat(response.lastSyncedAt()).isNotNull();
+    assertThat(response.hasSyncError()).isFalse();
     assertThat(accountService.syncedUserId).isEqualTo(appUser.getId());
     assertThat(transactionService.syncedUserId).isEqualTo(appUser.getId());
   }

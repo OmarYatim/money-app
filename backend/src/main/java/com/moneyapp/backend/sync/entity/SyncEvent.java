@@ -1,14 +1,18 @@
-package com.moneyapp.backend.banking.entity;
+package com.moneyapp.backend.sync.entity;
 
+import com.moneyapp.backend.sync.enums.SyncEventStatus;
+import com.moneyapp.backend.sync.enums.SyncEventTrigger;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.persistence.UniqueConstraint;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,21 +20,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(
-    name = "user_connection",
-    uniqueConstraints =
-        @UniqueConstraint(
-            name = "uk_user_connection_user_connection_id",
-            columnNames = {"user_id", "connection_id"}))
+@Table(name = "sync_event")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class UserConnection {
-
-  public static final String STATUS_ACTIVE = "active";
-  public static final String STATUS_REQUIRING_ACTION = "requiring_action";
-  public static final String STATUS_SYNC_FAILED = "SYNC_FAILED";
+public class SyncEvent {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -39,15 +34,29 @@ public class UserConnection {
   @Column(name = "user_id", nullable = false)
   private Long userId;
 
-  @Column(name = "connection_id", nullable = false)
+  @Column(name = "connection_id")
   private Long connectionId;
 
-  @Column(nullable = false, length = 50)
-  @Builder.Default
-  private String status = STATUS_ACTIVE;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "triggered_by", nullable = false, length = 50)
+  private SyncEventTrigger triggeredBy;
 
-  @Column(length = 100)
-  private String state;
+  @Column(name = "triggered_at", nullable = false)
+  private Instant triggeredAt;
+
+  @Column(name = "completed_at")
+  private Instant completedAt;
+
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 50)
+  private SyncEventStatus status;
+
+  @Column(name = "error_message", columnDefinition = "TEXT")
+  private String errorMessage;
+
+  @Column(name = "attempt_count", nullable = false)
+  @Builder.Default
+  private Integer attemptCount = 1;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
@@ -60,6 +69,12 @@ public class UserConnection {
     LocalDateTime now = LocalDateTime.now();
     createdAt = now;
     updatedAt = now;
+    if (triggeredAt == null) {
+      triggeredAt = Instant.now();
+    }
+    if (attemptCount == null) {
+      attemptCount = 1;
+    }
   }
 
   @PreUpdate

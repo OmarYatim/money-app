@@ -2,6 +2,7 @@ package com.moneyapp.backend.config;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,6 +32,37 @@ class SecurityConfigTest {
   @Test
   void healthEndpointIsPublic() throws Exception {
     mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
+  }
+
+  @Test
+  void powensWebhookEndpointRequiresBearerToken() throws Exception {
+    mockMvc
+        .perform(post("/webhooks/powens").contentType("application/json").content("{}"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void powensWebhookEndpointAcceptsMissingContentTypeBeforeUserTokenValidation() throws Exception {
+    mockMvc
+        .perform(
+            post("/webhooks/powens")
+                .header("Authorization", "Bearer any-token")
+                .content(
+                    "{\"event\":\"CONNECTION_SYNCED\",\"user_id\":\"unknown-user\",\"connection_id\":123}"))
+        .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void powensWebhookEndpointIgnoresPowensOriginHeaderBeforeUserTokenValidation() throws Exception {
+    mockMvc
+        .perform(
+            post("/webhooks/powens")
+                .header("Authorization", "Bearer any-token")
+                .header("Origin", "poc4oy-sandbox.biapi.pro")
+                .contentType("application/json")
+                .content(
+                    "{\"event\":\"CONNECTION_SYNCED\",\"user_id\":\"unknown-user\",\"connection_id\":123}"))
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
