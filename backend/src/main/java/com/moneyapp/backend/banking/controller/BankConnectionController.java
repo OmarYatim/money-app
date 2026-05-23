@@ -11,7 +11,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -28,11 +30,20 @@ public class BankConnectionController {
 
   @GetMapping("/connect")
   public ResponseEntity<BankConnectResponse> connect(Authentication authentication) {
-    if (authentication == null || !authentication.isAuthenticated()) {
-      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
-    }
+    requireAuthenticated(authentication);
 
     return ResponseEntity.ok(bankConnectionService.createConnectLink(authentication.getName()));
+  }
+
+  @DeleteMapping("/connections/{connectionId}")
+  public ResponseEntity<Void> disconnect(
+      @PathVariable Long connectionId,
+      @RequestParam boolean deleteData,
+      Authentication authentication) {
+    requireAuthenticated(authentication);
+
+    bankConnectionService.disconnectConnection(authentication.getName(), connectionId, deleteData);
+    return ResponseEntity.noContent().build();
   }
 
   @GetMapping("/callback")
@@ -58,5 +69,11 @@ public class BankConnectionController {
         .queryParam("connected", "connected".equals(response.status()))
         .build()
         .toUri();
+  }
+
+  private void requireAuthenticated(Authentication authentication) {
+    if (authentication == null || !authentication.isAuthenticated()) {
+      throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+    }
   }
 }

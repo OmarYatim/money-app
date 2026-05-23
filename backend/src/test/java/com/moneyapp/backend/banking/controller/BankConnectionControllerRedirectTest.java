@@ -76,7 +76,7 @@ class BankConnectionControllerRedirectTest {
     private BankConnectionCallbackResponse response;
 
     private StubBankConnectionService() {
-      super(null, null, null, null, null, null, null, null);
+      super(null, null, null, null, null, null, null, null, null, null, null);
     }
 
     @Override

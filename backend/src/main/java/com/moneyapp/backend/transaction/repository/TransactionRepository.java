@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface TransactionRepository
     extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
@@ -20,4 +21,7 @@ public interface TransactionRepository
 
   Optional<Transaction> findByUserIdAndExternalTransactionId(
       Long userId, Long externalTransactionId);
+
+  @Transactional
+  void deleteByUserIdAndAccountIdIn(Long userId, List<Long> accountIds);
 }
