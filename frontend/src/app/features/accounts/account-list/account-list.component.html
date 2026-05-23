@@ -96,51 +96,137 @@
       </div>
 
       <!-- Account cards grid -->
-      <div class="account-grid">
-        @for (account of filteredAccounts(); track account.id) {
-          <div class="account-card">
-            <div class="account-card__accent" [style.background]="accountTypeAccent(account.type)"></div>
-            <div class="account-card__head">
-              <div class="account-card__icon">
-                <mat-icon aria-hidden="true">{{ accountTypeIcon(account.type) }}</mat-icon>
+      <div class="connection-list">
+        @for (group of accountGroups(); track group.id) {
+          <section class="connection-group">
+            <div class="connection-group__header">
+              <div>
+                <h2 class="connection-group__title">{{ group.institutionName }}</h2>
+                <p class="connection-group__meta">
+                  {{ group.accounts.length }} {{ group.accounts.length === 1 ? 'account' : 'accounts' }}
+                </p>
               </div>
-              <span class="account-card__status">
-                <span class="account-card__status-dot"></span>
-                Synced
-              </span>
+              @if (group.connectionId !== null) {
+                <button
+                  class="connection-group__disconnect"
+                  type="button"
+                  [disabled]="disconnectingConnectionId() !== null"
+                  (click)="openDisconnectDialog(group)"
+                >
+                  <mat-icon aria-hidden="true">link_off</mat-icon>
+                  Disconnect
+                </button>
+              }
             </div>
-            <div class="account-card__body">
-              <div class="account-card__name">
-                {{ account.institutionName ?? account.name }}
-              </div>
-              <div class="account-card__meta">
-                {{ account.type ?? 'account' }}
-                @if (account.accountNumberLastFour) {
-                  · ending {{ account.accountNumberLastFour }}
-                }
-              </div>
+            <div class="account-grid">
+              @for (account of group.accounts; track account.id) {
+                <div class="account-card">
+                  <div class="account-card__accent" [style.background]="accountTypeAccent(account.type)"></div>
+                  <div class="account-card__head">
+                    <div class="account-card__icon">
+                      <mat-icon aria-hidden="true">{{ accountTypeIcon(account.type) }}</mat-icon>
+                    </div>
+                    <span class="account-card__status">
+                      <span class="account-card__status-dot"></span>
+                      Synced
+                    </span>
+                  </div>
+                  <div class="account-card__body">
+                    <div class="account-card__name">
+                      {{ account.name }}
+                    </div>
+                    <div class="account-card__meta">
+                      {{ account.type ?? 'account' }}
+                      @if (account.accountNumberLastFour) {
+                        · ending {{ account.accountNumberLastFour }}
+                      }
+                    </div>
+                  </div>
+                  <div class="account-card__balance"
+                    [class.account-card__balance--negative]="account.balance < 0">
+                    {{ account.balance | currency: account.currency : 'symbol' : '1.2-2' }}
+                  </div>
+                  <div class="account-card__foot">
+                    <span>{{ account.currency }}</span>
+                    <a [routerLink]="['/transactions']" [queryParams]="{ accountId: account.id }" class="account-card__view-btn">
+                      View activity
+                      <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+                    </a>
+                  </div>
+                </div>
+              }
             </div>
-            <div class="account-card__balance"
-              [class.account-card__balance--negative]="account.balance < 0">
-              {{ account.balance | currency: account.currency : 'symbol' : '1.2-2' }}
-            </div>
-            <div class="account-card__foot">
-              <span>{{ account.currency }}</span>
-              <a [routerLink]="['/transactions']" [queryParams]="{ accountId: account.id }" class="account-card__view-btn">
-                View activity
-                <mat-icon aria-hidden="true">arrow_forward</mat-icon>
-              </a>
-            </div>
-          </div>
+          </section>
         }
-        <app-account-connect
-          label="Connect another bank"
-          loadingLabel="Connecting…"
-          icon="add"
-          variant="card"
-          (connected)="reloadAccounts()"
-        />
+        <div class="account-grid">
+          <app-account-connect
+            label="Connect another bank"
+            loadingLabel="Connecting…"
+            icon="add"
+            variant="card"
+            (connected)="reloadAccounts()"
+          />
+        </div>
       </div>
     }
   </div>
+
+  @if (disconnectDialog(); as dialog) {
+    <div class="disconnect-modal" role="presentation">
+      <section
+        class="disconnect-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="disconnect-title"
+      >
+        <div class="disconnect-dialog__icon">
+          <mat-icon aria-hidden="true">link_off</mat-icon>
+        </div>
+        <h2 id="disconnect-title">Disconnect {{ dialog.institutionName }}?</h2>
+        <p class="disconnect-dialog__text">
+          Choose what should happen to the local data linked to this bank connection.
+        </p>
+
+        <label class="disconnect-option">
+          <input
+            type="radio"
+            name="deleteData"
+            [checked]="!deleteDataChoice()"
+            (change)="deleteDataChoice.set(false)"
+          />
+          <span>
+            <strong>Conserver l'historique des transactions</strong>
+            <span>les transactions passées resteront visibles mais ne seront plus mises à jour</span>
+          </span>
+        </label>
+
+        <label class="disconnect-option disconnect-option--danger">
+          <input
+            type="radio"
+            name="deleteData"
+            [checked]="deleteDataChoice()"
+            (change)="deleteDataChoice.set(true)"
+          />
+          <span>
+            <strong>Supprimer toutes les données associées</strong>
+            <span>les comptes et toutes les transactions de cette banque seront définitivement supprimés</span>
+          </span>
+        </label>
+
+        <div class="disconnect-dialog__actions">
+          <button class="btn-ghost" type="button" (click)="closeDisconnectDialog()">
+            Cancel
+          </button>
+          <button
+            class="disconnect-dialog__confirm"
+            type="button"
+            [disabled]="disconnectingConnectionId() !== null"
+            (click)="confirmDisconnect()"
+          >
+            {{ disconnectingConnectionId() === null ? 'Disconnect' : 'Disconnecting…' }}
+          </button>
+        </div>
+      </section>
+    </div>
+  }
 </div>
