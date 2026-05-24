@@ -37,6 +37,7 @@ interface AccountConnectionGroup {
 interface DisconnectDialogState {
   connectionId: number;
   institutionName: string;
+  accounts: Account[];
 }
 
 const EMPTY_SYNC_STATUS: SyncStatus = {
@@ -69,6 +70,10 @@ export class AccountListComponent {
   protected readonly disconnectDialog = signal<DisconnectDialogState | null>(null);
   protected readonly deleteDataChoice = signal(false);
   protected readonly disconnectingConnectionId = signal<number | null>(null);
+  protected readonly accountNames = signal<Record<number, string>>({});
+  protected readonly openAccountMenuId = signal<number | null>(null);
+  protected readonly renamingAccountId = signal<number | null>(null);
+  protected readonly renameDraft = signal('');
 
   protected readonly accountTypeTabs = [
     { id: 'all', label: 'All accounts', count: (a: Account[]) => a.length },
@@ -143,11 +148,10 @@ export class AccountListComponent {
     return accounts.filter((a) => (a.type ?? '').toLowerCase() === type);
   });
 
-  protected readonly accountGroups = computed(() => {
+  protected readonly connectedBankGroups = computed(() => {
     const groups = new Map<string, AccountConnectionGroup>();
-    this.filteredAccounts().forEach((account) => {
-      const groupKey =
-        account.connectionId === null ? `account-${account.id}` : `${account.connectionId}`;
+    this.state().accounts.forEach((account) => {
+      const groupKey = this.connectionGroupKey(account);
       const existing = groups.get(groupKey);
       if (existing) {
         existing.accounts.push(account);
@@ -210,6 +214,52 @@ export class AccountListComponent {
     });
   }
 
+  protected displayName(account: Account): string {
+    return this.accountNames()[account.id] ?? account.name;
+  }
+
+  protected accountLastFour(account: Account): string {
+    return account.accountNumberLastFour ?? '----';
+  }
+
+  protected toggleAccountMenu(accountId: number): void {
+    this.openAccountMenuId.update((current) => (current === accountId ? null : accountId));
+  }
+
+  protected closeAccountMenu(): void {
+    this.openAccountMenuId.set(null);
+  }
+
+  protected startRename(account: Account): void {
+    this.openAccountMenuId.set(null);
+    this.renamingAccountId.set(account.id);
+    this.renameDraft.set(this.displayName(account));
+  }
+
+  protected updateRenameDraft(event: Event): void {
+    this.renameDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  protected commitRename(account: Account): void {
+    const name = this.renameDraft().trim() || account.name;
+    this.accountNames.update((names) => ({ ...names, [account.id]: name }));
+    this.renamingAccountId.set(null);
+  }
+
+  protected cancelRename(account: Account): void {
+    this.renameDraft.set(this.displayName(account));
+    this.renamingAccountId.set(null);
+  }
+
+  protected handleRenameKeydown(event: KeyboardEvent, account: Account): void {
+    if (event.key === 'Enter') {
+      this.commitRename(account);
+    }
+    if (event.key === 'Escape') {
+      this.cancelRename(account);
+    }
+  }
+
   protected reconnect(): void {
     this.snackBar.open(
       'Use Connect a bank to re-authenticate the connection.',
@@ -223,11 +273,20 @@ export class AccountListComponent {
       return;
     }
 
+    this.openAccountMenuId.set(null);
     this.deleteDataChoice.set(false);
     this.disconnectDialog.set({
       connectionId: group.connectionId,
       institutionName: group.institutionName,
+      accounts: group.accounts,
     });
+  }
+
+  protected openDisconnectDialogForAccount(account: Account): void {
+    const group = this.connectedBankGroups().find((item) => item.id === this.connectionGroupKey(account));
+    if (group) {
+      this.openDisconnectDialog(group);
+    }
   }
 
   protected closeDisconnectDialog(): void {
@@ -265,5 +324,11 @@ export class AccountListComponent {
           });
         },
       });
+  }
+
+  private connectionGroupKey(account: Account): string {
+    return account.connectionId === null
+      ? `account-${account.id}`
+      : `connection-${account.connectionId}`;
   }
 }

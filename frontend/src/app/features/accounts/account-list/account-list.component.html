@@ -95,78 +95,106 @@
         </button>
       </div>
 
-      <!-- Account cards grid -->
-      <div class="connection-list">
-        @for (group of accountGroups(); track group.id) {
-          <section class="connection-group">
-            <div class="connection-group__header">
-              <div>
-                <h2 class="connection-group__title">{{ group.institutionName }}</h2>
-                <p class="connection-group__meta">
-                  {{ group.accounts.length }} {{ group.accounts.length === 1 ? 'account' : 'accounts' }}
-                </p>
+      <div class="account-grid">
+        @for (account of filteredAccounts(); track account.id) {
+          <article class="account-card">
+            <div class="account-card__accent" [style.background]="accountTypeAccent(account.type)"></div>
+
+            <div class="account-card__head">
+              <div class="account-card__icon">
+                <mat-icon aria-hidden="true">{{ accountTypeIcon(account.type) }}</mat-icon>
               </div>
-              @if (group.connectionId !== null) {
+              <div class="account-card__actions">
+                <span class="account-card__status">
+                  <span class="account-card__status-dot"></span>
+                  Synced
+                </span>
                 <button
-                  class="connection-group__disconnect"
+                  class="account-card__menu-button"
                   type="button"
-                  [disabled]="disconnectingConnectionId() !== null"
-                  (click)="openDisconnectDialog(group)"
+                  aria-label="Account options"
+                  [attr.aria-expanded]="openAccountMenuId() === account.id"
+                  (click)="toggleAccountMenu(account.id)"
                 >
-                  <mat-icon aria-hidden="true">link_off</mat-icon>
-                  Disconnect
+                  <mat-icon aria-hidden="true">more_vert</mat-icon>
                 </button>
-              }
-            </div>
-            <div class="account-grid">
-              @for (account of group.accounts; track account.id) {
-                <div class="account-card">
-                  <div class="account-card__accent" [style.background]="accountTypeAccent(account.type)"></div>
-                  <div class="account-card__head">
-                    <div class="account-card__icon">
-                      <mat-icon aria-hidden="true">{{ accountTypeIcon(account.type) }}</mat-icon>
-                    </div>
-                    <span class="account-card__status">
-                      <span class="account-card__status-dot"></span>
-                      Synced
-                    </span>
-                  </div>
-                  <div class="account-card__body">
-                    <div class="account-card__name">
-                      {{ account.name }}
-                    </div>
-                    <div class="account-card__meta">
-                      {{ account.type ?? 'account' }}
-                      @if (account.accountNumberLastFour) {
-                        · ending {{ account.accountNumberLastFour }}
-                      }
-                    </div>
-                  </div>
-                  <div class="account-card__balance"
-                    [class.account-card__balance--negative]="account.balance < 0">
-                    {{ account.balance | currency: account.currency : 'symbol' : '1.2-2' }}
-                  </div>
-                  <div class="account-card__foot">
-                    <span>{{ account.currency }}</span>
-                    <a [routerLink]="['/transactions']" [queryParams]="{ accountId: account.id }" class="account-card__view-btn">
-                      View activity
-                      <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+
+                @if (openAccountMenuId() === account.id) {
+                  <div class="account-card__menu" role="menu">
+                    <button type="button" role="menuitem" (click)="startRename(account)">
+                      <mat-icon aria-hidden="true">edit</mat-icon>
+                      Rename account
+                    </button>
+                    <a
+                      role="menuitem"
+                      [routerLink]="['/transactions']"
+                      [queryParams]="{ accountId: account.id }"
+                      (click)="closeAccountMenu()"
+                    >
+                      <mat-icon aria-hidden="true">receipt_long</mat-icon>
+                      View transactions
                     </a>
+                    <div class="account-card__menu-divider"></div>
+                    <button
+                      class="account-card__menu-danger"
+                      type="button"
+                      role="menuitem"
+                      (click)="openDisconnectDialogForAccount(account)"
+                    >
+                      <mat-icon aria-hidden="true">link_off</mat-icon>
+                      Disconnect {{ account.institutionName ?? 'bank' }}
+                    </button>
                   </div>
+                }
+              </div>
+            </div>
+
+            <div class="account-card__body">
+              @if (renamingAccountId() === account.id) {
+                <input
+                  class="account-card__name-input"
+                  type="text"
+                  [value]="renameDraft()"
+                  (input)="updateRenameDraft($event)"
+                  (blur)="commitRename(account)"
+                  (keydown)="handleRenameKeydown($event, account)"
+                />
+              } @else {
+                <div class="account-card__name-row">
+                  <span class="account-card__name">{{ displayName(account) }}</span>
                 </div>
               }
+              <div class="account-card__meta">
+                {{ account.institutionName ?? 'Bank' }} · {{ account.type ?? 'account' }}
+                ending {{ accountLastFour(account) }}
+              </div>
             </div>
-          </section>
+
+            <div class="account-card__balance"
+              [class.account-card__balance--negative]="account.balance < 0">
+              {{ account.balance | currency: account.currency : 'symbol' : '1.2-2' }}
+            </div>
+
+            <div class="account-card__foot">
+              <span>{{ account.currency }} account</span>
+              <a
+                [routerLink]="['/transactions']"
+                [queryParams]="{ accountId: account.id }"
+                class="account-card__view-btn"
+              >
+                View activity
+                <mat-icon aria-hidden="true">arrow_forward</mat-icon>
+              </a>
+            </div>
+          </article>
         }
-        <div class="account-grid">
-          <app-account-connect
-            label="Connect another bank"
-            loadingLabel="Connecting…"
-            icon="add"
-            variant="card"
-            (connected)="reloadAccounts()"
-          />
-        </div>
+        <app-account-connect
+          label="Connect another bank"
+          loadingLabel="Connecting…"
+          icon="add"
+          variant="card"
+          (connected)="reloadAccounts()"
+        />
       </div>
     }
   </div>
