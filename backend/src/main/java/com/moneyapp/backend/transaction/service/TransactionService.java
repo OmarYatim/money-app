@@ -3,6 +3,7 @@ package com.moneyapp.backend.transaction.service;
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.service.CurrentAppUserService;
 import com.moneyapp.backend.banking.entity.Account;
+import com.moneyapp.backend.banking.mapper.AccountMapper;
 import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.banking.service.PowensClient;
 import com.moneyapp.backend.transaction.dto.PowensTransactionResponse;
@@ -280,7 +281,7 @@ public class TransactionService {
   }
 
   private String accountName(Account account) {
-    return account == null ? null : account.getName();
+    return AccountMapper.displayName(account);
   }
 
   private String counterpartyLabel(PowensTransactionResponse.PowensCounterparty counterparty) {

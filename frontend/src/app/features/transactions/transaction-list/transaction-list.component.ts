@@ -776,14 +776,15 @@ export class TransactionListComponent {
 
   private async loadAccounts(): Promise<void> {
     try {
-      this.accounts.set(await firstValueFrom(this.accountService.getAccounts()));
+      this.accounts.set(await firstValueFrom(this.accountService.getTransactionFilterAccounts()));
     } catch {
       this.accounts.set([]);
     }
   }
 
-  private accountLabel(account: Account): string {
-    return account.institutionName ?? account.name;
+  protected accountLabel(account: Account): string {
+    const label = account.name;
+    return account.disabled ? `${label} (disconnected)` : label;
   }
 
   private groupKey(transaction: Transaction): string {

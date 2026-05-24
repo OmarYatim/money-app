@@ -8,15 +8,22 @@ import com.moneyapp.backend.banking.dto.PowensAccountsResponse;
 import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.mapper.AccountMapper;
 import com.moneyapp.backend.banking.repository.AccountRepository;
+import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +32,7 @@ public class AccountService {
   private final CurrentAppUserService currentAppUserService;
   private final AccountRepository accountRepository;
   private final PowensClient powensClient;
+  private final TransactionRepository transactionRepository;
 
   @Transactional(readOnly = true)
   public List<AccountResponse> findAccounts(String email) {
@@ -32,6 +40,44 @@ public class AccountService {
     return accountRepository.findByUserIdAndDisabledFalseOrderByNameAsc(appUser.getId()).stream()
         .map(AccountMapper::toResponse)
         .toList();
+  }
+
+  @Transactional(readOnly = true)
+  public List<AccountResponse> findTransactionFilterAccounts(String email) {
+    AppUser appUser = currentAppUserService.resolveExisting(email);
+    List<Account> activeAccounts =
+        accountRepository.findByUserIdAndDisabledFalseOrderByNameAsc(appUser.getId());
+    List<Long> accountIdsWithHistory =
+        transactionRepository.findDistinctAccountIdsWithTransactions(appUser.getId());
+
+    Map<Long, Account> accountsById = new LinkedHashMap<>();
+    activeAccounts.forEach(account -> accountsById.put(account.getId(), account));
+    if (!accountIdsWithHistory.isEmpty()) {
+      accountRepository.findByUserIdAndIdIn(appUser.getId(), accountIdsWithHistory).stream()
+          .filter(Account::isDisabled)
+          .forEach(account -> accountsById.putIfAbsent(account.getId(), account));
+    }
+
+    List<Account> accounts = new ArrayList<>(accountsById.values());
+    accounts.sort(
+        Comparator.comparing(Account::isDisabled)
+            .thenComparing(
+                account -> AccountMapper.displayName(account).toLowerCase(),
+                Comparator.nullsLast(String::compareTo)));
+    return accounts.stream().map(AccountMapper::toResponse).toList();
+  }
+
+  @Transactional
+  public AccountResponse updateAccount(String email, Long accountId, String name) {
+    AppUser appUser = currentAppUserService.resolveExisting(email);
+    String displayName = normalizeDisplayName(name);
+    Account account =
+        accountRepository
+            .findByIdAndUserId(accountId, appUser.getId())
+            .orElseThrow(
+                () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Account not found"));
+    account.setDisplayName(displayName);
+    return AccountMapper.toResponse(accountRepository.save(account));
   }
 
   public record AccountSyncResult(List<Account> accounts, Set<String> ibans) {}
@@ -157,6 +203,14 @@ public class AccountService {
 
   private boolean isBlank(String value) {
     return value == null || value.isBlank();
+  }
+
+  private String normalizeDisplayName(String value) {
+    String trimmedValue = value == null ? "" : value.trim();
+    if (trimmedValue.isBlank()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name is required");
+    }
+    return trimmedValue;
   }
 
   private record AccountIdentity(

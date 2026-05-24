@@ -1,0 +1,123 @@
+:host {
+  display: block;
+}
+
+.connected-banks {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.connected-banks__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.connected-banks__title {
+  margin: 0;
+  color: var(--ink-900);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.connected-banks__subtitle {
+  margin: 2px 0 0;
+  color: var(--ink-400);
+  font-size: 11.5px;
+}
+
+.connected-banks__list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.connected-banks__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 4px;
+  border-top: 1px solid var(--ink-100);
+}
+
+.connected-banks__logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  background: var(--indigo-500);
+  color: white;
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.connected-banks__details {
+  flex: 1;
+  min-width: 0;
+}
+
+.connected-banks__name {
+  color: var(--ink-900);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.connected-banks__meta {
+  margin-top: 1px;
+  color: var(--ink-400);
+  font-size: 11.5px;
+}
+
+.connected-banks__balance {
+  margin-right: 4px;
+  color: var(--ink-700);
+  font-size: 12.5px;
+  font-weight: 500;
+}
+
+.connected-banks__balance--negative {
+  color: var(--red-600);
+}
+
+.connected-banks__disconnect {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 11px;
+  border: 1px solid var(--ink-200);
+  border-radius: 7px;
+  background: transparent;
+  color: var(--red-600);
+  font-size: 11.5px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  mat-icon {
+    width: 14px;
+    height: 14px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 48rem) {
+  .connected-banks__row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .connected-banks__disconnect {
+    width: 100%;
+    justify-content: center;
+  }
+}

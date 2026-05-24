@@ -136,7 +136,7 @@
                 [attr.aria-selected]="filterForm.controls.accountId.value === account.id"
                 (click)="selectAccount(account.id)"
               >
-                <span class="filter-menu__option-label">{{ account.institutionName ?? account.name }}</span>
+                <span class="filter-menu__option-label">{{ accountLabel(account) }}</span>
                 @if (filterForm.controls.accountId.value === account.id) {
                   <mat-icon aria-hidden="true">check</mat-icon>
                 }

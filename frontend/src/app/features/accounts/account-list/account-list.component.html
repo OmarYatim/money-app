@@ -155,6 +155,7 @@
                   class="account-card__name-input"
                   type="text"
                   [value]="renameDraft()"
+                  [disabled]="savingRenameAccountId() === account.id"
                   (input)="updateRenameDraft($event)"
                   (blur)="commitRename(account)"
                   (keydown)="handleRenameKeydown($event, account)"
@@ -196,6 +197,12 @@
           (connected)="reloadAccounts()"
         />
       </div>
+
+      <app-connected-banks
+        [accounts]="state().accounts"
+        [disconnectingConnectionId]="disconnectingConnectionId()"
+        (disconnect)="openDisconnectDialog($event)"
+      />
     }
   </div>
 

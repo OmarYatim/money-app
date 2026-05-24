@@ -19,25 +19,22 @@ import type { SyncStatus } from '../../../shared/models/sync-status.model';
 import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
 import { AccountConnectComponent } from '../account-connect/account-connect.component';
 import { AccountService } from '../account.service';
+import {
+  ConnectedBanksComponent,
+  type ConnectedBankGroup,
+} from '../connected-banks/connected-banks.component';
+
+interface DisconnectDialogState {
+  connectionId: number;
+  institutionName: string;
+  accounts: Account[];
+}
 
 interface AccountListState {
   accounts: Account[];
   syncStatus: SyncStatus;
   loading: boolean;
   error: string | null;
-}
-
-interface AccountConnectionGroup {
-  id: string;
-  connectionId: number | null;
-  institutionName: string;
-  accounts: Account[];
-}
-
-interface DisconnectDialogState {
-  connectionId: number;
-  institutionName: string;
-  accounts: Account[];
 }
 
 const EMPTY_SYNC_STATUS: SyncStatus = {
@@ -55,6 +52,7 @@ const EMPTY_SYNC_STATUS: SyncStatus = {
     RouterLink,
     PageActionsComponent,
     AccountConnectComponent,
+    ConnectedBanksComponent,
   ],
   templateUrl: './account-list.component.html',
   styleUrl: './account-list.component.scss',
@@ -70,9 +68,9 @@ export class AccountListComponent {
   protected readonly disconnectDialog = signal<DisconnectDialogState | null>(null);
   protected readonly deleteDataChoice = signal(false);
   protected readonly disconnectingConnectionId = signal<number | null>(null);
-  protected readonly accountNames = signal<Record<number, string>>({});
-  protected readonly openAccountMenuId = signal<number | null>(null);
   protected readonly renamingAccountId = signal<number | null>(null);
+  protected readonly savingRenameAccountId = signal<number | null>(null);
+  protected readonly openAccountMenuId = signal<number | null>(null);
   protected readonly renameDraft = signal('');
 
   protected readonly accountTypeTabs = [
@@ -149,20 +147,24 @@ export class AccountListComponent {
   });
 
   protected readonly connectedBankGroups = computed(() => {
-    const groups = new Map<string, AccountConnectionGroup>();
+    const groups = new Map<string, ConnectedBankGroup>();
     this.state().accounts.forEach((account) => {
       const groupKey = this.connectionGroupKey(account);
       const existing = groups.get(groupKey);
       if (existing) {
         existing.accounts.push(account);
+        existing.totalBalance += account.balance;
         return;
       }
 
+      const institutionName = account.institutionName ?? account.name;
       groups.set(groupKey, {
         id: groupKey,
         connectionId: account.connectionId,
-        institutionName: account.institutionName ?? account.name,
+        institutionName,
         accounts: [account],
+        totalBalance: account.balance,
+        initial: institutionName.trim().charAt(0).toUpperCase() || 'B',
       });
     });
     return Array.from(groups.values());
@@ -215,7 +217,7 @@ export class AccountListComponent {
   }
 
   protected displayName(account: Account): string {
-    return this.accountNames()[account.id] ?? account.name;
+    return account.name;
   }
 
   protected accountLastFour(account: Account): string {
@@ -241,9 +243,36 @@ export class AccountListComponent {
   }
 
   protected commitRename(account: Account): void {
+    if (this.renamingAccountId() !== account.id || this.savingRenameAccountId() !== null) {
+      return;
+    }
+
     const name = this.renameDraft().trim() || account.name;
-    this.accountNames.update((names) => ({ ...names, [account.id]: name }));
     this.renamingAccountId.set(null);
+    if (name === account.name) {
+      return;
+    }
+
+    this.savingRenameAccountId.set(account.id);
+    this.accountService
+      .updateAccount(account.id, name)
+      .pipe(
+        finalize(() => this.savingRenameAccountId.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.refreshAccounts$.next();
+          this.snackBar.open('Account renamed.', 'Dismiss', {
+            duration: 3000,
+          });
+        },
+        error: () => {
+          this.snackBar.open('Unable to rename this account.', 'Dismiss', {
+            duration: 5000,
+          });
+        },
+      });
   }
 
   protected cancelRename(account: Account): void {
@@ -268,7 +297,7 @@ export class AccountListComponent {
     );
   }
 
-  protected openDisconnectDialog(group: AccountConnectionGroup): void {
+  protected openDisconnectDialog(group: ConnectedBankGroup): void {
     if (group.connectionId === null || this.disconnectingConnectionId() !== null) {
       return;
     }
