@@ -703,6 +703,7 @@ export class TransactionListComponent {
         ),
       );
       const sourceTransactions = [firstPage, ...additionalPages].flatMap((page) => page.content);
+      this.mergeTransactionAccounts(sourceTransactions);
       this.state.update((current) => ({
         ...current,
         sourceTransactions,
@@ -776,7 +777,7 @@ export class TransactionListComponent {
 
   private async loadAccounts(): Promise<void> {
     try {
-      this.accounts.set(await firstValueFrom(this.accountService.getTransactionFilterAccounts()));
+      this.accounts.set(await firstValueFrom(this.accountService.getAccounts()));
     } catch {
       this.accounts.set([]);
     }
@@ -784,6 +785,30 @@ export class TransactionListComponent {
 
   protected accountLabel(account: Account): string {
     return account.name;
+  }
+
+  private mergeTransactionAccounts(transactions: Transaction[]): void {
+    const accountsById = new Map(this.accounts().map((account) => [account.id, account]));
+    transactions.forEach((transaction) => {
+      if (transaction.accountId === null || accountsById.has(transaction.accountId)) {
+        return;
+      }
+
+      accountsById.set(transaction.accountId, {
+        id: transaction.accountId,
+        connectionId: null,
+        institutionName: null,
+        name: transaction.accountName ?? 'Archived account',
+        type: null,
+        accountNumberLastFour: null,
+        balance: 0,
+        coming: 0,
+        currency: 'EUR',
+        lastUpdate: null,
+        disabled: true,
+      });
+    });
+    this.accounts.set(Array.from(accountsById.values()));
   }
 
   private groupKey(transaction: Transaction): string {
