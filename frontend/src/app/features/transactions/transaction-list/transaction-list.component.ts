@@ -783,8 +783,7 @@ export class TransactionListComponent {
   }
 
   protected accountLabel(account: Account): string {
-    const label = account.name;
-    return account.disabled ? `${label} (disconnected)` : label;
+    return account.name;
   }
 
   private groupKey(transaction: Transaction): string {
