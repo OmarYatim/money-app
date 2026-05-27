@@ -177,7 +177,8 @@
                 <configuration>
                     <failBuildOnCVSS>9</failBuildOnCVSS>
                     <format>HTML</format>
-                    <nvdApiKey>${env.NVD_API_KEY}</nvdApiKey>
+                    <nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
+                    <nvdApiDelay>6000</nvdApiDelay>
                     <outputDirectory>${project.build.directory}/dependency-check-report</outputDirectory>
                 </configuration>
             </plugin>
