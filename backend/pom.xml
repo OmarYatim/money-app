@@ -181,6 +181,7 @@
                     <format>HTML</format>
                     <nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
                     <nvdApiDelay>10000</nvdApiDelay>
+                    <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
                     <outputDirectory>${project.build.directory}/dependency-check-report</outputDirectory>
                 </configuration>
