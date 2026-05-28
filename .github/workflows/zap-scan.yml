@@ -1,0 +1,37 @@
+name: OWASP ZAP Scan
+
+on:
+  schedule:
+    - cron: "0 4 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  zap-scan:
+    name: ZAP Baseline
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: ZAP frontend scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: "https://nexioo.me"
+          report_html: zap-frontend-report.html
+          cmd_options: "-I"
+
+      - name: ZAP backend scan
+        uses: zaproxy/action-baseline@v0.12.0
+        with:
+          target: "https://api.nexioo.me"
+          report_html: zap-backend-report.html
+          cmd_options: "-I"
+
+      - name: Upload ZAP reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: zap-security-reports
+          path: |
+            zap-frontend-report.html
+            zap-backend-report.html
