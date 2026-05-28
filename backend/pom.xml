@@ -183,6 +183,7 @@
                     <nvdApiDelay>10000</nvdApiDelay>
                     <assemblyAnalyzerEnabled>false</assemblyAnalyzerEnabled>
                     <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                    <dataDirectory>${project.build.directory}/dependency-check-data</dataDirectory>
                     <outputDirectory>${project.build.directory}/dependency-check-report</outputDirectory>
                 </configuration>
             </plugin>
