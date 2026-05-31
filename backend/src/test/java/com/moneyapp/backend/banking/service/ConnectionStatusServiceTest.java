@@ -121,7 +121,7 @@ class ConnectionStatusServiceTest {
     private Long syncedUserId;
 
     FakeAccountService() {
-      super(null, null, null);
+      super(null, null, null, null);
     }
 
     @Override

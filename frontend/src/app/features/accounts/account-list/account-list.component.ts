@@ -1,17 +1,34 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
-import { catchError, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
+import { catchError, finalize, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
 
 import type { Account } from '../../../shared/models/account.model';
 import type { SyncStatus } from '../../../shared/models/sync-status.model';
 import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
 import { AccountConnectComponent } from '../account-connect/account-connect.component';
 import { AccountService } from '../account.service';
+import {
+  ConnectedBanksComponent,
+  type ConnectedBankGroup,
+} from '../connected-banks/connected-banks.component';
+
+interface DisconnectDialogState {
+  connectionId: number;
+  institutionName: string;
+  accounts: Account[];
+}
 
 interface AccountListState {
   accounts: Account[];
@@ -35,6 +52,7 @@ const EMPTY_SYNC_STATUS: SyncStatus = {
     RouterLink,
     PageActionsComponent,
     AccountConnectComponent,
+    ConnectedBanksComponent,
   ],
   templateUrl: './account-list.component.html',
   styleUrl: './account-list.component.scss',
@@ -42,10 +60,18 @@ const EMPTY_SYNC_STATUS: SyncStatus = {
 })
 export class AccountListComponent {
   private readonly accountService = inject(AccountService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly snackBar = inject(MatSnackBar);
   private readonly refreshAccounts$ = new Subject<void>();
 
   protected readonly filterType = signal<string>('all');
+  protected readonly disconnectDialog = signal<DisconnectDialogState | null>(null);
+  protected readonly deleteDataChoice = signal(false);
+  protected readonly disconnectingConnectionId = signal<number | null>(null);
+  protected readonly renamingAccountId = signal<number | null>(null);
+  protected readonly savingRenameAccountId = signal<number | null>(null);
+  protected readonly openAccountMenuId = signal<number | null>(null);
+  protected readonly renameDraft = signal('');
 
   protected readonly accountTypeTabs = [
     { id: 'all', label: 'All accounts', count: (a: Account[]) => a.length },
@@ -120,6 +146,30 @@ export class AccountListComponent {
     return accounts.filter((a) => (a.type ?? '').toLowerCase() === type);
   });
 
+  protected readonly connectedBankGroups = computed(() => {
+    const groups = new Map<string, ConnectedBankGroup>();
+    this.state().accounts.forEach((account) => {
+      const groupKey = this.connectionGroupKey(account);
+      const existing = groups.get(groupKey);
+      if (existing) {
+        existing.accounts.push(account);
+        existing.totalBalance += account.balance;
+        return;
+      }
+
+      const institutionName = account.institutionName ?? account.name;
+      groups.set(groupKey, {
+        id: groupKey,
+        connectionId: account.connectionId,
+        institutionName,
+        accounts: [account],
+        totalBalance: account.balance,
+        initial: institutionName.trim().charAt(0).toUpperCase() || 'B',
+      });
+    });
+    return Array.from(groups.values());
+  });
+
   protected readonly totals = computed(() => {
     const { accounts } = this.state();
     const totalAssets = accounts.filter((a) => a.balance > 0).reduce((s, a) => s + a.balance, 0);
@@ -166,11 +216,148 @@ export class AccountListComponent {
     });
   }
 
+  protected displayName(account: Account): string {
+    return account.name;
+  }
+
+  protected accountLastFour(account: Account): string {
+    return account.accountNumberLastFour ?? '----';
+  }
+
+  protected toggleAccountMenu(accountId: number): void {
+    this.openAccountMenuId.update((current) => (current === accountId ? null : accountId));
+  }
+
+  protected closeAccountMenu(): void {
+    this.openAccountMenuId.set(null);
+  }
+
+  protected startRename(account: Account): void {
+    this.openAccountMenuId.set(null);
+    this.renamingAccountId.set(account.id);
+    this.renameDraft.set(this.displayName(account));
+  }
+
+  protected updateRenameDraft(event: Event): void {
+    this.renameDraft.set((event.target as HTMLInputElement).value);
+  }
+
+  protected commitRename(account: Account): void {
+    if (this.renamingAccountId() !== account.id || this.savingRenameAccountId() !== null) {
+      return;
+    }
+
+    const name = this.renameDraft().trim() || account.name;
+    this.renamingAccountId.set(null);
+    if (name === account.name) {
+      return;
+    }
+
+    this.savingRenameAccountId.set(account.id);
+    this.accountService
+      .updateAccount(account.id, name)
+      .pipe(
+        finalize(() => this.savingRenameAccountId.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.refreshAccounts$.next();
+          this.snackBar.open('Account renamed.', 'Dismiss', {
+            duration: 3000,
+          });
+        },
+        error: () => {
+          this.snackBar.open('Unable to rename this account.', 'Dismiss', {
+            duration: 5000,
+          });
+        },
+      });
+  }
+
+  protected cancelRename(account: Account): void {
+    this.renameDraft.set(this.displayName(account));
+    this.renamingAccountId.set(null);
+  }
+
+  protected handleRenameKeydown(event: KeyboardEvent, account: Account): void {
+    if (event.key === 'Enter') {
+      this.commitRename(account);
+    }
+    if (event.key === 'Escape') {
+      this.cancelRename(account);
+    }
+  }
+
   protected reconnect(): void {
     this.snackBar.open(
       'Use Connect a bank to re-authenticate the connection.',
       'Dismiss',
       { duration: 5000 },
     );
+  }
+
+  protected openDisconnectDialog(group: ConnectedBankGroup): void {
+    if (group.connectionId === null || this.disconnectingConnectionId() !== null) {
+      return;
+    }
+
+    this.openAccountMenuId.set(null);
+    this.deleteDataChoice.set(false);
+    this.disconnectDialog.set({
+      connectionId: group.connectionId,
+      institutionName: group.institutionName,
+      accounts: group.accounts,
+    });
+  }
+
+  protected openDisconnectDialogForAccount(account: Account): void {
+    const group = this.connectedBankGroups().find((item) => item.id === this.connectionGroupKey(account));
+    if (group) {
+      this.openDisconnectDialog(group);
+    }
+  }
+
+  protected closeDisconnectDialog(): void {
+    if (this.disconnectingConnectionId() !== null) {
+      return;
+    }
+
+    this.disconnectDialog.set(null);
+  }
+
+  protected confirmDisconnect(): void {
+    const dialog = this.disconnectDialog();
+    if (!dialog || this.disconnectingConnectionId() !== null) {
+      return;
+    }
+
+    this.disconnectingConnectionId.set(dialog.connectionId);
+    this.accountService
+      .disconnectConnection(dialog.connectionId, this.deleteDataChoice())
+      .pipe(
+        finalize(() => this.disconnectingConnectionId.set(null)),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe({
+        next: () => {
+          this.disconnectDialog.set(null);
+          this.refreshAccounts$.next();
+          this.snackBar.open('Bank connection disconnected.', 'Dismiss', {
+            duration: 4000,
+          });
+        },
+        error: () => {
+          this.snackBar.open('Unable to disconnect this bank connection.', 'Dismiss', {
+            duration: 5000,
+          });
+        },
+      });
+  }
+
+  private connectionGroupKey(account: Account): string {
+    return account.connectionId === null
+      ? `account-${account.id}`
+      : `connection-${account.connectionId}`;
   }
 }

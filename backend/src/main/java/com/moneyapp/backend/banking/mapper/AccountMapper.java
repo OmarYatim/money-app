@@ -14,7 +14,7 @@ public final class AccountMapper {
         .id(account.getId())
         .connectionId(account.getConnectionId())
         .institutionName(account.getInstitutionName())
-        .name(account.getName())
+        .name(displayName(account))
         .type(account.getType())
         .accountNumberLastFour(account.getAccountNumberLastFour())
         .balance(account.getBalance())
@@ -23,6 +23,15 @@ public final class AccountMapper {
         .lastUpdate(account.getLastUpdate())
         .disabled(account.isDisabled())
         .build();
+  }
+
+  public static String displayName(Account account) {
+    if (account == null) {
+      return null;
+    }
+
+    String displayName = account.getDisplayName();
+    return displayName == null || displayName.isBlank() ? account.getName() : displayName;
   }
 
   public static ConnectionRequiringActionResponse toConnectionRequiringActionResponse(

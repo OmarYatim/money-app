@@ -20,6 +20,21 @@ export class AccountService {
     return this.http.get<Account[]>(`${this.apiBaseUrl}/api/accounts`);
   }
 
+  getTransactionFilterAccounts(): Observable<Account[]> {
+    return this.http.get<Account[]>(`${this.apiBaseUrl}/api/accounts/transaction-filter-options`);
+  }
+
+  updateAccount(accountId: number, name: string): Observable<Account> {
+    return this.http.patch<Account>(`${this.apiBaseUrl}/api/accounts/${accountId}`, { name });
+  }
+
+  disconnectConnection(connectionId: number, deleteData: boolean): Observable<void> {
+    return this.http.delete<void>(
+      `${this.apiBaseUrl}/api/bank/connections/${connectionId}`,
+      { params: { deleteData: String(deleteData) } },
+    );
+  }
+
   getSyncStatus(): Observable<SyncStatus> {
     return this.http.get<SyncStatus>(`${this.apiBaseUrl}/api/sync/status`);
   }

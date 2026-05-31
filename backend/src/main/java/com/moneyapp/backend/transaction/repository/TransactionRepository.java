@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.transaction.annotation.Transactional;
 
 public interface TransactionRepository
     extends JpaRepository<Transaction, Long>, JpaSpecificationExecutor<Transaction> {
@@ -20,4 +23,15 @@ public interface TransactionRepository
 
   Optional<Transaction> findByUserIdAndExternalTransactionId(
       Long userId, Long externalTransactionId);
+
+  @Transactional
+  void deleteByUserIdAndAccountIdIn(Long userId, List<Long> accountIds);
+
+  @Query(
+      """
+      select distinct t.accountId
+      from Transaction t
+      where t.userId = :userId and t.accountId is not null
+      """)
+  List<Long> findDistinctAccountIdsWithTransactions(@Param("userId") Long userId);
 }

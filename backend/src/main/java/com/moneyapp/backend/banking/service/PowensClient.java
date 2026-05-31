@@ -16,6 +16,10 @@ public interface PowensClient {
 
   PowensConnectionsResponse fetchConnections(String permanentAccessToken);
 
+  default void deleteConnection(String permanentAccessToken, Long connectionId) {
+    throw new UnsupportedOperationException("Connection deletion is not supported");
+  }
+
   default PowensTransactionsResponse fetchTransactions(String permanentAccessToken) {
     throw new UnsupportedOperationException("Transaction sync is not supported");
   }

@@ -68,6 +68,17 @@ class WebClientPowensClient implements PowensClient {
   }
 
   @Override
+  public void deleteConnection(String permanentAccessToken, Long connectionId) {
+    powensWebClient
+        .delete()
+        .uri("/users/me/connections/{connectionId}", connectionId)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + permanentAccessToken)
+        .retrieve()
+        .toBodilessEntity()
+        .block();
+  }
+
+  @Override
   public PowensTransactionsResponse fetchTransactions(String permanentAccessToken) {
     return powensWebClient
         .get()

@@ -1,0 +1,41 @@
+<section class="connected-banks">
+  <div class="connected-banks__header">
+    <div>
+      <h2 class="connected-banks__title">Connected banks</h2>
+      <p class="connected-banks__subtitle">
+        {{ bankGroups().length }} bank{{ bankGroups().length === 1 ? '' : 's' }} linked · disconnect any time
+      </p>
+    </div>
+  </div>
+
+  <div class="connected-banks__list">
+    @for (group of bankGroups(); track group.id) {
+      <div class="connected-banks__row">
+        <span class="connected-banks__logo" aria-hidden="true">{{ group.initial }}</span>
+        <div class="connected-banks__details">
+          <div class="connected-banks__name">{{ group.institutionName }}</div>
+          <div class="connected-banks__meta">
+            {{ group.accounts.length }} account{{ group.accounts.length === 1 ? '' : 's' }} · synced
+          </div>
+        </div>
+        <span
+          class="connected-banks__balance"
+          [class.connected-banks__balance--negative]="group.totalBalance < 0"
+        >
+          {{ group.totalBalance | currency: group.accounts[0].currency : 'symbol' : '1.0-0' }}
+        </span>
+        <button
+          class="connected-banks__disconnect"
+          type="button"
+          [disabled]="group.connectionId === null || disconnectingConnectionId() !== null"
+          (click)="emitDisconnect(group)"
+        >
+          <mat-icon aria-hidden="true">link_off</mat-icon>
+          <span>
+            {{ disconnectingConnectionId() === group.connectionId ? 'Disconnecting…' : 'Disconnect' }}
+          </span>
+        </button>
+      </div>
+    }
+  </div>
+</section>

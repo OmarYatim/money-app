@@ -14,7 +14,10 @@ import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.entity.Account;
 import com.moneyapp.backend.banking.repository.AccountRepository;
+import com.moneyapp.backend.transaction.entity.Transaction;
+import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,10 +43,13 @@ class AccountServiceTest {
 
   @Autowired private AccountRepository accountRepository;
 
+  @Autowired private TransactionRepository transactionRepository;
+
   @Autowired private CurrentAppUserService currentAppUserService;
 
   @BeforeEach
   void setUp() {
+    transactionRepository.deleteAll();
     accountRepository.deleteAll();
     appUserRepository.deleteAll();
   }
@@ -75,7 +81,8 @@ class AccountServiceTest {
                             BigDecimal.valueOf(25),
                             new PowensAccountResponse.PowensCurrency("EUR", "€"),
                             LocalDateTime.of(2026, 5, 2, 12, 0),
-                            false)))));
+                            false)))),
+            transactionRepository);
 
     AccountService.AccountSyncResult result = service.syncAccounts(appUser);
 
@@ -106,6 +113,7 @@ class AccountServiceTest {
             .connectionId(456L)
             .institutionName("Test Bank")
             .name("Main checking")
+            .displayName("Everyday account")
             .type("checking")
             .accountNumberLastFour("1234")
             .balance(BigDecimal.valueOf(100))
@@ -130,7 +138,8 @@ class AccountServiceTest {
                             BigDecimal.ZERO,
                             new PowensAccountResponse.PowensCurrency("EUR", "€"),
                             LocalDateTime.of(2026, 5, 2, 12, 0),
-                            false)))));
+                            false)))),
+            transactionRepository);
 
     List<Account> accounts = service.syncAccounts(appUser).accounts();
 
@@ -140,6 +149,7 @@ class AccountServiceTest {
     assertThat(account.getExternalAccountId()).isEqualTo(222L);
     assertThat(account.getConnectionId()).isEqualTo(789L);
     assertThat(account.getBalance()).isEqualByComparingTo("1200");
+    assertThat(account.getDisplayName()).isEqualTo("Everyday account");
   }
 
   @Test
@@ -162,7 +172,8 @@ class AccountServiceTest {
         new AccountService(
             currentAppUserService,
             accountRepository,
-            new StubPowensClient(new PowensAccountsResponse(List.of())));
+            new StubPowensClient(new PowensAccountsResponse(List.of())),
+            transactionRepository);
 
     List<AccountResponse> accounts = service.findAccounts("person@example.com");
 
@@ -172,12 +183,115 @@ class AccountServiceTest {
   }
 
   @Test
+  void updateAccountStoresDisplayNameWithoutReplacingPowensName() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Account account =
+        accountRepository.save(
+            Account.builder()
+                .userId(appUser.getId())
+                .externalAccountId(123L)
+                .connectionId(456L)
+                .institutionName("Test Bank")
+                .name("Main checking")
+                .type("checking")
+                .balance(BigDecimal.TEN)
+                .coming(BigDecimal.ZERO)
+                .currency("EUR")
+                .build());
+    AccountService service =
+        new AccountService(
+            currentAppUserService,
+            accountRepository,
+            new StubPowensClient(new PowensAccountsResponse(List.of())),
+            transactionRepository);
+
+    AccountResponse response =
+        service.updateAccount("person@example.com", account.getId(), "  Everyday account  ");
+
+    Account savedAccount = accountRepository.findById(account.getId()).orElseThrow();
+    assertThat(response.name()).isEqualTo("Everyday account");
+    assertThat(savedAccount.getName()).isEqualTo("Main checking");
+    assertThat(savedAccount.getDisplayName()).isEqualTo("Everyday account");
+  }
+
+  @Test
+  void findTransactionFilterAccountsIncludesDisabledAccountsWithTransactionHistory() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Account activeAccount =
+        accountRepository.save(
+            Account.builder()
+                .userId(appUser.getId())
+                .externalAccountId(123L)
+                .connectionId(456L)
+                .institutionName("Test Bank")
+                .name("Main checking")
+                .type("checking")
+                .balance(BigDecimal.TEN)
+                .coming(BigDecimal.ZERO)
+                .currency("EUR")
+                .build());
+    Account archivedAccount =
+        accountRepository.save(
+            Account.builder()
+                .userId(appUser.getId())
+                .externalAccountId(124L)
+                .connectionId(789L)
+                .institutionName("Old Bank")
+                .name("Archived checking")
+                .type("checking")
+                .balance(BigDecimal.ZERO)
+                .coming(BigDecimal.ZERO)
+                .currency("EUR")
+                .disabled(true)
+                .build());
+    accountRepository.save(
+        Account.builder()
+            .userId(appUser.getId())
+            .externalAccountId(125L)
+            .connectionId(999L)
+            .institutionName("Empty Bank")
+            .name("Archived empty")
+            .type("checking")
+            .balance(BigDecimal.ZERO)
+            .coming(BigDecimal.ZERO)
+            .currency("EUR")
+            .disabled(true)
+            .build());
+    transactionRepository.save(
+        Transaction.builder()
+            .userId(appUser.getId())
+            .accountId(archivedAccount.getId())
+            .externalAccountId(124L)
+            .externalTransactionId(987L)
+            .date(LocalDate.of(2026, 5, 24))
+            .label("Card payment")
+            .value(BigDecimal.ONE.negate())
+            .type("debit")
+            .category("OTHER")
+            .build());
+    AccountService service =
+        new AccountService(
+            currentAppUserService,
+            accountRepository,
+            new StubPowensClient(new PowensAccountsResponse(List.of())),
+            transactionRepository);
+
+    List<AccountResponse> accounts = service.findTransactionFilterAccounts("person@example.com");
+
+    assertThat(accounts)
+        .extracting(AccountResponse::id)
+        .containsExactly(activeAccount.getId(), archivedAccount.getId());
+    assertThat(accounts.get(1).disabled()).isTrue();
+  }
+
+  @Test
   void syncAccountsRequiresPowensIdentity() {
     AccountService service =
         new AccountService(
             currentAppUserService,
             accountRepository,
-            new StubPowensClient(new PowensAccountsResponse(List.of())));
+            new StubPowensClient(new PowensAccountsResponse(List.of())),
+            transactionRepository);
 
     assertThatThrownBy(() -> service.syncAccounts(AppUser.builder().id(1L).build()))
         .isInstanceOf(IllegalStateException.class)
@@ -190,7 +304,8 @@ class AccountServiceTest {
         new AccountService(
             currentAppUserService,
             accountRepository,
-            new StubPowensClient(new PowensAccountsResponse(List.of())));
+            new StubPowensClient(new PowensAccountsResponse(List.of())),
+            transactionRepository);
 
     assertThatThrownBy(() -> service.findAccounts("nobody@example.com"))
         .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)

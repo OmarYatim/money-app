@@ -4,8 +4,10 @@ import com.moneyapp.backend.banking.entity.UserConnection;
 import com.moneyapp.backend.banking.repository.UserConnectionRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -44,6 +46,18 @@ public class UserConnectionService {
   @Transactional(readOnly = true)
   public List<UserConnection> findConnectionsRequiringAction(Long userId) {
     return userConnectionRepository.findByUserIdAndStateIsNotNull(userId);
+  }
+
+  @Transactional(readOnly = true)
+  public UserConnection findOwnedConnectionOrThrow(Long userId, Long connectionId) {
+    return userConnectionRepository
+        .findByUserIdAndConnectionId(userId, connectionId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.FORBIDDEN));
+  }
+
+  @Transactional
+  public void delete(Long userConnectionId) {
+    userConnectionRepository.deleteById(userConnectionId);
   }
 
   private UserConnection upsertActiveConnection(Long userId, Long connectionId) {

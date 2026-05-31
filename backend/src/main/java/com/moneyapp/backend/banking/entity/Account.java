@@ -48,6 +48,9 @@ public class Account {
   @Column(nullable = false)
   private String name;
 
+  @Column(name = "display_name")
+  private String displayName;
+
   @Column(length = 100)
   private String type;
 
