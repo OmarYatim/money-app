@@ -113,7 +113,22 @@ mat-icon {
   }
 
   ::ng-deep .mat-button-toggle-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     height: 30px;
+    min-width: 92px;
+  }
+
+  ::ng-deep .mat-button-toggle-label-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    line-height: 30px;
+    padding: 0 11px;
+    text-align: center;
+    white-space: nowrap;
   }
 }
 

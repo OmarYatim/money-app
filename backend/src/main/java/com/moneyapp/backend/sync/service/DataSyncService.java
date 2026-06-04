@@ -4,6 +4,7 @@ import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.banking.entity.UserConnection;
 import com.moneyapp.backend.banking.repository.UserConnectionRepository;
 import com.moneyapp.backend.banking.service.AccountService;
+import com.moneyapp.backend.reports.service.NetWorthSnapshotService;
 import com.moneyapp.backend.sync.entity.SyncEvent;
 import com.moneyapp.backend.sync.enums.SyncEventStatus;
 import com.moneyapp.backend.sync.enums.SyncEventTrigger;
@@ -29,6 +30,7 @@ public class DataSyncService {
   private final AccountService accountService;
   private final TransactionService transactionService;
   private final TaskScheduler taskScheduler;
+  private final NetWorthSnapshotService netWorthSnapshotService;
 
   public SyncEvent sync(AppUser appUser, SyncEventTrigger triggeredBy, Long connectionId) {
     return sync(appUser, triggeredBy, connectionId, 1);
@@ -50,6 +52,7 @@ public class DataSyncService {
     try {
       AccountService.AccountSyncResult accountSyncResult = accountService.syncAccounts(appUser);
       transactionService.syncTransactions(appUser, accountSyncResult.ibans());
+      netWorthSnapshotService.createSnapshotIfMissing(appUser);
       syncEvent.setStatus(SyncEventStatus.SUCCESS);
       syncEvent.setCompletedAt(Instant.now());
       syncEvent.setErrorMessage(null);

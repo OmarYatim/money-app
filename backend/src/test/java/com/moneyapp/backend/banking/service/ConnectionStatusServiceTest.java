@@ -12,6 +12,7 @@ import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.dto.SyncStatusResponse;
 import com.moneyapp.backend.banking.repository.UserConnectionRepository;
+import com.moneyapp.backend.reports.service.NetWorthSnapshotService;
 import com.moneyapp.backend.sync.repository.SyncEventRepository;
 import com.moneyapp.backend.sync.service.DataSyncService;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
@@ -93,13 +94,15 @@ class ConnectionStatusServiceTest {
                 .build());
     FakeAccountService accountService = new FakeAccountService();
     FakeTransactionService transactionService = new FakeTransactionService();
+    FakeNetWorthSnapshotService netWorthSnapshotService = new FakeNetWorthSnapshotService();
     DataSyncService dataSyncService =
         new DataSyncService(
             syncEventRepository,
             userConnectionRepository,
             accountService,
             transactionService,
-            new ConcurrentTaskScheduler());
+            new ConcurrentTaskScheduler(),
+            netWorthSnapshotService);
     ConnectionStatusService service =
         new ConnectionStatusService(
             currentAppUserService,
@@ -115,6 +118,7 @@ class ConnectionStatusServiceTest {
     assertThat(response.hasSyncError()).isFalse();
     assertThat(accountService.syncedUserId).isEqualTo(appUser.getId());
     assertThat(transactionService.syncedUserId).isEqualTo(appUser.getId());
+    assertThat(netWorthSnapshotService.snapshotUserId).isEqualTo(appUser.getId());
   }
 
   private static class FakeAccountService extends AccountService {
@@ -142,6 +146,20 @@ class ConnectionStatusServiceTest {
     public List<Transaction> syncTransactions(AppUser appUser, Set<String> knownIbans) {
       syncedUserId = appUser.getId();
       return List.of();
+    }
+  }
+
+  private static class FakeNetWorthSnapshotService extends NetWorthSnapshotService {
+    private Long snapshotUserId;
+
+    FakeNetWorthSnapshotService() {
+      super(null, null);
+    }
+
+    @Override
+    public boolean createSnapshotIfMissing(AppUser user) {
+      snapshotUserId = user.getId();
+      return true;
     }
   }
 
