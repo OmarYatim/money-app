@@ -54,6 +54,12 @@ public class DashboardSummaryService {
         lastSyncedAt(accounts));
   }
 
+  @Transactional(readOnly = true)
+  public BigDecimal computeNetWorth(Long userId) {
+    List<Account> accounts = accountRepository.findByUserIdAndDisabledFalseOrderByNameAsc(userId);
+    return sumAssets(accounts).subtract(sumLiabilities(accounts));
+  }
+
   private List<Transaction> findRecentExpenseWindowTransactions(Long userId) {
     LocalDate today = LocalDate.now();
     return transactionRepository.findByUserIdAndDateBetween(
