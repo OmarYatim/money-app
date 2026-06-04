@@ -1,4 +1,4 @@
-<div class="coming-soon">
+<div class="reports">
   <header class="topbar">
     <div class="topbar__left">
       <nav class="topbar__crumb" aria-label="Breadcrumb">
@@ -8,37 +8,133 @@
         <span class="topbar__crumb-current">Reports</span>
       </nav>
       <h1 class="topbar__title">Reports</h1>
+      <p class="topbar__subtitle">{{ subtitle() }}</p>
     </div>
     <div class="topbar__right">
       <app-page-actions />
+      <button class="topbar__action-btn" type="button" (click)="reloadReports()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        <span>Refresh</span>
+      </button>
     </div>
   </header>
 
-  <div class="coming-soon__body">
-    <div class="coming-soon__card">
-      <div class="coming-soon__icon">
-        <span class="material-icons">bar_chart</span>
+  <div class="reports__body">
+    <section class="hero">
+      <div class="hero__head">
+        <div>
+          <div class="hero__kicker">
+            <span class="hero__dot"></span>
+            Period summary
+          </div>
+          <h2 class="hero__title">{{ currentRange().label }}</h2>
+          <p class="hero__subtitle">{{ periodLabel() }}</p>
+        </div>
+
+        <div class="hero__controls">
+          <mat-button-toggle-group
+            class="range-toggle"
+            [value]="selectedRange()"
+            aria-label="Report date range"
+            (change)="selectRange($event.value)"
+          >
+            @for (option of rangeOptions; track option.value) {
+              <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+
+          <label class="account-filter">
+            <span class="sr-only">Account</span>
+            <select [value]="selectedAccountId() ?? ''" (change)="selectAccount($event)">
+              <option value="">All accounts</option>
+              @for (account of accounts(); track account.id) {
+                <option [value]="account.id">{{ accountLabel(account) }}</option>
+              }
+            </select>
+            <mat-icon aria-hidden="true">expand_more</mat-icon>
+          </label>
+        </div>
       </div>
-      <div class="coming-soon__badge">Coming soon</div>
-      <h2 class="coming-soon__heading">Financial reports</h2>
-      <p class="coming-soon__text">
-        Detailed monthly and yearly reports — income vs. expenses, category trends, net worth evolution. Export to PDF or CSV.
-      </p>
-      <div class="coming-soon__features">
-        <div class="coming-soon__feature">
-          <span class="material-icons">calendar_month</span>
-          <span>Monthly and yearly breakdowns</span>
+
+      <div class="hero__stats">
+        <div class="hero-stat">
+          <span class="hero-stat__label">Income</span>
+          <strong class="hero-stat__value hero-stat__value--up">
+            {{ totalIncome() | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          </strong>
+          <span class="hero-stat__sub">Selected period</span>
         </div>
-        <div class="coming-soon__feature">
-          <span class="material-icons">category</span>
-          <span>Category trend analysis</span>
+        <div class="hero-stat">
+          <span class="hero-stat__label">Spending</span>
+          <strong class="hero-stat__value hero-stat__value--down">
+            {{ totalSpending() | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          </strong>
+          <span class="hero-stat__sub">{{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} categorised</span>
         </div>
-        <div class="coming-soon__feature">
-          <span class="material-icons">download</span>
-          <span>Export to PDF and CSV</span>
+        <div class="hero-stat">
+          <span class="hero-stat__label">Net flow</span>
+          <strong class="hero-stat__value" [class.hero-stat__value--down]="netCashFlow() < 0">
+            {{ netCashFlow() | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          </strong>
+          <span class="hero-stat__sub">Income minus spending</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat__label">Savings rate</span>
+          <strong class="hero-stat__value">{{ savingsRate() }}%</strong>
+          <span class="hero-stat__sub">Income kept</span>
         </div>
       </div>
-      <a routerLink="/dashboard" class="coming-soon__link">Back to dashboard</a>
-    </div>
+    </section>
+
+    @if (state().loading) {
+      <div class="reports__loading" aria-live="polite">
+        <mat-spinner diameter="36" />
+      </div>
+    } @else if (state().error) {
+      <div class="notice-card" role="alert">
+        <p>{{ state().error }}</p>
+        <button class="btn-ghost" type="button" (click)="reloadReports()">Retry</button>
+      </div>
+    } @else {
+      <section class="report-grid report-grid--flow">
+        <div class="report-card report-card--wide">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Income vs spending</h3>
+              <p class="report-card__sub">Monthly cash flow · net line included</p>
+            </div>
+          </div>
+          <app-income-expenses-chart [data]="state().incomeExpenses" />
+        </div>
+
+        <div class="report-card">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Net worth trajectory</h3>
+              <p class="report-card__sub">Snapshot history · local database only</p>
+            </div>
+          </div>
+          <app-net-worth-chart [data]="state().netWorthHistory" />
+        </div>
+      </section>
+
+      <section class="report-grid">
+        <div class="report-card report-card--wide">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Where it goes</h3>
+              <p class="report-card__sub">
+                {{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} across
+                {{ state().spending.length }} categories
+              </p>
+            </div>
+          </div>
+          <app-spending-chart
+            [data]="state().spending"
+            (categorySelected)="drillDownToCategory($event)"
+          />
+        </div>
+      </section>
+    }
   </div>
 </div>

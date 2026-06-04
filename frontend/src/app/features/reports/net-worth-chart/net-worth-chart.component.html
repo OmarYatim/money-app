@@ -1,0 +1,15 @@
+@if (data().length === 0) {
+  <div class="chart-empty">
+    Not enough data yet — net worth history will appear after your first sync.
+  </div>
+} @else {
+  <div class="chart-frame">
+    <canvas
+      baseChart
+      type="line"
+      [data]="chartData()"
+      [options]="chartOptions"
+      aria-label="Net worth history chart"
+    ></canvas>
+  </div>
+}

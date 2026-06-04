@@ -1,0 +1,13 @@
+@if (data().length === 0) {
+  <div class="chart-empty">No cash flow data for this period.</div>
+} @else {
+  <div class="chart-frame">
+    <canvas
+      baseChart
+      type="bar"
+      [data]="chartData()"
+      [options]="chartOptions"
+      aria-label="Income versus spending chart"
+    ></canvas>
+  </div>
+}

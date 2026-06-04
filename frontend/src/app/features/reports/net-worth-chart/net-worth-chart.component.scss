@@ -1,0 +1,19 @@
+:host {
+  display: block;
+}
+
+.chart-frame {
+  height: 250px;
+}
+
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 250px;
+  padding: 0 24px;
+  color: var(--ink-400);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}

@@ -1,0 +1,33 @@
+@if (data().length === 0) {
+  <div class="chart-empty">No spending data for this period.</div>
+} @else {
+  <div class="spending-chart">
+    <div class="spending-chart__donut">
+      <canvas
+        baseChart
+        type="doughnut"
+        [data]="chartData()"
+        [options]="chartOptions"
+        (chartClick)="selectSegment($event)"
+        aria-label="Spending by category chart"
+      ></canvas>
+      <div class="spending-chart__center" aria-hidden="true">
+        <span>Total spent</span>
+        <strong>{{ total() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+      </div>
+    </div>
+
+    <div class="spending-chart__list">
+      @for (item of data(); track item.category) {
+        <button class="spending-chart__row" type="button" (click)="categorySelected.emit(item.category)">
+          <span class="spending-chart__dot" [style.background]="categoryColor(item.category)"></span>
+          <span class="spending-chart__label">{{ categoryLabel(item.category) }}</span>
+          <span class="spending-chart__pct">{{ item.percentage }}%</span>
+          <span class="spending-chart__amount">
+            {{ item.totalAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          </span>
+        </button>
+      }
+    </div>
+  </div>
+}
