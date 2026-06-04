@@ -72,13 +72,13 @@ export class SpendingChartComponent {
     },
   };
 
-  protected selectSegment(event: { event?: ChartEvent; active?: { index: number }[] }): void {
-    const index = event.active?.[0]?.index;
-    if (index === undefined) {
+  protected selectSegment(event: { event?: ChartEvent; active?: object[] }): void {
+    const activeElement = event.active?.[0];
+    if (!this.hasChartElementIndex(activeElement)) {
       return;
     }
 
-    const item = this.data()[index];
+    const item = this.data()[activeElement.index];
     if (item) {
       this.categorySelected.emit(item.category);
     }
@@ -94,5 +94,9 @@ export class SpendingChartComponent {
       .split('_')
       .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
       .join(' ');
+  }
+
+  private hasChartElementIndex(value: object | undefined): value is { index: number } {
+    return typeof (value as { index?: unknown } | undefined)?.index === 'number';
   }
 }

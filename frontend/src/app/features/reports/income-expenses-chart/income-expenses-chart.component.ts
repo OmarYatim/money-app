@@ -14,7 +14,7 @@ import type { IncomeExpenses } from '../../../shared/models/report.model';
 export class IncomeExpensesChartComponent {
   readonly data = input.required<IncomeExpenses[]>();
 
-  protected readonly chartData = computed<ChartData<'bar'>>(() => ({
+  protected readonly chartData = computed<ChartData>(() => ({
     labels: this.data().map((item) => this.monthLabel(item.month)),
     datasets: [
       {
@@ -45,7 +45,7 @@ export class IncomeExpensesChartComponent {
     ],
   }));
 
-  protected readonly chartOptions: ChartOptions<'bar'> = {
+  protected readonly chartOptions: ChartOptions = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
