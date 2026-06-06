@@ -118,37 +118,6 @@
         <div class="report-card">
           <div class="report-card__header">
             <div>
-              <h3 class="report-card__title">Net worth trajectory</h3>
-              <p class="report-card__sub">Actual snapshots · dashed forecast from current cash flow</p>
-            </div>
-          </div>
-          <app-net-worth-chart
-            [data]="state().netWorthHistory"
-            [forecastMonthlyDelta]="forecastMonthlyDelta()"
-          />
-        </div>
-      </section>
-
-      <section class="report-grid">
-        <div class="report-card report-card--wide">
-          <div class="report-card__header">
-            <div>
-              <h3 class="report-card__title">Where it goes</h3>
-              <p class="report-card__sub">
-                {{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} across
-                {{ state().spending.length }} categories
-              </p>
-            </div>
-          </div>
-          <app-spending-chart
-            [data]="state().spending"
-            (categorySelected)="drillDownToCategory($event)"
-          />
-        </div>
-
-        <div class="report-card">
-          <div class="report-card__header">
-            <div>
               <h3 class="report-card__title">Savings rate</h3>
               <p class="report-card__sub">vs goal · 35%</p>
             </div>
@@ -178,6 +147,89 @@
               <strong>{{ netCashFlow() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="report-grid">
+        <div class="report-card">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Where it goes</h3>
+              <p class="report-card__sub">
+                {{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} across
+                {{ state().spending.length }} categories
+              </p>
+            </div>
+          </div>
+          <app-spending-chart
+            [data]="state().spending"
+            (categorySelected)="drillDownToCategory($event)"
+          />
+        </div>
+
+        <div class="report-card">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Top merchants</h3>
+              <p class="report-card__sub">Highest spend in this period</p>
+            </div>
+          </div>
+          @if (state().topMerchants.length > 0) {
+            <div class="merchant-list">
+              @for (merchant of state().topMerchants; track merchant.merchant) {
+                <div class="merchant-row">
+                  <div
+                    class="merchant-row__icon"
+                    [style.background]="categoryColor(merchant.category)"
+                  >
+                    <mat-icon aria-hidden="true">storefront</mat-icon>
+                  </div>
+                  <div class="merchant-row__body">
+                    <strong>{{ merchant.merchant }}</strong>
+                    <span>
+                      {{ categoryLabel(merchant.category) }} ·
+                      {{ merchant.transactionCount }} transactions
+                    </span>
+                  </div>
+                  <strong class="merchant-row__amount">
+                    {{ merchant.totalAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}
+                  </strong>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-panel">No merchant spend in this period.</div>
+          }
+        </div>
+      </section>
+
+      <section class="report-card report-card--full">
+        <div class="report-card__header">
+          <div>
+            <h3 class="report-card__title">Fixed vs flexible</h3>
+            <p class="report-card__sub">Recurring commitments compared with variable spend</p>
+          </div>
+        </div>
+        <div class="fixed-flex">
+          @for (group of fixedFlexibleGroups(); track group.key) {
+            <div class="fixed-flex__item">
+              <div class="fixed-flex__head">
+                <span class="fixed-flex__icon" [style.background]="group.color">
+                  <mat-icon aria-hidden="true">{{ group.icon }}</mat-icon>
+                </span>
+                <div>
+                  <strong>{{ group.label }}</strong>
+                  <span>{{ group.percentage }}% of spending</span>
+                </div>
+              </div>
+              <div class="fixed-flex__amount">
+                {{ group.totalAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}
+              </div>
+              <div class="fixed-flex__bar" aria-hidden="true">
+                <span [style.width.%]="group.percentage" [style.background]="group.color"></span>
+              </div>
+            </div>
+          }
         </div>
       </section>
     }

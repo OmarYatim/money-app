@@ -8,14 +8,9 @@ import { firstValueFrom } from 'rxjs';
 
 import { PageActionsComponent } from '../../shared/components/page-actions/page-actions.component';
 import type { Account } from '../../shared/models/account.model';
-import type {
-  IncomeExpenses,
-  NetWorthHistory,
-  SpendingByCategory,
-} from '../../shared/models/report.model';
+import type { IncomeExpenses, SpendingByCategory, TopMerchant } from '../../shared/models/report.model';
 import { AccountService } from '../accounts/account.service';
 import { IncomeExpensesChartComponent } from './income-expenses-chart/income-expenses-chart.component';
-import { NetWorthChartComponent } from './net-worth-chart/net-worth-chart.component';
 import { ReportsService } from './reports.service';
 import { SpendingChartComponent } from './spending-chart/spending-chart.component';
 
@@ -24,7 +19,7 @@ type ReportRange = 'month' | 'quarter' | 'sixMonths' | 'ytd' | 'year';
 interface ReportsState {
   spending: SpendingByCategory[];
   incomeExpenses: IncomeExpenses[];
-  netWorthHistory: NetWorthHistory[];
+  topMerchants: TopMerchant[];
   loading: boolean;
   error: string | null;
 }
@@ -33,6 +28,15 @@ interface ReportRangeOption {
   value: ReportRange;
   label: string;
   months: number;
+}
+
+interface FixedFlexibleGroup {
+  key: string;
+  label: string;
+  icon: string;
+  totalAmount: number;
+  percentage: number;
+  color: string;
 }
 
 const RANGE_OPTIONS: ReportRangeOption[] = [
@@ -46,10 +50,67 @@ const RANGE_OPTIONS: ReportRangeOption[] = [
 const EMPTY_STATE: ReportsState = {
   spending: [],
   incomeExpenses: [],
-  netWorthHistory: [],
+  topMerchants: [],
   loading: true,
   error: null,
 };
+
+const CATEGORY_COLORS: Record<string, string> = {
+  GROCERIES: '#5b5fef',
+  DINING: '#d99838',
+  TRANSPORT: '#3aa8c4',
+  UTILITIES: '#9396a8',
+  RENT: '#7c80f5',
+  HEALTH: '#2cad6a',
+  ENTERTAINMENT: '#e04a62',
+  SHOPPING: '#c8366f',
+  TRAVEL: '#3aa8c4',
+  EDUCATION: '#7c80f5',
+  INCOME: '#1f8a52',
+  TRANSFER: '#6b6e85',
+  SAVINGS: '#2cad6a',
+  SUBSCRIPTION: '#7c80f5',
+  OTHER: '#9396a8',
+};
+
+const FIXED_FLEXIBLE_CATEGORY_GROUPS: readonly {
+  key: string;
+  label: string;
+  icon: string;
+  color: string;
+  categories: readonly string[];
+}[] = [
+  {
+    key: 'fixed',
+    label: 'Fixed costs',
+    icon: 'home',
+    color: '#5b5fef',
+    categories: ['RENT', 'UTILITIES', 'TRANSPORT'],
+  },
+  {
+    key: 'subscriptions',
+    label: 'Recurring subs',
+    icon: 'sync',
+    color: '#7c80f5',
+    categories: ['SUBSCRIPTION'],
+  },
+  {
+    key: 'flexible',
+    label: 'Flexible spend',
+    icon: 'tune',
+    color: '#d99838',
+    categories: [
+      'GROCERIES',
+      'DINING',
+      'HEALTH',
+      'ENTERTAINMENT',
+      'SHOPPING',
+      'TRAVEL',
+      'EDUCATION',
+      'OTHER',
+    ],
+  },
+];
 
 @Component({
   selector: 'app-reports',
@@ -60,7 +121,6 @@ const EMPTY_STATE: ReportsState = {
     MatProgressSpinnerModule,
     PageActionsComponent,
     IncomeExpensesChartComponent,
-    NetWorthChartComponent,
     SpendingChartComponent,
   ],
   templateUrl: './reports.component.html',
@@ -114,10 +174,7 @@ export class ReportsComponent {
 
   protected readonly showNetCashFlowLine = computed(() => this.state().incomeExpenses.length > 1);
 
-  protected readonly forecastMonthlyDelta = computed(() => {
-    const months = Math.max(this.state().incomeExpenses.length, 1);
-    return this.netCashFlow() / months;
-  });
+  protected readonly fixedFlexibleGroups = computed(() => this.buildFixedFlexibleGroups());
 
   protected readonly savingsRateGaugeBackground = computed(() => {
     const progressDegrees = Math.min(Math.max(this.savingsRate(), 0), 100) * 1.8;
@@ -147,7 +204,7 @@ export class ReportsComponent {
     this.state.set({ ...this.state(), loading: true, error: null });
 
     try {
-      const [spending, incomeExpenses, netWorthHistory] = await Promise.all([
+      const [spending, incomeExpenses, topMerchants] = await Promise.all([
         firstValueFrom(
           this.reportsService.getSpendingByCategory({
             startDate: dateRange.startDate,
@@ -156,13 +213,20 @@ export class ReportsComponent {
           }),
         ),
         firstValueFrom(this.reportsService.getIncomeVsExpenses({ months, accountId })),
-        firstValueFrom(this.reportsService.getNetWorthHistory(months)),
+        firstValueFrom(
+          this.reportsService.getTopMerchants({
+            startDate: dateRange.startDate,
+            endDate: dateRange.endDate,
+            accountId,
+            limit: 6,
+          }),
+        ),
       ]);
 
       this.state.set({
         spending,
         incomeExpenses,
-        netWorthHistory,
+        topMerchants,
         loading: false,
         error: null,
       });
@@ -201,6 +265,18 @@ export class ReportsComponent {
     return `${account.name}${lastFour}`;
   }
 
+  protected categoryColor(category: string): string {
+    return CATEGORY_COLORS[category.toUpperCase()] ?? CATEGORY_COLORS['OTHER'];
+  }
+
+  protected categoryLabel(category: string): string {
+    return category
+      .toLowerCase()
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
+  }
+
   protected periodLabel(): string {
     const range = this.dateRange();
     return `${this.formatShortDate(range.startDate)} – ${this.formatShortDate(range.endDate)}`;
@@ -233,5 +309,39 @@ export class ReportsComponent {
     return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(
       new Date(`${date}T00:00:00`),
     );
+  }
+
+  private buildFixedFlexibleGroups(): FixedFlexibleGroup[] {
+    const spending = this.state().spending;
+    const spendingByCategory = new Map(
+      spending.map((item) => [item.category.toUpperCase(), item.totalAmount]),
+    );
+    const assignedCategories = new Set(
+      FIXED_FLEXIBLE_CATEGORY_GROUPS.flatMap((group) => group.categories),
+    );
+    const total = this.spendingTotal();
+
+    return FIXED_FLEXIBLE_CATEGORY_GROUPS.map((group) => {
+      const groupedTotal = group.categories.reduce(
+        (sum, category) => sum + (spendingByCategory.get(category) ?? 0),
+        0,
+      );
+      const unassignedTotal =
+        group.key === 'flexible'
+          ? spending
+              .filter((item) => !assignedCategories.has(item.category.toUpperCase()))
+              .reduce((sum, item) => sum + item.totalAmount, 0)
+          : 0;
+      const totalAmount = groupedTotal + unassignedTotal;
+
+      return {
+        key: group.key,
+        label: group.label,
+        icon: group.icon,
+        totalAmount,
+        percentage: total > 0 ? Math.round((totalAmount / total) * 100) : 0,
+        color: group.color,
+      };
+    });
   }
 }

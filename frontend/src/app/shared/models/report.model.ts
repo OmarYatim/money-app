@@ -11,7 +11,10 @@ export interface IncomeExpenses {
   netCashFlow: number;
 }
 
-export interface NetWorthHistory {
-  date: string;
-  netWorth: number;
+export interface TopMerchant {
+  merchant: string;
+  category: string;
+  transactionCount: number;
+  totalAmount: number;
+  lastTransactionDate: string;
 }
