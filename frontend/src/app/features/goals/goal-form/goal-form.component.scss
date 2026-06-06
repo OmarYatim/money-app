@@ -193,9 +193,48 @@
 }
 
 .goal-modal__field input[type='range'] {
-  accent-color: var(--goal-accent);
+  appearance: none;
+  background: transparent;
   min-height: 20px;
   padding: 0;
+}
+
+.goal-modal__field input[type='range']::-webkit-slider-runnable-track {
+  background: var(--paper-2);
+  border-radius: 999px;
+  height: 8px;
+}
+
+.goal-modal__field input[type='range']::-webkit-slider-thumb {
+  appearance: none;
+  background: var(--goal-accent);
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(20 22 58 / 18%);
+  height: 18px;
+  margin-top: -5px;
+  width: 18px;
+}
+
+.goal-modal__field input[type='range']::-moz-range-track {
+  background: var(--paper-2);
+  border-radius: 999px;
+  height: 8px;
+}
+
+.goal-modal__field input[type='range']::-moz-range-progress {
+  background: var(--goal-accent);
+  border-radius: 999px;
+  height: 8px;
+}
+
+.goal-modal__field input[type='range']::-moz-range-thumb {
+  background: var(--goal-accent);
+  border: 2px solid white;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgb(20 22 58 / 18%);
+  height: 16px;
+  width: 16px;
 }
 
 .goal-modal__icon-grid,

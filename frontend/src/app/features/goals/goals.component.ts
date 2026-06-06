@@ -188,13 +188,13 @@ export class GoalsComponent {
     ];
   });
   protected readonly contributionFeed = computed<ContributionFeedItem[]>(() => {
-    const selectedGoal = this.selectedGoal();
+    const goalsById = new Map(this.activeGoals().map((goal) => [goal.id, goal]));
 
-    return this.state().contributions.slice(0, 6).map((contribution) => ({
-      goal: selectedGoal,
+    return this.state().contributions.map((contribution) => ({
+      goal: goalsById.get(contribution.goalId) ?? null,
       amount: contribution.amount,
       contributedAt: contribution.contributedAt,
-      mode: contribution.note?.trim() || (selectedGoal?.autoSaveEnabled ? 'Auto-save' : 'Manual'),
+      mode: contribution.note?.trim() || (goalsById.get(contribution.goalId)?.autoSaveEnabled ? 'Auto-save' : 'Manual'),
     }));
   });
   protected readonly timelineGoals = computed<TimelineGoal[]>(() => {
@@ -232,7 +232,7 @@ export class GoalsComponent {
       this.accounts.set(accounts);
       this.state.set({ ...this.state(), goals, loading: false, error: null });
       this.selectedGoalId.set(goals[0]?.id ?? null);
-      await this.loadContributions(this.selectedGoalId());
+      await this.loadAllContributions(goals);
     } catch {
       this.state.set({ ...this.state(), loading: false, error: 'Unable to load goals.' });
     }
@@ -241,7 +241,6 @@ export class GoalsComponent {
   protected async selectGoal(goal: Goal): Promise<void> {
     this.selectedGoalId.set(goal.id);
     this.activePanel.set('none');
-    await this.loadContributions(goal.id);
   }
 
   protected openCreateForm(): void {
@@ -341,7 +340,7 @@ export class GoalsComponent {
       this.upsertGoal(savedGoal);
       this.selectedGoalId.set(savedGoal.id);
       this.activePanel.set('none');
-      await this.loadContributions(savedGoal.id);
+      await this.loadAllContributions();
       this.state.set({ ...this.state(), saving: false, error: null });
     } catch {
       this.state.set({ ...this.state(), saving: false, error: 'Unable to save goal.' });
@@ -361,7 +360,7 @@ export class GoalsComponent {
       );
       this.upsertGoal(updatedGoal);
       this.activePanel.set('none');
-      await this.loadContributions(updatedGoal.id);
+      await this.loadAllContributions();
       this.state.set({ ...this.state(), saving: false, error: null });
     } catch {
       this.state.set({ ...this.state(), saving: false, error: 'Unable to add contribution.' });
@@ -375,20 +374,26 @@ export class GoalsComponent {
       const goals = this.state().goals.filter((item) => item.id !== goal.id);
       this.state.set({ ...this.state(), goals, saving: false, contributions: [] });
       this.selectedGoalId.set(goals[0]?.id ?? null);
-      await this.loadContributions(this.selectedGoalId());
+      await this.loadAllContributions(goals);
     } catch {
       this.state.set({ ...this.state(), saving: false, error: 'Unable to archive goal.' });
     }
   }
 
-  private async loadContributions(goalId: number | null): Promise<void> {
-    if (goalId === null) {
+  private async loadAllContributions(goals = this.activeGoals()): Promise<void> {
+    if (goals.length === 0) {
       this.state.set({ ...this.state(), contributions: [] });
       return;
     }
 
-    const contributions = await firstValueFrom(this.goalService.getContributions(goalId));
-    this.state.set({ ...this.state(), contributions });
+    const contributions = await Promise.all(
+      goals.map((goal) => firstValueFrom(this.goalService.getContributions(goal.id))),
+    );
+    const sortedContributions = contributions
+      .flat()
+      .sort((left, right) => new Date(right.contributedAt).getTime() - new Date(left.contributedAt).getTime());
+
+    this.state.set({ ...this.state(), contributions: sortedContributions });
   }
 
   private upsertGoal(goal: Goal): void {
