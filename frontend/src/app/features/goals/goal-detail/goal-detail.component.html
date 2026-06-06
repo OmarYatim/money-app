@@ -11,10 +11,21 @@
     </div>
 
     <div class="goal-detail__hero">
-      <span>{{ selectedGoal.currentAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
-      <p>saved of {{ selectedGoal.targetAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
-      <div class="goal-detail__bar" aria-hidden="true">
-        <span [style.width.%]="selectedGoal.progressPercent"></span>
+      <div class="goal-detail__spotlight">
+        <div class="goal-detail__ring" [style.background]="ringBackground()" aria-label="Goal progress">
+          <div>
+            <strong>{{ selectedGoal.progressPercent }}%</strong>
+            <span>funded</span>
+          </div>
+        </div>
+
+        <div class="goal-detail__figure">
+          <span>{{ selectedGoal.currentAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+          <p>saved of {{ selectedGoal.targetAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
+          <div class="goal-detail__bar" aria-hidden="true">
+            <span [style.width.%]="selectedGoal.progressPercent"></span>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -47,6 +58,30 @@
           }
         </dd>
       </div>
+      <div>
+        <dt>Funding source</dt>
+        <dd>
+          @if (selectedGoal.linkedAccountName) {
+            {{ selectedGoal.linkedAccountName }}
+          } @else {
+            Manual
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>
+          @if (selectedGoal.projectedCompletionDate && selectedGoal.targetDate) {
+            @if (selectedGoal.projectedCompletionDate <= selectedGoal.targetDate) {
+              On track
+            } @else {
+              Behind target
+            }
+          } @else {
+            No projection yet
+          }
+        </dd>
+      </div>
     </dl>
 
     <div class="goal-detail__source">
@@ -66,7 +101,22 @@
     }
 
     <section class="goal-detail__history" aria-label="Contribution history">
-      <h3>Contributions</h3>
+      <div class="goal-detail__history-header">
+        <div>
+          <h3>Contributions</h3>
+          <p>Manual history for this goal</p>
+        </div>
+        <span>{{ contributions().length }} entries</span>
+      </div>
+      @if (contributions().length > 0) {
+        <div class="goal-detail__chart" aria-label="Contribution chart">
+          @for (contribution of contributions(); track contribution.id) {
+            <div class="goal-detail__chart-bar">
+              <span [style.height.%]="(contribution.amount / largestContribution()) * 100"></span>
+            </div>
+          }
+        </div>
+      }
       @for (contribution of contributions(); track contribution.id) {
         <div class="goal-detail__contribution">
           <span>{{ contribution.amount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>

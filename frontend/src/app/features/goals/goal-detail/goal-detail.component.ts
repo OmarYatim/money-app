@@ -20,4 +20,12 @@ export class GoalDetailComponent {
     const goal = this.goal();
     return goal ? Math.max(goal.targetAmount - goal.currentAmount, 0) : 0;
   });
+  protected readonly ringBackground = computed(() => {
+    const goal = this.goal();
+    const progress = goal ? Math.min(Math.max(goal.progressPercent, 0), 100) : 0;
+    return `conic-gradient(var(--indigo-500) 0% ${progress}%, var(--ink-100) ${progress}% 100%)`;
+  });
+  protected readonly largestContribution = computed(() =>
+    Math.max(...this.contributions().map((contribution) => contribution.amount), 1),
+  );
 }

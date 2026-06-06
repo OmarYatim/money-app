@@ -1,4 +1,4 @@
-import { CurrencyPipe } from '@angular/common';
+import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
@@ -26,6 +26,13 @@ interface GoalsState {
 }
 
 type GoalsPanel = 'none' | 'create' | 'edit' | 'contribution';
+type GoalsView = 'overview' | 'timeline';
+
+interface TimelineGoal {
+  goal: Goal;
+  progressPercent: number;
+  targetPosition: number | null;
+}
 
 const INITIAL_STATE: GoalsState = {
   goals: [],
@@ -39,6 +46,7 @@ const INITIAL_STATE: GoalsState = {
   selector: 'app-goals',
   imports: [
     CurrencyPipe,
+    DatePipe,
     PageActionsComponent,
     ContributionDialogComponent,
     GoalDetailComponent,
@@ -57,6 +65,7 @@ export class GoalsComponent {
   protected readonly accounts = signal<Account[]>([]);
   protected readonly selectedGoalId = signal<number | null>(null);
   protected readonly activePanel = signal<GoalsPanel>('none');
+  protected readonly view = signal<GoalsView>('overview');
 
   protected readonly selectedGoal = computed(() => {
     const selectedGoalId = this.selectedGoalId();
@@ -64,12 +73,51 @@ export class GoalsComponent {
   });
 
   protected readonly activeGoals = computed(() => this.state().goals);
+  protected readonly onTrackGoals = computed(() =>
+    this.state().goals.filter((goal) => goal.projectedCompletionDate && goal.targetDate
+      ? goal.projectedCompletionDate <= goal.targetDate
+      : goal.progressPercent >= 40),
+  );
   protected readonly totalSaved = computed(() =>
     this.state().goals.reduce((sum, goal) => sum + goal.currentAmount, 0),
   );
   protected readonly totalTarget = computed(() =>
     this.state().goals.reduce((sum, goal) => sum + goal.targetAmount, 0),
   );
+  protected readonly monthlyPace = computed(() =>
+    this.state().goals.reduce((sum, goal) => sum + goal.monthlyRate, 0),
+  );
+  protected readonly overallProgress = computed(() => {
+    const target = this.totalTarget();
+    return target > 0 ? Math.round((this.totalSaved() / target) * 100) : 0;
+  });
+  protected readonly projectedYearEnd = computed(() => this.totalSaved() + this.monthlyPace() * 6);
+  protected readonly averageProgress = computed(() => {
+    const goals = this.state().goals;
+    if (goals.length === 0) {
+      return 0;
+    }
+
+    return Math.round(goals.reduce((sum, goal) => sum + goal.progressPercent, 0) / goals.length);
+  });
+  protected readonly timelineGoals = computed<TimelineGoal[]>(() => {
+    const goals = this.state().goals;
+    const targetDates = goals
+      .map((goal) => goal.targetDate)
+      .filter((targetDate): targetDate is string => targetDate !== null)
+      .sort();
+    const start = targetDates[0] ?? this.todayIsoDate();
+    const end = targetDates[targetDates.length - 1] ?? this.todayIsoDate();
+    const range = Math.max(1, new Date(end).getTime() - new Date(start).getTime());
+
+    return goals.map((goal) => ({
+      goal,
+      progressPercent: Math.min(Math.max(goal.progressPercent, 0), 100),
+      targetPosition: goal.targetDate
+        ? ((new Date(goal.targetDate).getTime() - new Date(start).getTime()) / range) * 100
+        : null,
+    }));
+  });
 
   constructor() {
     void this.loadInitialData();
@@ -102,6 +150,10 @@ export class GoalsComponent {
   protected openCreateForm(): void {
     this.selectedGoalId.set(null);
     this.activePanel.set('create');
+  }
+
+  protected selectView(view: GoalsView): void {
+    this.view.set(view);
   }
 
   protected openEditForm(): void {
@@ -199,5 +251,9 @@ export class GoalsComponent {
     }
 
     return left.id - right.id;
+  }
+
+  private todayIsoDate(): string {
+    return new Date().toISOString().slice(0, 10);
   }
 }

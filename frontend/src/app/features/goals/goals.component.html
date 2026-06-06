@@ -11,6 +11,22 @@
       <p class="topbar__subtitle">Plan savings targets and track contribution progress.</p>
     </div>
     <div class="topbar__right">
+      <div class="goals__view-switch" aria-label="Goal view">
+        <button
+          type="button"
+          [class.goals__view-switch-button--active]="view() === 'overview'"
+          (click)="selectView('overview')"
+        >
+          Overview
+        </button>
+        <button
+          type="button"
+          [class.goals__view-switch-button--active]="view() === 'timeline'"
+          (click)="selectView('timeline')"
+        >
+          Timeline
+        </button>
+      </div>
       <button class="topbar__action-btn" type="button" (click)="openCreateForm()">
         <span class="material-icons">add</span>
         New goal
@@ -33,6 +49,26 @@
       </div>
       <div>
         <span class="material-icons">track_changes</span>
+        <p>Overall progress</p>
+        <strong>{{ overallProgress() }}%</strong>
+      </div>
+      <div>
+        <span class="material-icons">repeat</span>
+        <p>Monthly pace</p>
+        <strong>{{ monthlyPace() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+      </div>
+      <div>
+        <span class="material-icons">check_circle</span>
+        <p>On track</p>
+        <strong>{{ onTrackGoals().length }}/{{ activeGoals().length }}</strong>
+      </div>
+      <div>
+        <span class="material-icons">trending_up</span>
+        <p>Projected reach</p>
+        <strong>{{ projectedYearEnd() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+      </div>
+      <div>
+        <span class="material-icons">flag</span>
         <p>Active goals</p>
         <strong>{{ activeGoals().length }}</strong>
       </div>
@@ -45,46 +81,90 @@
         <div class="goals__status goals__status--error">{{ state().error }}</div>
       }
 
-      <div class="goals__grid">
-        <app-goal-list
-          [goals]="activeGoals()"
-          [selectedGoalId]="selectedGoalId()"
-          (selected)="selectGoal($event)"
-          (archived)="archiveGoal($event)"
-        />
+      @if (view() === 'timeline') {
+        <section class="goals__timeline" aria-label="Goal timeline chart">
+          <div class="goals__timeline-header">
+            <div>
+              <h2>Goal timeline</h2>
+              <p>Targets plotted by due date with progress shown on each lane.</p>
+            </div>
+            <span>{{ averageProgress() }}% average progress</span>
+          </div>
 
-        <div class="goals__main">
-          @if (activePanel() === 'create') {
-            <app-goal-form
-              [accounts]="accounts()"
-              [saving]="state().saving"
-              (goalSubmitted)="saveGoal($event)"
-              (formClosed)="closePanel()"
-            />
-          } @else if (activePanel() === 'edit') {
-            <app-goal-form
-              [goal]="selectedGoal()"
-              [accounts]="accounts()"
-              [saving]="state().saving"
-              (goalSubmitted)="saveGoal($event)"
-              (formClosed)="closePanel()"
-            />
-          } @else if (activePanel() === 'contribution') {
-            <app-contribution-dialog
-              [saving]="state().saving"
-              (contributionSubmitted)="addContribution($event)"
-              (formClosed)="closePanel()"
-            />
-          } @else {
-            <app-goal-detail
-              [goal]="selectedGoal()"
-              [contributions]="state().contributions"
-              (addContribution)="openContributionForm()"
-              (edit)="openEditForm()"
-            />
-          }
+          <div class="goals__timeline-chart">
+            @for (item of timelineGoals(); track item.goal.id) {
+              <button
+                class="goals__timeline-row"
+                type="button"
+                [class.goals__timeline-row--selected]="item.goal.id === selectedGoalId()"
+                (click)="selectGoal(item.goal)"
+              >
+                <span class="goals__timeline-label">
+                  <span class="goals__timeline-dot"></span>
+                  <span>{{ item.goal.name }}</span>
+                  <small>{{ item.progressPercent }}%</small>
+                </span>
+                <span class="goals__timeline-track">
+                  <span class="goals__timeline-fill" [style.width.%]="item.progressPercent"></span>
+                  @if (item.targetPosition !== null) {
+                    <span class="goals__timeline-marker" [style.left.%]="item.targetPosition"></span>
+                  }
+                </span>
+                <span class="goals__timeline-date">
+                  @if (item.goal.targetDate) {
+                    {{ item.goal.targetDate | date: 'MMM yyyy' }}
+                  } @else {
+                    No deadline
+                  }
+                </span>
+              </button>
+            } @empty {
+              <p class="goals__timeline-empty">Create a goal to see the timeline.</p>
+            }
+          </div>
+        </section>
+      } @else {
+        <div class="goals__grid">
+          <app-goal-list
+            [goals]="activeGoals()"
+            [selectedGoalId]="selectedGoalId()"
+            (selected)="selectGoal($event)"
+            (archived)="archiveGoal($event)"
+          />
+
+          <div class="goals__main">
+            @if (activePanel() === 'create') {
+              <app-goal-form
+                [accounts]="accounts()"
+                [saving]="state().saving"
+                (goalSubmitted)="saveGoal($event)"
+                (formClosed)="closePanel()"
+              />
+            } @else if (activePanel() === 'edit') {
+              <app-goal-form
+                [goal]="selectedGoal()"
+                [accounts]="accounts()"
+                [saving]="state().saving"
+                (goalSubmitted)="saveGoal($event)"
+                (formClosed)="closePanel()"
+              />
+            } @else if (activePanel() === 'contribution') {
+              <app-contribution-dialog
+                [saving]="state().saving"
+                (contributionSubmitted)="addContribution($event)"
+                (formClosed)="closePanel()"
+              />
+            } @else {
+              <app-goal-detail
+                [goal]="selectedGoal()"
+                [contributions]="state().contributions"
+                (addContribution)="openContributionForm()"
+                (edit)="openEditForm()"
+              />
+            }
+          </div>
         </div>
-      </div>
+      }
     }
   </main>
 </div>
