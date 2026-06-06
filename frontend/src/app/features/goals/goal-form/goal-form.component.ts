@@ -94,6 +94,8 @@ export class GoalFormComponent {
     this.form.valueChanges.pipe(startWith(this.form.getRawValue())),
     { initialValue: this.form.getRawValue() },
   );
+  protected readonly selectedColor = computed(() => this.formValue().color ?? '#5b5fef');
+  protected readonly selectedColorSoft = computed(() => this.softColor(this.selectedColor(), 14));
   protected readonly targetAmount = computed(() => this.formValue().targetAmount ?? 0);
   protected readonly monthlyAmount = computed(() => this.formValue().plannedMonthlyContribution ?? 0);
   protected readonly remainingAmount = computed(() => {
@@ -212,5 +214,19 @@ export class GoalFormComponent {
     }
 
     return color;
+  }
+
+  private softColor(color: string, opacity: number): string {
+    const normalized = color.startsWith('#') ? color.slice(1) : color;
+
+    if (normalized.length !== 6) {
+      return 'var(--lavender-50)';
+    }
+
+    const alpha = Math.round((opacity / 100) * 255)
+      .toString(16)
+      .padStart(2, '0');
+
+    return `#${normalized}${alpha}`;
   }
 }

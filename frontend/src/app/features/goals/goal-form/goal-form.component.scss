@@ -14,6 +14,9 @@
 }
 
 .goal-modal__panel {
+  --goal-accent: var(--indigo-500);
+  --goal-accent-soft: var(--lavender-50);
+
   background: white;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -21,9 +24,9 @@
   display: flex;
   flex-direction: column;
   max-height: calc(100vh - 24px);
-  max-width: 900px;
+  max-width: 620px;
   overflow: hidden;
-  width: min(900px, 100%);
+  width: min(620px, 100%);
 }
 
 .goal-modal__header,
@@ -47,6 +50,7 @@
 
 .goal-modal__preview {
   align-items: center;
+  background: var(--goal-accent-soft);
   border-radius: 10px;
   display: inline-flex;
   flex-shrink: 0;
@@ -89,9 +93,9 @@
 
 .goal-modal__tabs {
   display: grid;
-  gap: 8px;
+  gap: 7px;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  padding: 10px 18px 0;
+  padding: 8px 18px 0;
 }
 
 .goal-modal__tabs button {
@@ -100,9 +104,9 @@
   border-radius: 8px;
   display: grid;
   gap: 1px 8px;
-  grid-template-columns: 22px minmax(0, 1fr);
-  min-height: 42px;
-  padding: 6px 9px;
+  grid-template-columns: 20px minmax(0, 1fr);
+  min-height: 34px;
+  padding: 4px 8px;
   text-align: left;
 }
 
@@ -114,13 +118,15 @@
   display: inline-flex;
   font-size: 12px;
   font-weight: 800;
-  height: 22px;
+  grid-row: 1 / span 2;
+  height: 20px;
   justify-content: center;
-  width: 22px;
+  width: 20px;
 }
 
 .goal-modal__tabs strong,
 .goal-modal__tabs small {
+  grid-column: 2;
   min-width: 0;
 }
 
@@ -132,15 +138,18 @@
 .goal-modal__tabs small {
   color: var(--ink-500);
   font-size: 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .goal-modal__tab--active {
-  border-color: var(--indigo-500);
-  box-shadow: 0 0 0 1px var(--indigo-500);
+  border-color: var(--goal-accent);
+  box-shadow: 0 0 0 1px var(--goal-accent);
 }
 
 .goal-modal__tab--active > span {
-  background: var(--indigo-500);
+  background: var(--goal-accent);
   color: white;
 }
 
@@ -184,7 +193,7 @@
 }
 
 .goal-modal__field input[type='range'] {
-  accent-color: var(--indigo-500);
+  accent-color: var(--goal-accent);
   min-height: 20px;
   padding: 0;
 }
@@ -209,9 +218,9 @@
 }
 
 .goal-modal__choice--active {
-  background: var(--lavender-50);
-  border-color: var(--indigo-500);
-  color: var(--indigo-500);
+  background: var(--goal-accent-soft);
+  border-color: var(--goal-accent);
+  color: var(--goal-accent);
 }
 
 .goal-modal__swatches button {
@@ -223,7 +232,7 @@
 }
 
 .goal-modal__swatch--active {
-  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--ink-900);
+  box-shadow: 0 0 0 2px white, 0 0 0 4px var(--swatch-color);
 }
 
 .goal-modal__pills button {
@@ -237,8 +246,8 @@
 }
 
 .goal-modal__pill--active {
-  background: var(--ink-900);
-  border-color: var(--ink-900);
+  background: var(--goal-accent);
+  border-color: var(--goal-accent);
   color: white;
 }
 
@@ -341,12 +350,14 @@
 }
 
 .goal-modal__forecast-bar span:first-child {
+  background: var(--goal-accent);
   border-radius: inherit;
   display: block;
   height: 100%;
 }
 
 .goal-modal__forecast-bar span:last-child {
+  background: repeating-linear-gradient(90deg, var(--goal-accent-soft) 0 6px, transparent 6px 10px);
   display: block;
   flex: 1;
   height: 100%;
@@ -354,9 +365,9 @@
 
 .goal-modal__warning {
   align-items: center;
-  background: var(--lavender-50);
+  background: var(--goal-accent-soft);
   border-radius: 7px;
-  color: var(--indigo-500);
+  color: var(--goal-accent);
   display: flex;
   font-size: 12px;
   font-weight: 700;
