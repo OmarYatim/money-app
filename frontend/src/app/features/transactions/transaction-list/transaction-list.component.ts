@@ -244,6 +244,23 @@ export class TransactionListComponent {
       this.filterForm.patchValue({ accountId: Number(accountIdParam) }, { emitEvent: false });
     }
 
+    const categoryParam = this.route.snapshot.queryParamMap.get('category');
+    if (categoryParam && this.isCategoryType(categoryParam)) {
+      this.filterForm.patchValue({ category: categoryParam }, { emitEvent: false });
+    }
+
+    const minDateParam = this.route.snapshot.queryParamMap.get('minDate');
+    const maxDateParam = this.route.snapshot.queryParamMap.get('maxDate');
+    if (minDateParam || maxDateParam) {
+      this.selectedPeriod.set('custom');
+      this.customMinDate.set(minDateParam ?? '');
+      this.customMaxDate.set(maxDateParam ?? '');
+      this.filterForm.patchValue(
+        { minDate: minDateParam ?? '', maxDate: maxDateParam ?? '' },
+        { emitEvent: false },
+      );
+    }
+
     const transactionIdParam = this.route.snapshot.queryParamMap.get('transactionId');
     if (transactionIdParam) {
       void this.openTransactionById(Number(transactionIdParam));
@@ -837,6 +854,10 @@ export class TransactionListComponent {
       String(date.getMonth() + 1).padStart(2, '0'),
       String(date.getDate()).padStart(2, '0'),
     ].join('-');
+  }
+
+  private isCategoryType(value: string): value is CategoryType {
+    return CATEGORY_TYPES.includes(value as CategoryType);
   }
 
   private currentQuery(): TransactionQuery {

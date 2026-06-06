@@ -1,0 +1,118 @@
+:host {
+  display: block;
+}
+
+.spending-chart {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: center;
+  gap: 22px;
+}
+
+.spending-chart__donut {
+  position: relative;
+  height: 220px;
+  min-width: 0;
+}
+
+.spending-chart__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+
+  span {
+    font-size: 10px;
+    color: var(--ink-500);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  strong {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 30px;
+    font-weight: 400;
+    color: var(--ink-900);
+    line-height: 1;
+  }
+}
+
+.spending-chart__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.spending-chart__row {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) 42px 72px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 8px;
+  border-radius: 8px;
+  color: inherit;
+  text-align: left;
+
+  &:hover,
+  &:focus-visible {
+    background: var(--lavender-50);
+  }
+}
+
+.spending-chart__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.spending-chart__label {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ink-700);
+  font-size: 12.5px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spending-chart__pct,
+.spending-chart__amount {
+  font-family: 'JetBrains Mono', monospace;
+  text-align: right;
+}
+
+.spending-chart__pct {
+  color: var(--ink-400);
+  font-size: 11px;
+}
+
+.spending-chart__amount {
+  color: var(--ink-900);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 220px;
+  color: var(--ink-400);
+  font-size: 13px;
+  text-align: center;
+}
+
+@media (max-width: 760px) {
+  .spending-chart {
+    grid-template-columns: 1fr;
+  }
+
+  .spending-chart__donut {
+    max-width: 260px;
+    width: 100%;
+    margin: 0 auto;
+  }
+}

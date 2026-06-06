@@ -1,4 +1,4 @@
-<div class="coming-soon">
+<div class="reports">
   <header class="topbar">
     <div class="topbar__left">
       <nav class="topbar__crumb" aria-label="Breadcrumb">
@@ -8,37 +8,230 @@
         <span class="topbar__crumb-current">Reports</span>
       </nav>
       <h1 class="topbar__title">Reports</h1>
+      <p class="topbar__subtitle">{{ subtitle() }}</p>
     </div>
     <div class="topbar__right">
       <app-page-actions />
+      <button class="topbar__action-btn" type="button" (click)="reloadReports()">
+        <mat-icon aria-hidden="true">refresh</mat-icon>
+        <span>Refresh</span>
+      </button>
     </div>
   </header>
 
-  <div class="coming-soon__body">
-    <div class="coming-soon__card">
-      <div class="coming-soon__icon">
-        <span class="material-icons">bar_chart</span>
+  <div class="reports__body">
+    <section class="hero">
+      <div class="hero__head">
+        <div>
+          <div class="hero__kicker">
+            <span class="hero__dot"></span>
+            Period summary
+          </div>
+          <h2 class="hero__title">{{ currentRange().label }}</h2>
+          <p class="hero__subtitle">{{ periodLabel() }}</p>
+        </div>
+
+        <div class="hero__controls">
+          <mat-button-toggle-group
+            class="range-toggle"
+            [value]="selectedRange()"
+            aria-label="Report date range"
+            (change)="selectRange($event.value)"
+          >
+            @for (option of rangeOptions; track option.value) {
+              <mat-button-toggle [value]="option.value">{{ option.label }}</mat-button-toggle>
+            }
+          </mat-button-toggle-group>
+
+          <label class="account-filter">
+            <span class="sr-only">Account</span>
+            <select [value]="selectedAccountId() ?? ''" (change)="selectAccount($event)">
+              <option value="">All accounts</option>
+              @for (account of accounts(); track account.id) {
+                <option [value]="account.id">{{ accountLabel(account) }}</option>
+              }
+            </select>
+            <mat-icon aria-hidden="true">expand_more</mat-icon>
+          </label>
+        </div>
       </div>
-      <div class="coming-soon__badge">Coming soon</div>
-      <h2 class="coming-soon__heading">Financial reports</h2>
-      <p class="coming-soon__text">
-        Detailed monthly and yearly reports — income vs. expenses, category trends, net worth evolution. Export to PDF or CSV.
-      </p>
-      <div class="coming-soon__features">
-        <div class="coming-soon__feature">
-          <span class="material-icons">calendar_month</span>
-          <span>Monthly and yearly breakdowns</span>
+
+      <div class="hero__stats">
+        <div class="hero-stat">
+          <span class="hero-stat__label">Income</span>
+          <strong class="hero-stat__value hero-stat__value--up">
+            {{ totalIncome() | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          </strong>
+          <span class="hero-stat__sub">Selected period</span>
         </div>
-        <div class="coming-soon__feature">
-          <span class="material-icons">category</span>
-          <span>Category trend analysis</span>
+        <div class="hero-stat">
+          <span class="hero-stat__label">Spending</span>
+          <strong class="hero-stat__value hero-stat__value--down">
+            {{ totalSpending() | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          </strong>
+          <span class="hero-stat__sub">{{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} categorised</span>
         </div>
-        <div class="coming-soon__feature">
-          <span class="material-icons">download</span>
-          <span>Export to PDF and CSV</span>
+        <div class="hero-stat">
+          <span class="hero-stat__label">Net flow</span>
+          <strong class="hero-stat__value" [class.hero-stat__value--down]="netCashFlow() < 0">
+            {{ netCashFlow() | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          </strong>
+          <span class="hero-stat__sub">Income minus spending</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat__label">Savings rate</span>
+          <strong class="hero-stat__value">{{ savingsRate() }}%</strong>
+          <span class="hero-stat__sub">Income kept</span>
         </div>
       </div>
-      <a routerLink="/dashboard" class="coming-soon__link">Back to dashboard</a>
-    </div>
+    </section>
+
+    @if (state().loading) {
+      <div class="reports__loading" aria-live="polite">
+        <mat-spinner diameter="36" />
+      </div>
+    } @else if (state().error) {
+      <div class="notice-card" role="alert">
+        <p>{{ state().error }}</p>
+        <button class="btn-ghost" type="button" (click)="reloadReports()">Retry</button>
+      </div>
+    } @else {
+      <section class="report-grid report-grid--flow">
+        <div class="report-card report-card--wide">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Income vs spending</h3>
+              <p class="report-card__sub">
+                Monthly cash flow
+                @if (showNetCashFlowLine()) {
+                  · net line included
+                }
+              </p>
+            </div>
+          </div>
+          <app-income-expenses-chart
+            [data]="state().incomeExpenses"
+            [showNetLine]="showNetCashFlowLine()"
+          />
+        </div>
+
+        <div class="report-card">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Savings rate</h3>
+              <p class="report-card__sub">vs goal · 35%</p>
+            </div>
+          </div>
+          <div class="savings-gauge">
+            <div class="savings-gauge__arc" [style.background]="savingsRateGaugeBackground()">
+              <div class="savings-gauge__inner"></div>
+            </div>
+            <div class="savings-gauge__value">
+              <strong>{{ savingsRate() }}%</strong>
+              <span [class.savings-gauge__delta--down]="savingsRate() < 35">
+                {{ savingsRate() - 35 }} pts vs target
+              </span>
+            </div>
+          </div>
+          <div class="savings-gauge__rows">
+            <div>
+              <span>Income</span>
+              <strong>{{ totalIncome() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Spending</span>
+              <strong>{{ totalSpending() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Net kept</span>
+              <strong>{{ netCashFlow() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="report-grid">
+        <div class="report-card">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Where it goes</h3>
+              <p class="report-card__sub">
+                {{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} across
+                {{ state().spending.length }} categories
+              </p>
+            </div>
+          </div>
+          <app-spending-chart
+            [data]="state().spending"
+            (categorySelected)="drillDownToCategory($event)"
+          />
+        </div>
+
+        <div class="report-card">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Top merchants</h3>
+              <p class="report-card__sub">Highest spend in this period</p>
+            </div>
+          </div>
+          @if (state().topMerchants.length > 0) {
+            <div class="merchant-list">
+              @for (merchant of state().topMerchants; track merchant.merchant) {
+                <div class="merchant-row">
+                  <div
+                    class="merchant-row__icon"
+                    [style.background]="categoryColor(merchant.category)"
+                  >
+                    <mat-icon aria-hidden="true">storefront</mat-icon>
+                  </div>
+                  <div class="merchant-row__body">
+                    <strong>{{ merchant.merchant }}</strong>
+                    <span>
+                      {{ categoryLabel(merchant.category) }} ·
+                      {{ merchant.transactionCount }} transactions
+                    </span>
+                  </div>
+                  <strong class="merchant-row__amount">
+                    {{ merchant.totalAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}
+                  </strong>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="empty-panel">No merchant spend in this period.</div>
+          }
+        </div>
+      </section>
+
+      <section class="report-card report-card--full">
+        <div class="report-card__header">
+          <div>
+            <h3 class="report-card__title">Fixed vs flexible</h3>
+            <p class="report-card__sub">Recurring commitments compared with variable spend</p>
+          </div>
+        </div>
+        <div class="fixed-flex">
+          @for (group of fixedFlexibleGroups(); track group.key) {
+            <div class="fixed-flex__item">
+              <div class="fixed-flex__head">
+                <span class="fixed-flex__icon" [style.background]="group.color">
+                  <mat-icon aria-hidden="true">{{ group.icon }}</mat-icon>
+                </span>
+                <div>
+                  <strong>{{ group.label }}</strong>
+                  <span>{{ group.percentage }}% of spending</span>
+                </div>
+              </div>
+              <div class="fixed-flex__amount">
+                {{ group.totalAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}
+              </div>
+              <div class="fixed-flex__bar" aria-hidden="true">
+                <span [style.width.%]="group.percentage" [style.background]="group.color"></span>
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
   </div>
 </div>
