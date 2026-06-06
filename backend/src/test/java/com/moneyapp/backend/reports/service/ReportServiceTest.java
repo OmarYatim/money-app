@@ -9,6 +9,7 @@ import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.reports.dto.IncomeExpensesResponse;
 import com.moneyapp.backend.reports.dto.NetWorthHistoryResponse;
 import com.moneyapp.backend.reports.dto.SpendingByCategoryResponse;
+import com.moneyapp.backend.reports.dto.TopMerchantResponse;
 import com.moneyapp.backend.reports.entity.NetWorthSnapshot;
 import com.moneyapp.backend.reports.repository.NetWorthSnapshotRepository;
 import com.moneyapp.backend.transaction.entity.Transaction;
@@ -151,6 +152,60 @@ class ReportServiceTest {
     assertThat(result.get(0).netWorth()).isEqualByComparingTo("100");
     assertThat(result.get(1).netWorth()).isEqualByComparingTo("150");
     assertThat(result.get(2).netWorth()).isEqualByComparingTo("200");
+  }
+
+  @Test
+  void topMerchantsGroupsExpensesByMerchantSortedDescending() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Account accountA = accountRepository.save(account(appUser.getId(), 1L, "Checking"));
+    Account accountB = accountRepository.save(account(appUser.getId(), 2L, "Savings"));
+    LocalDate april = LocalDate.of(2026, 4, 1);
+    transactionRepository.save(
+        transaction(appUser.getId(), accountA.getId(), 1L, april, "Carrefour", "-45"));
+    transactionRepository.save(
+        transaction(appUser.getId(), accountA.getId(), 2L, april.plusDays(2), "Carrefour", "-55"));
+    transactionRepository.save(
+        transaction(appUser.getId(), accountB.getId(), 3L, april.plusDays(1), "Netflix", "-20"));
+    transactionRepository.save(
+        transaction(appUser.getId(), accountA.getId(), 4L, april.plusDays(3), "Salary", "2000"));
+
+    List<TopMerchantResponse> result =
+        reportService.topMerchants(
+            appUser.getEmail(), LocalDate.of(2026, 4, 1), LocalDate.of(2026, 4, 30), null, 8);
+
+    assertThat(result).hasSize(2);
+    assertThat(result.get(0).merchant()).isEqualTo("Carrefour");
+    assertThat(result.get(0).transactionCount()).isEqualTo(2);
+    assertThat(result.get(0).totalAmount()).isEqualByComparingTo("100");
+    assertThat(result.get(0).lastTransactionDate()).isEqualTo(april.plusDays(2));
+    assertThat(result.get(1).merchant()).isEqualTo("Netflix");
+  }
+
+  @Test
+  void topMerchantsRespectsAccountFilterAndLimit() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Account accountA = accountRepository.save(account(appUser.getId(), 1L, "Checking"));
+    Account accountB = accountRepository.save(account(appUser.getId(), 2L, "Savings"));
+    LocalDate april = LocalDate.of(2026, 4, 1);
+    transactionRepository.save(
+        transaction(appUser.getId(), accountA.getId(), 1L, april, "Carrefour", "-45"));
+    transactionRepository.save(
+        transaction(appUser.getId(), accountA.getId(), 2L, april, "Monoprix", "-30"));
+    transactionRepository.save(
+        transaction(appUser.getId(), accountB.getId(), 3L, april, "Netflix", "-200"));
+
+    List<TopMerchantResponse> result =
+        reportService.topMerchants(
+            appUser.getEmail(),
+            LocalDate.of(2026, 4, 1),
+            LocalDate.of(2026, 4, 30),
+            accountA.getId(),
+            1);
+
+    assertThat(result)
+        .singleElement()
+        .extracting(TopMerchantResponse::merchant)
+        .isEqualTo("Carrefour");
   }
 
   private void repeatTransactions(

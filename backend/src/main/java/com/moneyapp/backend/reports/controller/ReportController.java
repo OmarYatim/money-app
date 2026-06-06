@@ -3,6 +3,7 @@ package com.moneyapp.backend.reports.controller;
 import com.moneyapp.backend.reports.dto.IncomeExpensesResponse;
 import com.moneyapp.backend.reports.dto.NetWorthHistoryResponse;
 import com.moneyapp.backend.reports.dto.SpendingByCategoryResponse;
+import com.moneyapp.backend.reports.dto.TopMerchantResponse;
 import com.moneyapp.backend.reports.service.ReportService;
 import java.time.LocalDate;
 import java.util.List;
@@ -42,6 +43,18 @@ public class ReportController {
       Authentication authentication) {
     return ResponseEntity.ok(
         reportService.incomeVsExpenses(authenticatedEmail(authentication), months, accountId));
+  }
+
+  @GetMapping("/top-merchants")
+  public ResponseEntity<List<TopMerchantResponse>> topMerchants(
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+      @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+      @RequestParam(required = false) Long accountId,
+      @RequestParam(defaultValue = "8") int limit,
+      Authentication authentication) {
+    return ResponseEntity.ok(
+        reportService.topMerchants(
+            authenticatedEmail(authentication), startDate, endDate, accountId, limit));
   }
 
   @GetMapping("/net-worth-history")

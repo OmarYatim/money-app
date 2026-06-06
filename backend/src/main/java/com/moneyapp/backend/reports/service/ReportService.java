@@ -6,6 +6,7 @@ import com.moneyapp.backend.banking.repository.AccountRepository;
 import com.moneyapp.backend.reports.dto.IncomeExpensesResponse;
 import com.moneyapp.backend.reports.dto.NetWorthHistoryResponse;
 import com.moneyapp.backend.reports.dto.SpendingByCategoryResponse;
+import com.moneyapp.backend.reports.dto.TopMerchantResponse;
 import com.moneyapp.backend.reports.repository.NetWorthSnapshotRepository;
 import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
@@ -104,6 +105,44 @@ public class ReportService {
   }
 
   @Transactional(readOnly = true)
+  public List<TopMerchantResponse> topMerchants(
+      String email, LocalDate startDate, LocalDate endDate, Long accountId, int limit) {
+    validateDateRange(startDate, endDate);
+    validateLimit(limit);
+    AppUser appUser = currentAppUserService.resolveExisting(email);
+    validateAccountFilter(appUser.getId(), accountId);
+
+    Map<String, MerchantTotals> totals = new LinkedHashMap<>();
+    transactionsForRange(appUser.getId(), startDate, endDate, accountId).stream()
+        .filter(transaction -> !transaction.isInternalTransfer())
+        .filter(transaction -> transaction.getValue().compareTo(BigDecimal.ZERO) < 0)
+        .forEach(
+            transaction ->
+                totals
+                    .computeIfAbsent(merchantName(transaction), ignored -> new MerchantTotals())
+                    .add(transaction));
+
+    return totals.entrySet().stream()
+        .map(
+            entry ->
+                new TopMerchantResponse(
+                    entry.getKey(),
+                    entry.getValue().primaryCategory(),
+                    entry.getValue().transactionCount,
+                    entry.getValue().totalAmount,
+                    entry.getValue().lastTransactionDate))
+        .sorted(
+            (left, right) -> {
+              int byAmount = right.totalAmount().compareTo(left.totalAmount());
+              return byAmount != 0
+                  ? byAmount
+                  : left.merchant().compareToIgnoreCase(right.merchant());
+            })
+        .limit(limit)
+        .toList();
+  }
+
+  @Transactional(readOnly = true)
   public List<NetWorthHistoryResponse> netWorthHistory(String email, int months) {
     validateMonths(months);
     AppUser appUser = currentAppUserService.resolveExisting(email);
@@ -143,6 +182,12 @@ public class ReportService {
     }
   }
 
+  private void validateLimit(int limit) {
+    if (limit < 1 || limit > 20) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "limit must be between 1 and 20");
+    }
+  }
+
   private void validateAccountFilter(Long userId, Long accountId) {
     if (accountId == null) {
       return;
@@ -162,6 +207,41 @@ public class ReportService {
       } else if (value.compareTo(BigDecimal.ZERO) < 0) {
         expenses = expenses.add(value.abs());
       }
+    }
+  }
+
+  private String merchantName(Transaction transaction) {
+    if (!isBlank(transaction.getCounterpartyLabel())) {
+      return transaction.getCounterpartyLabel().trim();
+    }
+    return isBlank(transaction.getLabel()) ? "Unknown merchant" : transaction.getLabel().trim();
+  }
+
+  private boolean isBlank(String value) {
+    return value == null || value.isBlank();
+  }
+
+  private static final class MerchantTotals {
+    private long transactionCount = 0;
+    private BigDecimal totalAmount = BigDecimal.ZERO;
+    private LocalDate lastTransactionDate;
+    private final Map<String, BigDecimal> categoryTotals = new LinkedHashMap<>();
+
+    private void add(Transaction transaction) {
+      transactionCount++;
+      BigDecimal amount = transaction.getValue().abs();
+      totalAmount = totalAmount.add(amount);
+      categoryTotals.merge(transaction.getCategory(), amount, BigDecimal::add);
+      if (lastTransactionDate == null || transaction.getDate().isAfter(lastTransactionDate)) {
+        lastTransactionDate = transaction.getDate();
+      }
+    }
+
+    private String primaryCategory() {
+      return categoryTotals.entrySet().stream()
+          .max(Map.Entry.comparingByValue())
+          .map(Map.Entry::getKey)
+          .orElse("OTHER");
     }
   }
 }
