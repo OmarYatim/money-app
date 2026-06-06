@@ -15,4 +15,20 @@ export class GoalListComponent {
   selectedGoalId = input<number | null>(null);
   selected = output<Goal>();
   archived = output<Goal>();
+
+  protected goalColor(goal: Goal): string {
+    return normalizeGoalColor(goal.color);
+  }
+}
+
+function normalizeGoalColor(color: string): string {
+  const colors: Record<string, string> = {
+    indigo: '#5b5fef',
+    green: '#2cad6a',
+    amber: '#d99838',
+    red: '#e04a62',
+    slate: '#9396a8',
+  };
+
+  return colors[color] ?? color;
 }

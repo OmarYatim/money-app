@@ -44,11 +44,13 @@ const ICON_CHOICES: Choice[] = [
 ];
 
 const COLOR_CHOICES: ColorChoice[] = [
-  { value: 'indigo', label: 'Indigo', swatch: 'var(--indigo-500)' },
-  { value: 'green', label: 'Green', swatch: 'var(--green-500)' },
-  { value: 'amber', label: 'Amber', swatch: 'var(--amber-500)' },
-  { value: 'red', label: 'Red', swatch: 'var(--red-500)' },
-  { value: 'slate', label: 'Slate', swatch: 'var(--ink-400)' },
+  { value: '#5b5fef', label: 'Indigo', swatch: '#5b5fef' },
+  { value: '#4f52e0', label: 'Deep indigo', swatch: '#4f52e0' },
+  { value: '#2cad6a', label: 'Green', swatch: '#2cad6a' },
+  { value: '#d99838', label: 'Amber', swatch: '#d99838' },
+  { value: '#e04a62', label: 'Rose', swatch: '#e04a62' },
+  { value: '#9396a8', label: 'Slate', swatch: '#9396a8' },
+  { value: '#14163a', label: 'Ink', swatch: '#14163a' },
 ];
 
 const CATEGORY_CHOICES = ['Safety net', 'Travel', 'Tech', 'Family', 'Long-term', 'Transport', 'Health', 'Education', 'Other'];
@@ -78,7 +80,7 @@ export class GoalFormComponent {
   protected readonly form = new FormGroup<GoalFormValue>({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     icon: new FormControl('flag', { nonNullable: true }),
-    color: new FormControl('indigo', { nonNullable: true }),
+    color: new FormControl('#5b5fef', { nonNullable: true }),
     category: new FormControl('Other', { nonNullable: true }),
     priority: new FormControl('Medium', { nonNullable: true }),
     note: new FormControl('', { nonNullable: true }),
@@ -97,6 +99,11 @@ export class GoalFormComponent {
   protected readonly remainingAmount = computed(() => {
     const goal = this.goal();
     return Math.max(this.targetAmount() - (goal?.currentAmount ?? 0), 0);
+  });
+  protected readonly previewProgress = computed(() => {
+    const target = this.targetAmount();
+    const current = this.goal()?.currentAmount ?? 0;
+    return target > 0 ? Math.min(Math.round((current / target) * 100), 100) : 0;
   });
   protected readonly forecastMonths = computed(() => {
     const monthly = this.monthlyAmount();
@@ -125,7 +132,7 @@ export class GoalFormComponent {
     this.form.setValue({
       name: goal?.name ?? '',
       icon: goal?.icon ?? 'flag',
-      color: goal?.color ?? 'indigo',
+      color: this.normalizedColor(goal?.color),
       category: goal?.category ?? 'Other',
       priority: goal?.priority ?? 'Medium',
       note: goal?.note ?? '',
@@ -153,6 +160,14 @@ export class GoalFormComponent {
     this.form.controls.priority.setValue(priority);
   }
 
+  protected updateTargetAmount(value: string): void {
+    this.form.controls.targetAmount.setValue(Math.max(0, Number(value) || 0));
+  }
+
+  protected updateMonthlyAmount(value: string): void {
+    this.form.controls.plannedMonthlyContribution.setValue(Math.max(0, Number(value) || 0));
+  }
+
   protected submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -170,8 +185,32 @@ export class GoalFormComponent {
       category: value.category,
       priority: value.priority,
       note: value.note.trim() || null,
-      autoSaveEnabled: value.autoSaveEnabled,
+      autoSaveEnabled: (value.plannedMonthlyContribution ?? 0) > 0,
       plannedMonthlyContribution: value.plannedMonthlyContribution ?? 0,
     });
+  }
+
+  private normalizedColor(color: string | null | undefined): string {
+    if (!color || color === 'indigo') {
+      return '#5b5fef';
+    }
+
+    if (color === 'green') {
+      return '#2cad6a';
+    }
+
+    if (color === 'amber') {
+      return '#d99838';
+    }
+
+    if (color === 'red') {
+      return '#e04a62';
+    }
+
+    if (color === 'slate') {
+      return '#9396a8';
+    }
+
+    return color;
   }
 }

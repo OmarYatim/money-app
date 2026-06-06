@@ -159,6 +159,10 @@ export class GoalsComponent {
     this.view.set(view);
   }
 
+  protected goalColor(goal: Goal): string {
+    return normalizeGoalColor(goal.color);
+  }
+
   protected openEditForm(): void {
     this.activePanel.set('edit');
   }
@@ -259,4 +263,16 @@ export class GoalsComponent {
   private todayIsoDate(): string {
     return new Date().toISOString().slice(0, 10);
   }
+}
+
+function normalizeGoalColor(color: string): string {
+  const colors: Record<string, string> = {
+    indigo: '#5b5fef',
+    green: '#2cad6a',
+    amber: '#d99838',
+    red: '#e04a62',
+    slate: '#9396a8',
+  };
+
+  return colors[color] ?? color;
 }

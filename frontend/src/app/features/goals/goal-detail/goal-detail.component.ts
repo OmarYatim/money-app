@@ -23,9 +23,26 @@ export class GoalDetailComponent {
   protected readonly ringBackground = computed(() => {
     const goal = this.goal();
     const progress = goal ? Math.min(Math.max(goal.progressPercent, 0), 100) : 0;
-    return `conic-gradient(var(--indigo-500) 0% ${progress}%, var(--ink-100) ${progress}% 100%)`;
+    const color = goal ? this.goalColor(goal) : 'var(--indigo-500)';
+    return `conic-gradient(${color} 0% ${progress}%, var(--ink-100) ${progress}% 100%)`;
   });
   protected readonly largestContribution = computed(() =>
     Math.max(...this.contributions().map((contribution) => contribution.amount), 1),
   );
+
+  protected goalColor(goal: Goal): string {
+    return normalizeGoalColor(goal.color);
+  }
+}
+
+function normalizeGoalColor(color: string): string {
+  const colors: Record<string, string> = {
+    indigo: '#5b5fef',
+    green: '#2cad6a',
+    amber: '#d99838',
+    red: '#e04a62',
+    slate: '#9396a8',
+  };
+
+  return colors[color] ?? color;
 }

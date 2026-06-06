@@ -4,7 +4,7 @@
       <button class="goal-list__select" type="button" (click)="selected.emit(goal)">
         <span class="goal-list__topline">
           <span class="goal-list__identity">
-            <span class="goal-list__icon" [attr.data-color]="goal.color">
+            <span class="goal-list__icon" [style.background]="goalColor(goal)">
               <span class="material-icons">{{ goal.icon }}</span>
             </span>
             <span class="goal-list__name">{{ goal.name }}</span>
@@ -18,7 +18,7 @@
         </span>
 
         <span class="goal-list__progress" aria-hidden="true">
-          <span class="goal-list__progress-fill" [style.width.%]="goal.progressPercent"></span>
+          <span class="goal-list__progress-fill" [style.width.%]="goal.progressPercent" [style.background]="goalColor(goal)"></span>
         </span>
 
         <span class="goal-list__meta">

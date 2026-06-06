@@ -4,7 +4,7 @@
       <div>
         <p class="goal-detail__eyebrow">Savings goal</p>
         <h2>
-          <span class="goal-detail__title-icon" [attr.data-color]="selectedGoal.color">
+          <span class="goal-detail__title-icon" [style.background]="goalColor(selectedGoal)">
             <span class="material-icons">{{ selectedGoal.icon }}</span>
           </span>
           {{ selectedGoal.name }}
@@ -28,7 +28,7 @@
           <span>{{ selectedGoal.currentAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
           <p>saved of {{ selectedGoal.targetAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
           <div class="goal-detail__bar" aria-hidden="true">
-            <span [style.width.%]="selectedGoal.progressPercent"></span>
+            <span [style.width.%]="selectedGoal.progressPercent" [style.background]="goalColor(selectedGoal)"></span>
           </div>
         </div>
       </div>
@@ -138,7 +138,7 @@
         <div class="goal-detail__chart" aria-label="Contribution chart">
           @for (contribution of contributions(); track contribution.id) {
             <div class="goal-detail__chart-bar">
-              <span [style.height.%]="(contribution.amount / largestContribution()) * 100"></span>
+              <span [style.height.%]="(contribution.amount / largestContribution()) * 100" [style.background]="goalColor(selectedGoal)"></span>
             </div>
           }
         </div>

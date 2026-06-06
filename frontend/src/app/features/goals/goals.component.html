@@ -100,14 +100,14 @@
                 (click)="selectGoal(item.goal)"
               >
                 <span class="goals__timeline-label">
-                  <span class="goals__timeline-dot"></span>
+                  <span class="goals__timeline-dot" [style.background]="goalColor(item.goal)"></span>
                   <span>{{ item.goal.name }}</span>
                   <small>{{ item.progressPercent }}%</small>
                 </span>
                 <span class="goals__timeline-track">
-                  <span class="goals__timeline-fill" [style.width.%]="item.progressPercent"></span>
+                  <span class="goals__timeline-fill" [style.width.%]="item.progressPercent" [style.background]="goalColor(item.goal)"></span>
                   @if (item.targetPosition !== null) {
-                    <span class="goals__timeline-marker" [style.left.%]="item.targetPosition"></span>
+                    <span class="goals__timeline-marker" [style.left.%]="item.targetPosition" [style.border-color]="goalColor(item.goal)"></span>
                   }
                 </span>
                 <span class="goals__timeline-date">
