@@ -13,10 +13,10 @@ import type { IncomeExpenses } from '../../../shared/models/report.model';
 })
 export class IncomeExpensesChartComponent {
   readonly data = input.required<IncomeExpenses[]>();
+  readonly showNetLine = input(true);
 
-  protected readonly chartData = computed<ChartData>(() => ({
-    labels: this.data().map((item) => this.monthLabel(item.month)),
-    datasets: [
+  protected readonly chartData = computed<ChartData>(() => {
+    const datasets: ChartData['datasets'] = [
       {
         type: 'bar',
         label: 'Income',
@@ -31,7 +31,10 @@ export class IncomeExpensesChartComponent {
         backgroundColor: '#c5c7d4',
         borderRadius: 4,
       },
-      {
+    ];
+
+    if (this.showNetLine()) {
+      datasets.push({
         type: 'line',
         label: 'Net',
         data: this.data().map((item) => item.netCashFlow),
@@ -41,9 +44,14 @@ export class IncomeExpensesChartComponent {
         pointRadius: 3,
         pointHoverRadius: 5,
         yAxisID: 'y',
-      },
-    ],
-  }));
+      });
+    }
+
+    return {
+      labels: this.data().map((item) => this.monthLabel(item.month)),
+      datasets,
+    };
+  });
 
   protected readonly chartOptions: ChartOptions = {
     responsive: true,

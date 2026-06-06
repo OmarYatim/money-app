@@ -101,20 +101,31 @@
           <div class="report-card__header">
             <div>
               <h3 class="report-card__title">Income vs spending</h3>
-              <p class="report-card__sub">Monthly cash flow · net line included</p>
+              <p class="report-card__sub">
+                Monthly cash flow
+                @if (showNetCashFlowLine()) {
+                  · net line included
+                }
+              </p>
             </div>
           </div>
-          <app-income-expenses-chart [data]="state().incomeExpenses" />
+          <app-income-expenses-chart
+            [data]="state().incomeExpenses"
+            [showNetLine]="showNetCashFlowLine()"
+          />
         </div>
 
         <div class="report-card">
           <div class="report-card__header">
             <div>
               <h3 class="report-card__title">Net worth trajectory</h3>
-              <p class="report-card__sub">Snapshot history · local database only</p>
+              <p class="report-card__sub">Actual snapshots · dashed forecast from current cash flow</p>
             </div>
           </div>
-          <app-net-worth-chart [data]="state().netWorthHistory" />
+          <app-net-worth-chart
+            [data]="state().netWorthHistory"
+            [forecastMonthlyDelta]="forecastMonthlyDelta()"
+          />
         </div>
       </section>
 
@@ -133,6 +144,40 @@
             [data]="state().spending"
             (categorySelected)="drillDownToCategory($event)"
           />
+        </div>
+
+        <div class="report-card">
+          <div class="report-card__header">
+            <div>
+              <h3 class="report-card__title">Savings rate</h3>
+              <p class="report-card__sub">vs goal · 35%</p>
+            </div>
+          </div>
+          <div class="savings-gauge">
+            <div class="savings-gauge__arc" [style.background]="savingsRateGaugeBackground()">
+              <div class="savings-gauge__inner"></div>
+            </div>
+            <div class="savings-gauge__value">
+              <strong>{{ savingsRate() }}%</strong>
+              <span [class.savings-gauge__delta--down]="savingsRate() < 35">
+                {{ savingsRate() - 35 }} pts vs target
+              </span>
+            </div>
+          </div>
+          <div class="savings-gauge__rows">
+            <div>
+              <span>Income</span>
+              <strong>{{ totalIncome() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Spending</span>
+              <strong>{{ totalSpending() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Net kept</span>
+              <strong>{{ netCashFlow() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+          </div>
         </div>
       </section>
     }

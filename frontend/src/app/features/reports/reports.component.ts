@@ -112,6 +112,18 @@ export class ReportsComponent {
     this.state().spending.reduce((sum, item) => sum + item.totalAmount, 0),
   );
 
+  protected readonly showNetCashFlowLine = computed(() => this.state().incomeExpenses.length > 1);
+
+  protected readonly forecastMonthlyDelta = computed(() => {
+    const months = Math.max(this.state().incomeExpenses.length, 1);
+    return this.netCashFlow() / months;
+  });
+
+  protected readonly savingsRateGaugeBackground = computed(() => {
+    const progressDegrees = Math.min(Math.max(this.savingsRate(), 0), 100) * 1.8;
+    return `conic-gradient(from 270deg, #5b5fef 0deg ${progressDegrees}deg, var(--ink-100) ${progressDegrees}deg 180deg, transparent 180deg 360deg)`;
+  });
+
   constructor() {
     void this.loadAccounts();
     void this.reloadReports();
