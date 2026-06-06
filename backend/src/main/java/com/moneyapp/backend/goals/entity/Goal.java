@@ -43,6 +43,33 @@ public class Goal {
   @Column(name = "target_date")
   private LocalDate targetDate;
 
+  @Column(nullable = false, length = 50)
+  @Builder.Default
+  private String icon = "flag";
+
+  @Column(nullable = false, length = 30)
+  @Builder.Default
+  private String color = "indigo";
+
+  @Column(nullable = false, length = 100)
+  @Builder.Default
+  private String category = "Other";
+
+  @Column(nullable = false, length = 30)
+  @Builder.Default
+  private String priority = "Medium";
+
+  @Column(length = 1000)
+  private String note;
+
+  @Column(name = "auto_save_enabled", nullable = false)
+  @Builder.Default
+  private boolean autoSaveEnabled = false;
+
+  @Column(name = "planned_monthly_contribution", nullable = false, precision = 19, scale = 4)
+  @Builder.Default
+  private BigDecimal plannedMonthlyContribution = BigDecimal.ZERO;
+
   @Column(name = "current_amount", nullable = false, precision = 19, scale = 4)
   @Builder.Default
   private BigDecimal currentAmount = BigDecimal.ZERO;

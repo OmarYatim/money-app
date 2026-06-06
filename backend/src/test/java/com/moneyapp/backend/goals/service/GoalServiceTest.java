@@ -64,12 +64,29 @@ class GoalServiceTest {
     GoalProgressResponse response =
         goalService.createGoal(
             appUser.getEmail(),
-            new CreateGoalRequest(
-                "Holiday Japan", new BigDecimal("3000"), LocalDate.of(2027, 6, 1), null));
+            createGoalRequest(
+                "Holiday Japan",
+                new BigDecimal("3000"),
+                LocalDate.of(2027, 6, 1),
+                null,
+                "flight",
+                "amber",
+                "Travel",
+                "High",
+                "Flights and hotels",
+                true,
+                new BigDecimal("250")));
 
     assertThat(response.id()).isNotNull();
     assertThat(response.name()).isEqualTo("Holiday Japan");
     assertThat(response.targetAmount()).isEqualByComparingTo("3000");
+    assertThat(response.icon()).isEqualTo("flight");
+    assertThat(response.color()).isEqualTo("amber");
+    assertThat(response.category()).isEqualTo("Travel");
+    assertThat(response.priority()).isEqualTo("High");
+    assertThat(response.note()).isEqualTo("Flights and hotels");
+    assertThat(response.autoSaveEnabled()).isTrue();
+    assertThat(response.plannedMonthlyContribution()).isEqualByComparingTo("250");
     assertThat(response.currentAmount()).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat(response.progressPercent()).isEqualByComparingTo("0.0");
     assertThat(response.archived()).isFalse();
@@ -147,7 +164,7 @@ class GoalServiceTest {
     GoalProgressResponse response =
         goalService.createGoal(
             appUser.getEmail(),
-            new CreateGoalRequest(
+            createGoalRequest(
                 "Deposit", new BigDecimal("1000"), LocalDate.of(2027, 1, 1), account.getId()));
 
     assertThat(response.currentAmount()).isEqualByComparingTo("500");
@@ -181,7 +198,7 @@ class GoalServiceTest {
     AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
     GoalProgressResponse goal =
         goalService.createGoal(
-            appUser.getEmail(), new CreateGoalRequest("Trip", new BigDecimal("800"), null, null));
+            appUser.getEmail(), createGoalRequest("Trip", new BigDecimal("800"), null, null));
     goalService.addContribution(
         appUser.getEmail(),
         goal.id(),
@@ -203,7 +220,7 @@ class GoalServiceTest {
     AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
     GoalProgressResponse goal =
         goalService.createGoal(
-            appUser.getEmail(), new CreateGoalRequest("Camera", new BigDecimal("500"), null, null));
+            appUser.getEmail(), createGoalRequest("Camera", new BigDecimal("500"), null, null));
 
     GoalProgressResponse response =
         goalService.addContribution(
@@ -232,7 +249,7 @@ class GoalServiceTest {
     AppUser other = appUserRepository.save(AppUser.builder().email("other@example.com").build());
     GoalProgressResponse goal =
         goalService.createGoal(
-            owner.getEmail(), new CreateGoalRequest("Private", new BigDecimal("500"), null, null));
+            owner.getEmail(), createGoalRequest("Private", new BigDecimal("500"), null, null));
 
     assertThatThrownBy(() -> goalService.getGoal(other.getEmail(), goal.id()))
         .isInstanceOf(ResponseStatusException.class)
@@ -258,5 +275,47 @@ class GoalServiceTest {
         .targetDate(targetDate)
         .currentAmount(BigDecimal.ZERO)
         .build();
+  }
+
+  private CreateGoalRequest createGoalRequest(
+      String name, BigDecimal targetAmount, LocalDate targetDate, Long linkedAccountId) {
+    return createGoalRequest(
+        name,
+        targetAmount,
+        targetDate,
+        linkedAccountId,
+        null,
+        null,
+        null,
+        null,
+        null,
+        false,
+        BigDecimal.ZERO);
+  }
+
+  private CreateGoalRequest createGoalRequest(
+      String name,
+      BigDecimal targetAmount,
+      LocalDate targetDate,
+      Long linkedAccountId,
+      String icon,
+      String color,
+      String category,
+      String priority,
+      String note,
+      boolean autoSaveEnabled,
+      BigDecimal plannedMonthlyContribution) {
+    return new CreateGoalRequest(
+        name,
+        targetAmount,
+        targetDate,
+        linkedAccountId,
+        icon,
+        color,
+        category,
+        priority,
+        note,
+        autoSaveEnabled,
+        plannedMonthlyContribution);
   }
 }

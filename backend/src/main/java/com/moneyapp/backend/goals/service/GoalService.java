@@ -78,6 +78,13 @@ public class GoalService {
             .targetAmount(request.targetAmount())
             .targetDate(request.targetDate())
             .linkedAccountId(request.linkedAccountId())
+            .icon(defaultText(request.icon(), "flag"))
+            .color(defaultText(request.color(), "indigo"))
+            .category(defaultText(request.category(), "Other"))
+            .priority(defaultText(request.priority(), "Medium"))
+            .note(normalizeNote(request.note()))
+            .autoSaveEnabled(request.autoSaveEnabled())
+            .plannedMonthlyContribution(defaultMoney(request.plannedMonthlyContribution()))
             .currentAmount(linkedAccount == null ? BigDecimal.ZERO : linkedAccount.getBalance())
             .archived(false)
             .build();
@@ -94,6 +101,13 @@ public class GoalService {
     goal.setTargetAmount(request.targetAmount());
     goal.setTargetDate(request.targetDate());
     goal.setLinkedAccountId(request.linkedAccountId());
+    goal.setIcon(defaultText(request.icon(), "flag"));
+    goal.setColor(defaultText(request.color(), "indigo"));
+    goal.setCategory(defaultText(request.category(), "Other"));
+    goal.setPriority(defaultText(request.priority(), "Medium"));
+    goal.setNote(normalizeNote(request.note()));
+    goal.setAutoSaveEnabled(request.autoSaveEnabled());
+    goal.setPlannedMonthlyContribution(defaultMoney(request.plannedMonthlyContribution()));
     goal.setCurrentAmount(
         linkedAccount == null ? contributionTotal(goal.getId()) : linkedAccount.getBalance());
     return goalProgressService.computeProgress(goalRepository.save(goal), linkedAccount);
@@ -206,6 +220,10 @@ public class GoalService {
     }
 
     return note.trim();
+  }
+
+  private String defaultText(String value, String fallback) {
+    return value == null || value.isBlank() ? fallback : value.trim();
   }
 
   private BigDecimal defaultMoney(BigDecimal value) {
