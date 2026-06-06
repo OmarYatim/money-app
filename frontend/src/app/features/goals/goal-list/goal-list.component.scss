@@ -46,6 +46,48 @@
   gap: 10px;
 }
 
+.goal-list__identity {
+  align-items: center;
+  display: flex;
+  gap: 9px;
+  min-width: 0;
+}
+
+.goal-list__icon {
+  align-items: center;
+  border-radius: 8px;
+  color: white;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 30px;
+  justify-content: center;
+  width: 30px;
+}
+
+.goal-list__icon[data-color='indigo'] {
+  background: var(--indigo-500);
+}
+
+.goal-list__icon[data-color='green'] {
+  background: var(--green-500);
+}
+
+.goal-list__icon[data-color='amber'] {
+  background: var(--amber-500);
+}
+
+.goal-list__icon[data-color='red'] {
+  background: var(--red-500);
+}
+
+.goal-list__icon[data-color='slate'] {
+  background: var(--ink-400);
+}
+
+.goal-list__icon .material-icons {
+  font-size: 17px;
+}
+
 .goal-list__name {
   color: var(--ink-900);
   font-size: 15px;

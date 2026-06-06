@@ -3,7 +3,12 @@
     <div class="goal-detail__header">
       <div>
         <p class="goal-detail__eyebrow">Savings goal</p>
-        <h2>{{ selectedGoal.name }}</h2>
+        <h2>
+          <span class="goal-detail__title-icon" [attr.data-color]="selectedGoal.color">
+            <span class="material-icons">{{ selectedGoal.icon }}</span>
+          </span>
+          {{ selectedGoal.name }}
+        </h2>
       </div>
       <button class="goal-detail__icon" type="button" aria-label="Edit goal" (click)="edit.emit()">
         <span class="material-icons">edit</span>
@@ -36,17 +41,31 @@
       </div>
       <div>
         <dt>Monthly rate</dt>
-        <dd>{{ selectedGoal.monthlyRate | currency: 'EUR' : 'symbol' : '1.0-0' }}</dd>
+        <dd>
+          @if (selectedGoal.autoSaveEnabled) {
+            {{ selectedGoal.plannedMonthlyContribution | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          } @else {
+            {{ selectedGoal.monthlyRate | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          }
+        </dd>
       </div>
       <div>
-        <dt>Target date</dt>
+        <dt>Target month</dt>
         <dd>
           @if (selectedGoal.targetDate) {
-            {{ selectedGoal.targetDate | date: 'dd MMM yyyy' }}
+            {{ selectedGoal.targetDate | date: 'MMM yyyy' }}
           } @else {
             -
           }
         </dd>
+      </div>
+      <div>
+        <dt>Priority</dt>
+        <dd>{{ selectedGoal.priority }}</dd>
+      </div>
+      <div>
+        <dt>Category</dt>
+        <dd>{{ selectedGoal.category }}</dd>
       </div>
       <div>
         <dt>Projected date</dt>
@@ -91,7 +110,14 @@
       } @else {
         Manual contributions
       }
+      @if (selectedGoal.autoSaveEnabled) {
+        · Auto-save plan {{ selectedGoal.plannedMonthlyContribution | currency: 'EUR' : 'symbol' : '1.0-0' }}/mo
+      }
     </div>
+
+    @if (selectedGoal.note) {
+      <p class="goal-detail__note">{{ selectedGoal.note }}</p>
+    }
 
     @if (!selectedGoal.linkedAccountId) {
       <button class="goal-detail__primary" type="button" (click)="addContribution.emit()">

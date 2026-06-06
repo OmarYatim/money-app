@@ -85,7 +85,10 @@ export class GoalsComponent {
     this.state().goals.reduce((sum, goal) => sum + goal.targetAmount, 0),
   );
   protected readonly monthlyPace = computed(() =>
-    this.state().goals.reduce((sum, goal) => sum + goal.monthlyRate, 0),
+    this.state().goals.reduce(
+      (sum, goal) => sum + (goal.autoSaveEnabled ? goal.plannedMonthlyContribution : goal.monthlyRate),
+      0,
+    ),
   );
   protected readonly overallProgress = computed(() => {
     const target = this.totalTarget();

@@ -40,9 +40,47 @@
 }
 
 .goal-detail__header h2 {
+  align-items: center;
   color: var(--ink-900);
+  display: flex;
   font-size: 22px;
+  gap: 10px;
   margin: 0;
+}
+
+.goal-detail__title-icon {
+  align-items: center;
+  border-radius: 8px;
+  color: white;
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 34px;
+  justify-content: center;
+  width: 34px;
+}
+
+.goal-detail__title-icon[data-color='indigo'] {
+  background: var(--indigo-500);
+}
+
+.goal-detail__title-icon[data-color='green'] {
+  background: var(--green-500);
+}
+
+.goal-detail__title-icon[data-color='amber'] {
+  background: var(--amber-500);
+}
+
+.goal-detail__title-icon[data-color='red'] {
+  background: var(--red-500);
+}
+
+.goal-detail__title-icon[data-color='slate'] {
+  background: var(--ink-400);
+}
+
+.goal-detail__title-icon .material-icons {
+  font-size: 18px;
 }
 
 .goal-detail__icon {
@@ -181,6 +219,16 @@
 .goal-detail__source .material-icons {
   color: var(--indigo-500);
   font-size: 18px;
+}
+
+.goal-detail__note {
+  background: var(--paper);
+  border-radius: 8px;
+  color: var(--ink-700);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+  padding: 12px;
 }
 
 .goal-detail__primary {

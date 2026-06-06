@@ -3,6 +3,13 @@ export interface Goal {
   name: string;
   targetAmount: number;
   targetDate: string | null;
+  icon: string;
+  color: string;
+  category: string;
+  priority: string;
+  note: string | null;
+  autoSaveEnabled: boolean;
+  plannedMonthlyContribution: number;
   currentAmount: number;
   progressPercent: number;
   monthlyRate: number;
@@ -27,6 +34,13 @@ export interface GoalPayload {
   targetAmount: number;
   targetDate: string | null;
   linkedAccountId: number | null;
+  icon: string;
+  color: string;
+  category: string;
+  priority: string;
+  note: string | null;
+  autoSaveEnabled: boolean;
+  plannedMonthlyContribution: number;
 }
 
 export interface GoalContributionPayload {

@@ -3,7 +3,12 @@
     <article class="goal-list__item" [class.goal-list__item--selected]="goal.id === selectedGoalId()">
       <button class="goal-list__select" type="button" (click)="selected.emit(goal)">
         <span class="goal-list__topline">
-          <span class="goal-list__name">{{ goal.name }}</span>
+          <span class="goal-list__identity">
+            <span class="goal-list__icon" [attr.data-color]="goal.color">
+              <span class="material-icons">{{ goal.icon }}</span>
+            </span>
+            <span class="goal-list__name">{{ goal.name }}</span>
+          </span>
           <span class="goal-list__percent">{{ goal.progressPercent }}%</span>
         </span>
 
@@ -18,10 +23,11 @@
 
         <span class="goal-list__meta">
           @if (goal.targetDate) {
-            Target {{ goal.targetDate | date: 'dd MMM yyyy' }}
+            Target {{ goal.targetDate | date: 'MMM yyyy' }}
           } @else {
             No target date
           }
+          · {{ goal.priority }}
         </span>
       </button>
 
