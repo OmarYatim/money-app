@@ -1,0 +1,38 @@
+<section class="goal-list" aria-label="Savings goals">
+  @for (goal of goals(); track goal.id) {
+    <article class="goal-list__item" [class.goal-list__item--selected]="goal.id === selectedGoalId()">
+      <button class="goal-list__select" type="button" (click)="selected.emit(goal)">
+        <span class="goal-list__topline">
+          <span class="goal-list__name">{{ goal.name }}</span>
+          <span class="goal-list__percent">{{ goal.progressPercent }}%</span>
+        </span>
+
+        <span class="goal-list__amounts">
+          {{ goal.currentAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          <span>of {{ goal.targetAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+        </span>
+
+        <span class="goal-list__progress" aria-hidden="true">
+          <span class="goal-list__progress-fill" [style.width.%]="goal.progressPercent"></span>
+        </span>
+
+        <span class="goal-list__meta">
+          @if (goal.targetDate) {
+            Target {{ goal.targetDate | date: 'dd MMM yyyy' }}
+          } @else {
+            No target date
+          }
+        </span>
+      </button>
+
+      <button class="goal-list__archive" type="button" aria-label="Archive goal" (click)="archived.emit(goal)">
+        <span class="material-icons">archive</span>
+      </button>
+    </article>
+  } @empty {
+    <div class="goal-list__empty">
+      <span class="material-icons">flag</span>
+      <p>No goals yet</p>
+    </div>
+  }
+</section>

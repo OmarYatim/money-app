@@ -1,0 +1,91 @@
+:host {
+  display: block;
+}
+
+.goal-form {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px;
+}
+
+.goal-form__header,
+.goal-form__actions {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.goal-form__header h2 {
+  color: var(--ink-900);
+  font-size: 16px;
+  margin: 0;
+}
+
+.goal-form__icon {
+  align-items: center;
+  border-radius: 8px;
+  color: var(--ink-500);
+  display: inline-flex;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.goal-form__icon:hover {
+  background: var(--ink-100);
+}
+
+.goal-form__field {
+  color: var(--ink-700);
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.goal-form__field input,
+.goal-form__field select {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink-900);
+  font-size: 14px;
+  min-height: 38px;
+  padding: 8px 10px;
+}
+
+.goal-form__error {
+  color: var(--red-600);
+  font-size: 12px;
+  margin: 0;
+}
+
+.goal-form__primary,
+.goal-form__secondary {
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  min-height: 38px;
+  padding: 0 14px;
+}
+
+.goal-form__primary {
+  background: var(--ink-900);
+  color: white;
+}
+
+.goal-form__primary:disabled {
+  background: var(--ink-300);
+  cursor: not-allowed;
+}
+
+.goal-form__secondary {
+  border: 1px solid var(--line);
+  color: var(--ink-700);
+}

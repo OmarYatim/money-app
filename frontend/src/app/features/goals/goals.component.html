@@ -1,44 +1,90 @@
-<div class="coming-soon">
+<div class="goals">
   <header class="topbar">
     <div class="topbar__left">
       <nav class="topbar__crumb" aria-label="Breadcrumb">
-        <span class="material-icons" style="font-size: 12px;">home</span>
+        <span class="material-icons">home</span>
         <span>Workspace</span>
-        <span class="material-icons" style="font-size: 12px;">chevron_right</span>
+        <span class="material-icons">chevron_right</span>
         <span class="topbar__crumb-current">Goals</span>
       </nav>
       <h1 class="topbar__title">Goals</h1>
+      <p class="topbar__subtitle">Plan savings targets and track contribution progress.</p>
     </div>
     <div class="topbar__right">
+      <button class="topbar__action-btn" type="button" (click)="openCreateForm()">
+        <span class="material-icons">add</span>
+        New goal
+      </button>
       <app-page-actions />
     </div>
   </header>
 
-  <div class="coming-soon__body">
-    <div class="coming-soon__card">
-      <div class="coming-soon__icon">
+  <main class="goals__body">
+    <section class="goals__summary" aria-label="Goals summary">
+      <div>
+        <span class="material-icons">savings</span>
+        <p>Total saved</p>
+        <strong>{{ totalSaved() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+      </div>
+      <div>
         <span class="material-icons">flag</span>
+        <p>Total targets</p>
+        <strong>{{ totalTarget() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
       </div>
-      <div class="coming-soon__badge">Coming soon</div>
-      <h2 class="coming-soon__heading">Savings goals</h2>
-      <p class="coming-soon__text">
-        Set and track financial goals — emergency fund, travel, big purchases. Nexioo will show your progress and project when you'll get there.
-      </p>
-      <div class="coming-soon__features">
-        <div class="coming-soon__feature">
-          <span class="material-icons">track_changes</span>
-          <span>Track progress towards any target</span>
-        </div>
-        <div class="coming-soon__feature">
-          <span class="material-icons">timeline</span>
-          <span>Projected completion date</span>
-        </div>
-        <div class="coming-soon__feature">
-          <span class="material-icons">savings</span>
-          <span>Linked to your accounts</span>
+      <div>
+        <span class="material-icons">track_changes</span>
+        <p>Active goals</p>
+        <strong>{{ activeGoals().length }}</strong>
+      </div>
+    </section>
+
+    @if (state().loading) {
+      <div class="goals__status">Loading goals...</div>
+    } @else {
+      @if (state().error) {
+        <div class="goals__status goals__status--error">{{ state().error }}</div>
+      }
+
+      <div class="goals__grid">
+        <app-goal-list
+          [goals]="activeGoals()"
+          [selectedGoalId]="selectedGoalId()"
+          (selected)="selectGoal($event)"
+          (archived)="archiveGoal($event)"
+        />
+
+        <div class="goals__main">
+          @if (activePanel() === 'create') {
+            <app-goal-form
+              [accounts]="accounts()"
+              [saving]="state().saving"
+              (goalSubmitted)="saveGoal($event)"
+              (formClosed)="closePanel()"
+            />
+          } @else if (activePanel() === 'edit') {
+            <app-goal-form
+              [goal]="selectedGoal()"
+              [accounts]="accounts()"
+              [saving]="state().saving"
+              (goalSubmitted)="saveGoal($event)"
+              (formClosed)="closePanel()"
+            />
+          } @else if (activePanel() === 'contribution') {
+            <app-contribution-dialog
+              [saving]="state().saving"
+              (contributionSubmitted)="addContribution($event)"
+              (formClosed)="closePanel()"
+            />
+          } @else {
+            <app-goal-detail
+              [goal]="selectedGoal()"
+              [contributions]="state().contributions"
+              (addContribution)="openContributionForm()"
+              (edit)="openEditForm()"
+            />
+          }
         </div>
       </div>
-      <a routerLink="/dashboard" class="coming-soon__link">Back to dashboard</a>
-    </div>
-  </div>
+    }
+  </main>
 </div>
