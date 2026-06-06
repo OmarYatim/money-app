@@ -1,0 +1,274 @@
+.goals__overview {
+  gap: 18px;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr);
+}
+
+.goals__section-header {
+  gap: 12px;
+  justify-content: space-between;
+}
+
+:where(.goals__section-header h2, .goals__side-card h2) {
+  color: var(--ink-900);
+  font-size: 14px;
+  margin: 0;
+}
+
+.goals__section-header p,
+.goals__side-card header p {
+  font-size: 11.5px;
+  margin-top: 3px;
+}
+
+.goals__filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: flex-end;
+}
+
+.goals__cards-grid {
+  gap: 12px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.goals__goal-card {
+  --goal-color: var(--indigo-500);
+  --goal-color-soft: var(--lavender-50);
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 36px;
+  min-height: 172px;
+  padding: 16px;
+}
+
+.goals__goal-card--selected {
+  border-color: var(--goal-color);
+  box-shadow: 0 0 0 1px var(--goal-color), 0 8px 24px var(--goal-color-soft);
+}
+
+.goals__goal-select {
+  gap: 11px;
+  text-align: left;
+}
+
+.goals__goal-head {
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.goals__goal-icon {
+  background: var(--goal-color-soft);
+  border-radius: 8px;
+  color: var(--goal-color);
+  height: 32px;
+  width: 32px;
+}
+
+.goals__goal-head > span:last-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.goals__goal-head strong {
+  font-size: 13.5px;
+  font-weight: 800;
+}
+
+.goals__goal-head small {
+  font-size: 11px;
+}
+
+.goals__goal-edit {
+  align-self: start;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  color: var(--ink-500);
+  height: 28px;
+  width: 28px;
+}
+
+.goals__goal-amount {
+  align-items: baseline;
+  gap: 7px;
+}
+
+.goals__goal-amount strong {
+  font-size: 27px;
+}
+
+.goals__goal-amount small {
+  color: var(--ink-400);
+  font-size: 11.5px;
+}
+
+.goals__goal-progress {
+  background: var(--ink-100);
+  border-radius: 4px;
+  display: block;
+  height: 8px;
+  overflow: hidden;
+  position: relative;
+}
+
+.goals__goal-progress span {
+  background: var(--goal-color);
+  border-radius: inherit;
+  display: block;
+  height: 100%;
+}
+
+.goals__goal-progress i {
+  background: var(--ink-300);
+  border-radius: 50%;
+  height: 3px;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 3px;
+}
+
+.goals__goal-progress i:nth-child(2) {
+  left: 25%;
+}
+
+.goals__goal-progress i:nth-child(3) {
+  left: 50%;
+}
+
+.goals__goal-progress i:nth-child(4) {
+  left: 75%;
+}
+
+.goals__goal-foot {
+  color: var(--ink-500);
+  font-size: 11.5px;
+  gap: 6px;
+}
+
+.goals__side-card {
+  padding: 18px 20px;
+}
+
+.goals__side-card header {
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.goals__side-card header button {
+  align-items: center;
+  color: var(--indigo-500);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 4px;
+}
+
+.goals__feed {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.goals__feed-row {
+  border-bottom: 1px solid var(--ink-100);
+  gap: 11px;
+  padding: 9px 4px;
+}
+
+.goals__feed-row:last-child {
+  border-bottom: 0;
+}
+
+.goals__feed-dot {
+  height: 8px;
+  width: 8px;
+}
+
+.goals__feed-row div {
+  flex: 1;
+  min-width: 0;
+}
+
+.goals__feed-row strong {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.goals__feed-row small {
+  font-size: 11px;
+}
+
+.goals__feed-row > span:last-child {
+  color: var(--green-600);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+:where(.goals__empty-feed) {
+  color: var(--ink-500);
+  margin: 0;
+}
+
+.goals__dialog-layer {
+  align-items: center;
+  background: rgb(20 22 58 / 42%);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 24px;
+  position: fixed;
+  z-index: 30;
+}
+
+.goals__dialog-layer app-contribution-dialog {
+  max-width: 420px;
+  width: 100%;
+}
+
+@media (max-width: 1280px) {
+  .goals__overview,
+  .goals__spotlight {
+    grid-template-columns: 1fr;
+  }
+
+  .goals__spotlight-right {
+    align-items: center;
+  }
+}
+
+@media (max-width: 900px) {
+  :where(.topbar, .topbar__right, .goals__section-header) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .topbar__right {
+    align-items: stretch;
+    width: 100%;
+  }
+
+  .goals__body {
+    padding: 18px;
+  }
+
+  .goals__cards-grid,
+  .goals__kpis,
+  .goals__mini-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .goals__filters {
+    justify-content: flex-start;
+  }
+
+  .goals__hero-amount strong {
+    font-size: 44px;
+  }
+
+  .goals__spotlight {
+    padding: 20px;
+  }
+}

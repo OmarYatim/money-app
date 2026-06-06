@@ -48,6 +48,7 @@ cd backend && mvn clean verify         # run all tests (uses H2 in memory — no
 cd frontend && ng lint --fix           # auto-fix lint issues
 cd frontend && ng lint                 # check only
 cd frontend && npx tsc --noEmit        # type-check only — no output files
+cd frontend && ng build                # production build — verifies bundle and component style budgets
 cd frontend && ng test --watch=false --browsers=ChromeHeadless   # unit tests
 ```
 
@@ -58,8 +59,10 @@ cd frontend && ng test --watch=false --browsers=ChromeHeadless   # unit tests
 cd backend && mvn spotless:apply && mvn spotless:check
 
 # After generating frontend code:
-cd frontend && ng lint --fix && npx tsc --noEmit
+cd frontend && ng lint --fix && npx tsc --noEmit && ng build
 ```
+
+For every frontend change, verify Angular build budgets before reporting done. The production build must pass the configured `initial` and `anyComponentStyle` budgets in `frontend/angular.json`; do not ignore bundle budget warnings or component style budget errors.
 
 ---
 
@@ -72,7 +75,6 @@ State what you want to run and **why**, then wait for approval:
 mvn spring-boot:run ...       # starts the server
 mvn clean package ...         # builds a JAR
 ng serve                      # starts the dev server
-ng build ...                  # compiles the app
 ng generate ...               # scaffolds files
 docker-compose up             # starts containers
 docker build ...              # builds an image

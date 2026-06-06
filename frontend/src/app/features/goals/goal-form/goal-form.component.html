@@ -1,0 +1,245 @@
+<div class="goal-modal" role="presentation">
+  <form
+    class="goal-modal__panel"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-label]="heading()"
+    [formGroup]="form"
+    [style.--goal-accent]="selectedColor()"
+    [style.--goal-accent-soft]="selectedColorSoft()"
+    (ngSubmit)="submit()"
+  >
+    <header class="goal-modal__header">
+      <div class="goal-modal__title-block">
+        <span class="goal-modal__preview" [style.color]="selectedColor()">
+          <span class="material-icons">{{ form.controls.icon.value }}</span>
+        </span>
+        <div>
+          <p>{{ goal() ? 'Edit savings plan' : 'Create savings plan' }}</p>
+          <h2>{{ heading() }}</h2>
+        </div>
+      </div>
+      <button class="goal-modal__icon" type="button" aria-label="Close form" (click)="formClosed.emit()">
+        <span class="material-icons">close</span>
+      </button>
+    </header>
+
+    <div class="goal-modal__tabs" role="tablist" aria-label="Goal form sections">
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'details'"
+        [class.goal-modal__tab--active]="activeTab() === 'details'"
+        (click)="selectTab('details')"
+      >
+        <span>1</span>
+        <strong>Details</strong>
+        <small>Name and target</small>
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'funding'"
+        [class.goal-modal__tab--active]="activeTab() === 'funding'"
+        (click)="selectTab('funding')"
+      >
+        <span>2</span>
+        <strong>Funding</strong>
+        <small>Account and schedule</small>
+      </button>
+    </div>
+
+    <div class="goal-modal__body">
+      @if (activeTab() === 'details') {
+        <label class="goal-modal__field goal-modal__field--wide">
+          <span>Goal name</span>
+          <input formControlName="name" type="text" placeholder="Emergency fund" />
+        </label>
+
+        <div class="goal-modal__field goal-modal__field--wide">
+          <span>Icon</span>
+          <div class="goal-modal__icon-grid">
+            @for (option of iconChoices; track option.value) {
+              <button
+                type="button"
+                [class.goal-modal__choice--active]="form.controls.icon.value === option.value"
+                [style.border-color]="form.controls.icon.value === option.value ? selectedColor() : null"
+                [style.color]="form.controls.icon.value === option.value ? selectedColor() : null"
+                [attr.aria-label]="option.label"
+                (click)="chooseIcon(option.value)"
+              >
+                <span class="material-icons">{{ option.value }}</span>
+              </button>
+            }
+          </div>
+        </div>
+
+        <div class="goal-modal__field goal-modal__field--wide">
+          <span>Color</span>
+          <div class="goal-modal__swatches">
+            @for (option of colorChoices; track option.value) {
+              <button
+                type="button"
+                [class.goal-modal__swatch--active]="form.controls.color.value === option.value"
+                [style.background]="option.swatch"
+                [style.--swatch-color]="option.swatch"
+                [attr.aria-label]="option.label"
+                (click)="chooseColor(option.value)"
+              ></button>
+            }
+          </div>
+        </div>
+
+        <label class="goal-modal__field">
+          <span>Category</span>
+          <select formControlName="category">
+            @for (category of categoryChoices; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+        </label>
+
+        <div class="goal-modal__field">
+          <span>Priority</span>
+          <div class="goal-modal__pills">
+            @for (priority of priorityChoices; track priority) {
+              <button
+                type="button"
+                [class.goal-modal__pill--active]="form.controls.priority.value === priority"
+                [style.background-color]="form.controls.priority.value === priority ? selectedColor() : null"
+                [style.border-color]="form.controls.priority.value === priority ? selectedColor() : null"
+                [style.color]="form.controls.priority.value === priority ? 'white' : null"
+                (click)="choosePriority(priority)"
+              >
+                {{ priority }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <label class="goal-modal__field goal-modal__field--wide">
+          <span>Target amount</span>
+          <div class="goal-modal__amount">
+            <span>€</span>
+            <input
+              [value]="targetAmount()"
+              type="number"
+              min="0"
+              step="50"
+              placeholder="3000"
+              (input)="updateTargetAmount($any($event.target).value)"
+            />
+          </div>
+          <input
+            [value]="targetAmount()"
+            type="range"
+            min="100"
+            max="50000"
+            step="100"
+            (input)="updateTargetAmount($any($event.target).value)"
+          />
+          <div class="goal-modal__ticks">
+            <span>€100</span>
+            <span>€10k</span>
+            <span>€25k</span>
+            <span>€50k+</span>
+          </div>
+        </label>
+
+        <label class="goal-modal__field goal-modal__field--wide">
+          <span>Note</span>
+          <textarea formControlName="note" rows="3" placeholder="A private reminder of why this goal matters."></textarea>
+        </label>
+      } @else {
+        <label class="goal-modal__field goal-modal__field--wide">
+          <span>Source account</span>
+          <select formControlName="linkedAccountId">
+            <option [ngValue]="null">Manual contributions</option>
+            @for (account of accounts(); track account.id) {
+              <option [ngValue]="account.id">{{ account.name }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="goal-modal__field goal-modal__field--wide">
+          <span>Auto-save monthly</span>
+          <small class="goal-modal__hint">Set to €0 to fund manually. This schedules the monthly amount in the plan.</small>
+          <div class="goal-modal__amount">
+            <span>€</span>
+            <input
+              [value]="monthlyAmount()"
+              type="number"
+              min="0"
+              step="10"
+              (input)="updateMonthlyAmount($any($event.target).value)"
+            />
+            <small>/ month</small>
+          </div>
+          <input
+            [value]="monthlyAmount()"
+            type="range"
+            min="0"
+            max="2000"
+            step="10"
+            (input)="updateMonthlyAmount($any($event.target).value)"
+          />
+          <div class="goal-modal__ticks">
+            <span>€0</span>
+            <span>€500</span>
+            <span>€1k</span>
+            <span>€2k+</span>
+          </div>
+        </label>
+
+        <label class="goal-modal__field goal-modal__field--wide">
+          <span>Target month</span>
+          <input formControlName="targetMonth" type="month" />
+        </label>
+
+        <section class="goal-modal__forecast" aria-label="Funding forecast">
+          <div class="goal-modal__forecast-header">
+            <span>Forecast</span>
+            <small>auto-calculated</small>
+          </div>
+          <div class="goal-modal__forecast-grid">
+            <div>
+              <span>Progress</span>
+              <strong [style.color]="selectedColor()">{{ previewProgress() }}%</strong>
+            </div>
+            <div>
+              <span>Remaining</span>
+              <strong>{{ remainingAmount() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+            </div>
+            <div>
+              <span>Months at plan</span>
+              <strong>{{ forecastMonths() ?? '∞' }}</strong>
+            </div>
+            <div>
+              <span>Reach by</span>
+              <strong>{{ forecastLabel() }}</strong>
+            </div>
+          </div>
+          <div class="goal-modal__forecast-bar" aria-hidden="true">
+            <span [style.width.%]="previewProgress()"></span>
+            <span></span>
+          </div>
+          @if (monthlyAmount() === 0) {
+            <p class="goal-modal__warning">
+              <span class="material-icons">flag</span>
+              No monthly auto-save amount. Add funds manually or set a monthly plan.
+            </p>
+          }
+        </section>
+      }
+    </div>
+
+    @if (form.invalid && form.touched) {
+      <p class="goal-modal__error">Name and a positive target amount are required.</p>
+    }
+
+    <footer class="goal-modal__actions">
+      <button class="goal-modal__secondary" type="button" (click)="formClosed.emit()">Cancel</button>
+      <button class="goal-modal__primary" type="submit" [disabled]="saving()">{{ submitLabel() }}</button>
+    </footer>
+  </form>
+</div>

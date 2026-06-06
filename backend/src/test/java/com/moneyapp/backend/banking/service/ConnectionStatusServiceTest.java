@@ -12,6 +12,7 @@ import com.moneyapp.backend.banking.dto.PowensConnectionsResponse;
 import com.moneyapp.backend.banking.dto.PowensTokenCodeResponse;
 import com.moneyapp.backend.banking.dto.SyncStatusResponse;
 import com.moneyapp.backend.banking.repository.UserConnectionRepository;
+import com.moneyapp.backend.goals.service.GoalService;
 import com.moneyapp.backend.reports.service.NetWorthSnapshotService;
 import com.moneyapp.backend.sync.repository.SyncEventRepository;
 import com.moneyapp.backend.sync.service.DataSyncService;
@@ -95,6 +96,7 @@ class ConnectionStatusServiceTest {
     FakeAccountService accountService = new FakeAccountService();
     FakeTransactionService transactionService = new FakeTransactionService();
     FakeNetWorthSnapshotService netWorthSnapshotService = new FakeNetWorthSnapshotService();
+    FakeGoalService goalService = new FakeGoalService();
     DataSyncService dataSyncService =
         new DataSyncService(
             syncEventRepository,
@@ -102,7 +104,8 @@ class ConnectionStatusServiceTest {
             accountService,
             transactionService,
             new ConcurrentTaskScheduler(),
-            netWorthSnapshotService);
+            netWorthSnapshotService,
+            goalService);
     ConnectionStatusService service =
         new ConnectionStatusService(
             currentAppUserService,
@@ -119,6 +122,7 @@ class ConnectionStatusServiceTest {
     assertThat(accountService.syncedUserId).isEqualTo(appUser.getId());
     assertThat(transactionService.syncedUserId).isEqualTo(appUser.getId());
     assertThat(netWorthSnapshotService.snapshotUserId).isEqualTo(appUser.getId());
+    assertThat(goalService.refreshedUserId).isEqualTo(appUser.getId());
   }
 
   private static class FakeAccountService extends AccountService {
@@ -160,6 +164,20 @@ class ConnectionStatusServiceTest {
     public boolean createSnapshotIfMissing(AppUser user) {
       snapshotUserId = user.getId();
       return true;
+    }
+  }
+
+  private static class FakeGoalService extends GoalService {
+    private Long refreshedUserId;
+
+    FakeGoalService() {
+      super(null, null, null, null, null);
+    }
+
+    @Override
+    public void refreshLinkedAccountGoals(
+        Long userId, List<com.moneyapp.backend.banking.entity.Account> accounts) {
+      refreshedUserId = userId;
     }
   }
 

@@ -1,0 +1,166 @@
+@if (goal(); as selectedGoal) {
+  <section class="goal-detail" aria-label="Goal detail">
+    <div class="goal-detail__header">
+      <div>
+        <p class="goal-detail__eyebrow">Savings goal</p>
+        <h2>
+          <span class="goal-detail__title-icon" [style.background]="goalColor(selectedGoal)">
+            <span class="material-icons">{{ selectedGoal.icon }}</span>
+          </span>
+          {{ selectedGoal.name }}
+        </h2>
+      </div>
+      <button class="goal-detail__icon" type="button" aria-label="Edit goal" (click)="edit.emit()">
+        <span class="material-icons">edit</span>
+      </button>
+    </div>
+
+    <div class="goal-detail__hero">
+      <div class="goal-detail__spotlight">
+        <div class="goal-detail__ring" [style.background]="ringBackground()" aria-label="Goal progress">
+          <div>
+            <strong>{{ selectedGoal.progressPercent }}%</strong>
+            <span>funded</span>
+          </div>
+        </div>
+
+        <div class="goal-detail__figure">
+          <span>{{ selectedGoal.currentAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+          <p>saved of {{ selectedGoal.targetAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</p>
+          <div class="goal-detail__bar" aria-hidden="true">
+            <span [style.width.%]="selectedGoal.progressPercent" [style.background]="goalColor(selectedGoal)"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <dl class="goal-detail__stats">
+      <div>
+        <dt>Remaining</dt>
+        <dd>{{ remainingAmount() | currency: 'EUR' : 'symbol' : '1.0-0' }}</dd>
+      </div>
+      <div>
+        <dt>Monthly rate</dt>
+        <dd>
+          @if (selectedGoal.autoSaveEnabled) {
+            {{ selectedGoal.plannedMonthlyContribution | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          } @else {
+            {{ selectedGoal.monthlyRate | currency: 'EUR' : 'symbol' : '1.0-0' }}
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Target month</dt>
+        <dd>
+          @if (selectedGoal.targetDate) {
+            {{ selectedGoal.targetDate | date: 'MMM yyyy' }}
+          } @else {
+            -
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Priority</dt>
+        <dd>{{ selectedGoal.priority }}</dd>
+      </div>
+      <div>
+        <dt>Category</dt>
+        <dd>{{ selectedGoal.category }}</dd>
+      </div>
+      <div>
+        <dt>Projected date</dt>
+        <dd>
+          @if (selectedGoal.projectedCompletionDate) {
+            {{ selectedGoal.projectedCompletionDate | date: 'dd MMM yyyy' }}
+          } @else {
+            No projection yet
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Funding source</dt>
+        <dd>
+          @if (selectedGoal.linkedAccountName) {
+            {{ selectedGoal.linkedAccountName }}
+          } @else {
+            Manual
+          }
+        </dd>
+      </div>
+      <div>
+        <dt>Status</dt>
+        <dd>
+          @if (selectedGoal.projectedCompletionDate && selectedGoal.targetDate) {
+            @if (selectedGoal.projectedCompletionDate <= selectedGoal.targetDate) {
+              On track
+            } @else {
+              Behind target
+            }
+          } @else {
+            No projection yet
+          }
+        </dd>
+      </div>
+    </dl>
+
+    <div class="goal-detail__source">
+      <span class="material-icons">{{ selectedGoal.linkedAccountId ? 'account_balance' : 'add_circle' }}</span>
+      @if (selectedGoal.linkedAccountName) {
+        Linked to {{ selectedGoal.linkedAccountName }}
+      } @else {
+        Manual contributions
+      }
+      @if (selectedGoal.autoSaveEnabled) {
+        · Auto-save plan {{ selectedGoal.plannedMonthlyContribution | currency: 'EUR' : 'symbol' : '1.0-0' }}/mo
+      }
+    </div>
+
+    @if (selectedGoal.note) {
+      <p class="goal-detail__note">{{ selectedGoal.note }}</p>
+    }
+
+    @if (!selectedGoal.linkedAccountId) {
+      <button class="goal-detail__primary" type="button" (click)="addContribution.emit()">
+        <span class="material-icons">add</span>
+        Add contribution
+      </button>
+    }
+
+    <section class="goal-detail__history" aria-label="Contribution history">
+      <div class="goal-detail__history-header">
+        <div>
+          <h3>Contributions</h3>
+          <p>Manual history for this goal</p>
+        </div>
+        <span>{{ contributions().length }} entries</span>
+      </div>
+      @if (contributions().length > 0) {
+        <div class="goal-detail__chart" aria-label="Contribution chart">
+          @for (contribution of contributions(); track contribution.id) {
+            <div class="goal-detail__chart-bar">
+              <span [style.height.%]="(contribution.amount / largestContribution()) * 100" [style.background]="goalColor(selectedGoal)"></span>
+            </div>
+          }
+        </div>
+      }
+      @for (contribution of contributions(); track contribution.id) {
+        <div class="goal-detail__contribution">
+          <span>{{ contribution.amount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+          <small>
+            {{ contribution.contributedAt | date: 'dd MMM yyyy' }}
+            @if (contribution.note) {
+              · {{ contribution.note }}
+            }
+          </small>
+        </div>
+      } @empty {
+        <p class="goal-detail__empty">No manual contributions yet.</p>
+      }
+    </section>
+  </section>
+} @else {
+  <section class="goal-detail goal-detail--empty">
+    <span class="material-icons">track_changes</span>
+    <p>Select a goal to view progress.</p>
+  </section>
+}
