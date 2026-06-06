@@ -13,22 +13,6 @@
       </p>
     </div>
     <div class="topbar__right">
-      <div class="goals__view-switch" aria-label="Goal view">
-        <button
-          type="button"
-          [class.goals__view-switch-button--active]="view() === 'overview'"
-          (click)="selectView('overview')"
-        >
-          Grid
-        </button>
-        <button
-          type="button"
-          [class.goals__view-switch-button--active]="view() === 'timeline'"
-          (click)="selectView('timeline')"
-        >
-          Timeline
-        </button>
-      </div>
       <button class="topbar__action-btn" type="button" (click)="openCreateForm()">
         <span class="material-icons">add</span>
         New goal
@@ -45,50 +29,7 @@
         <div class="goals__status goals__status--error">{{ state().error }}</div>
       }
 
-      @if (view() === 'timeline') {
-        <section class="goals__timeline" aria-label="Goal timeline chart">
-          <div class="goals__timeline-header">
-            <div>
-              <h2>Goal timeline</h2>
-              <p>Targets plotted by due date with progress shown on each lane.</p>
-            </div>
-            <span>{{ averageProgress() }}% average progress</span>
-          </div>
-
-          <div class="goals__timeline-chart">
-            @for (item of timelineGoals(); track item.goal.id) {
-              <button
-                class="goals__timeline-row"
-                type="button"
-                [class.goals__timeline-row--selected]="item.goal.id === selectedGoalId()"
-                (click)="selectGoal(item.goal)"
-              >
-                <span class="goals__timeline-label">
-                  <span class="goals__timeline-dot" [style.background]="goalColor(item.goal)"></span>
-                  <span>{{ item.goal.name }}</span>
-                  <small>{{ item.progressPercent }}%</small>
-                </span>
-                <span class="goals__timeline-track">
-                  <span class="goals__timeline-fill" [style.width.%]="item.progressPercent" [style.background]="goalColor(item.goal)"></span>
-                  @if (item.targetPosition !== null) {
-                    <span class="goals__timeline-marker" [style.left.%]="item.targetPosition" [style.border-color]="goalColor(item.goal)"></span>
-                  }
-                </span>
-                <span class="goals__timeline-date">
-                  @if (item.goal.targetDate) {
-                    {{ item.goal.targetDate | date: 'MMM yyyy' }}
-                  } @else {
-                    No deadline
-                  }
-                </span>
-              </button>
-            } @empty {
-              <p class="goals__timeline-empty">Create a goal to see the timeline.</p>
-            }
-          </div>
-        </section>
-      } @else {
-        @if (selectedGoal(); as goal) {
+      @if (selectedGoal(); as goal) {
           <section class="goals__spotlight" aria-label="Spotlight goal">
             <div class="goals__spotlight-left">
               <p class="goals__eyebrow">
@@ -179,9 +120,9 @@
               </div>
             </div>
           </section>
-        }
+      }
 
-        <section class="goals__kpis" aria-label="Goal metrics">
+      <section class="goals__kpis" aria-label="Goal metrics">
           @for (kpi of kpis(); track kpi.label) {
             <article class="goals__kpi">
               <span class="goals__kpi-icon">
@@ -192,9 +133,9 @@
               <small [class.goals__positive]="kpi.tone === 'positive'">{{ kpi.sub }}</small>
             </article>
           }
-        </section>
+      </section>
 
-        <section class="goals__overview">
+      <section class="goals__overview">
           <div class="goals__cards-column">
             <div class="goals__section-header">
               <div>
@@ -295,8 +236,7 @@
             </article>
 
           </aside>
-        </section>
-      }
+      </section>
     }
   </main>
 

@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { PageActionsComponent } from '../../shared/components/page-actions/page-actions.component';
@@ -24,14 +24,7 @@ interface GoalsState {
 }
 
 type GoalsPanel = 'none' | 'create' | 'edit' | 'contribution';
-type GoalsView = 'overview' | 'timeline';
 type PriorityFilter = 'All' | 'Essential' | 'High' | 'Medium' | 'Low';
-
-interface TimelineGoal {
-  goal: Goal;
-  progressPercent: number;
-  targetPosition: number | null;
-}
 
 interface GoalKpi {
   icon: string;
@@ -66,8 +59,9 @@ const INITIAL_STATE: GoalsState = {
     GoalFormComponent,
   ],
   templateUrl: './goals.component.html',
-  styleUrl: './goals.component.scss',
+  styleUrls: ['./goals.component.scss', './goals-overview.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class GoalsComponent {
   private readonly accountService = inject(AccountService);
@@ -77,7 +71,6 @@ export class GoalsComponent {
   protected readonly accounts = signal<Account[]>([]);
   protected readonly selectedGoalId = signal<number | null>(null);
   protected readonly activePanel = signal<GoalsPanel>('none');
-  protected readonly view = signal<GoalsView>('overview');
   protected readonly priorityFilter = signal<PriorityFilter>('All');
   protected readonly priorityFilters: PriorityFilter[] = ['All', 'Essential', 'High', 'Medium', 'Low'];
 
@@ -114,16 +107,7 @@ export class GoalsComponent {
     const target = this.totalTarget();
     return target > 0 ? Math.round((this.totalSaved() / target) * 100) : 0;
   });
-  protected readonly projectedYearEnd = computed(() => this.totalSaved() + this.monthlyPace() * 6);
   protected readonly projectedReach = computed(() => this.totalSaved() + this.monthlyPace() * 12);
-  protected readonly averageProgress = computed(() => {
-    const goals = this.activeGoals();
-    if (goals.length === 0) {
-      return 0;
-    }
-
-    return Math.round(goals.reduce((sum, goal) => sum + goal.progressPercent, 0) / goals.length);
-  });
   protected readonly averageStreak = computed(() => {
     const activeGoals = this.activeGoals().filter((goal) => this.monthlyAmount(goal) > 0);
     return activeGoals.length > 0 ? Math.round(activeGoals.reduce((sum, goal) => sum + this.goalStreak(goal), 0) / activeGoals.length) : 0;
@@ -197,25 +181,6 @@ export class GoalsComponent {
       mode: contribution.note?.trim() || (goalsById.get(contribution.goalId)?.autoSaveEnabled ? 'Auto-save' : 'Manual'),
     }));
   });
-  protected readonly timelineGoals = computed<TimelineGoal[]>(() => {
-    const goals = this.activeGoals();
-    const targetDates = goals
-      .map((goal) => goal.targetDate)
-      .filter((targetDate): targetDate is string => targetDate !== null)
-      .sort();
-    const start = targetDates[0] ?? this.todayIsoDate();
-    const end = targetDates[targetDates.length - 1] ?? this.todayIsoDate();
-    const range = Math.max(1, new Date(end).getTime() - new Date(start).getTime());
-
-    return goals.map((goal) => ({
-      goal,
-      progressPercent: Math.min(Math.max(goal.progressPercent, 0), 100),
-      targetPosition: goal.targetDate
-        ? ((new Date(goal.targetDate).getTime() - new Date(start).getTime()) / range) * 100
-        : null,
-    }));
-  });
-
   constructor() {
     void this.loadInitialData();
   }
@@ -246,10 +211,6 @@ export class GoalsComponent {
   protected openCreateForm(): void {
     this.selectedGoalId.set(null);
     this.activePanel.set('create');
-  }
-
-  protected selectView(view: GoalsView): void {
-    this.view.set(view);
   }
 
   protected selectPriorityFilter(filter: PriorityFilter): void {
@@ -419,9 +380,6 @@ export class GoalsComponent {
     return left.id - right.id;
   }
 
-  private todayIsoDate(): string {
-    return new Date().toISOString().slice(0, 10);
-  }
 }
 
 function formatEuro(amount: number): string {
