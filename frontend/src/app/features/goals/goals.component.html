@@ -8,7 +8,9 @@
         <span class="topbar__crumb-current">Goals</span>
       </nav>
       <h1 class="topbar__title">Goals</h1>
-      <p class="topbar__subtitle">Plan savings targets and track contribution progress.</p>
+      <p class="topbar__subtitle">
+        {{ activeGoals().length }} active · saving {{ monthlyPace() | currency: 'EUR' : 'symbol' : '1.0-0' }}/month
+      </p>
     </div>
     <div class="topbar__right">
       <div class="goals__view-switch" aria-label="Goal view">
@@ -17,7 +19,7 @@
           [class.goals__view-switch-button--active]="view() === 'overview'"
           (click)="selectView('overview')"
         >
-          Overview
+          Grid
         </button>
         <button
           type="button"
@@ -36,44 +38,6 @@
   </header>
 
   <main class="goals__body">
-    <section class="goals__summary" aria-label="Goals summary">
-      <div>
-        <span class="material-icons">savings</span>
-        <p>Total saved</p>
-        <strong>{{ totalSaved() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
-      </div>
-      <div>
-        <span class="material-icons">flag</span>
-        <p>Total targets</p>
-        <strong>{{ totalTarget() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
-      </div>
-      <div>
-        <span class="material-icons">track_changes</span>
-        <p>Overall progress</p>
-        <strong>{{ overallProgress() }}%</strong>
-      </div>
-      <div>
-        <span class="material-icons">repeat</span>
-        <p>Monthly pace</p>
-        <strong>{{ monthlyPace() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
-      </div>
-      <div>
-        <span class="material-icons">check_circle</span>
-        <p>On track</p>
-        <strong>{{ onTrackGoals().length }}/{{ activeGoals().length }}</strong>
-      </div>
-      <div>
-        <span class="material-icons">trending_up</span>
-        <p>Projected reach</p>
-        <strong>{{ projectedYearEnd() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
-      </div>
-      <div>
-        <span class="material-icons">flag</span>
-        <p>Active goals</p>
-        <strong>{{ activeGoals().length }}</strong>
-      </div>
-    </section>
-
     @if (state().loading) {
       <div class="goals__status">Loading goals...</div>
     } @else {
@@ -124,47 +88,251 @@
           </div>
         </section>
       } @else {
-        <div class="goals__grid">
-          <app-goal-list
-            [goals]="activeGoals()"
-            [selectedGoalId]="selectedGoalId()"
-            (selected)="selectGoal($event)"
-            (archived)="archiveGoal($event)"
-          />
+        @if (selectedGoal(); as goal) {
+          <section class="goals__spotlight" aria-label="Spotlight goal">
+            <div class="goals__spotlight-left">
+              <p class="goals__eyebrow">
+                <span></span>
+                Spotlight · {{ goal.category }}
+              </p>
+              <div class="goals__spotlight-title">
+                <span class="goals__spotlight-icon" [style.background]="goalSoftColor(goal)" [style.color]="goalColor(goal)">
+                  <span class="material-icons">{{ goal.icon }}</span>
+                </span>
+                <h2>{{ goal.name }}</h2>
+                <span [class]="priorityClass(goal.priority)">{{ goal.priority }}</span>
+              </div>
+              <div class="goals__hero-amount">
+                <strong>{{ goal.currentAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+                <span>of {{ goal.targetAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+              </div>
+              <div class="goals__hero-meta">
+                <span [style.color]="goalColor(goal)">
+                  <span class="material-icons">trending_up</span>
+                  +{{ monthlyAmount(goal) | currency: 'EUR' : 'symbol' : '1.0-0' }}/mo
+                </span>
+                <span>·</span>
+                <span>
+                  @if (goal.targetDate) {
+                    target {{ goal.targetDate | date: 'MMM yyyy' }}
+                  } @else {
+                    no target date
+                  }
+                </span>
+                <span>·</span>
+                <span>{{ goalStreak(goal) }}-month streak</span>
+              </div>
+              <p class="goals__hero-note">
+                {{ goal.note || 'Keep this plan funded with monthly auto-save and manual top-ups.' }}
+              </p>
+              <div class="goals__hero-actions">
+                <button class="goals__hero-primary" type="button" (click)="openContributionForm()">
+                  <span class="material-icons">add</span>
+                  Add funds
+                </button>
+                <button class="goals__hero-secondary" type="button" (click)="openEditForm()">
+                  <span class="material-icons">settings</span>
+                  Adjust plan
+                </button>
+                <button class="goals__hero-secondary" type="button" (click)="openEditForm()">
+                  <span class="material-icons">repeat</span>
+                  Auto-save · {{ monthlyAmount(goal) | currency: 'EUR' : 'symbol' : '1.0-0' }}/mo
+                </button>
+              </div>
+            </div>
 
-          <div class="goals__main">
-            @if (activePanel() === 'create') {
-              <app-goal-form
-                [accounts]="accounts()"
-                [saving]="state().saving"
-                (goalSubmitted)="saveGoal($event)"
-                (formClosed)="closePanel()"
-              />
-            } @else if (activePanel() === 'edit') {
-              <app-goal-form
-                [goal]="selectedGoal()"
-                [accounts]="accounts()"
-                [saving]="state().saving"
-                (goalSubmitted)="saveGoal($event)"
-                (formClosed)="closePanel()"
-              />
-            } @else if (activePanel() === 'contribution') {
-              <app-contribution-dialog
-                [saving]="state().saving"
-                (contributionSubmitted)="addContribution($event)"
-                (formClosed)="closePanel()"
-              />
-            } @else {
-              <app-goal-detail
-                [goal]="selectedGoal()"
-                [contributions]="state().contributions"
-                (addContribution)="openContributionForm()"
-                (edit)="openEditForm()"
-              />
-            }
+            <div class="goals__spotlight-right">
+              <div class="goals__ring" [style.background]="progressRingStyle(goal)">
+                <div>
+                  <strong>{{ goal.progressPercent }}<span>%</span></strong>
+                  <small>
+                    @if (monthsToTarget(goal) !== null) {
+                      {{ monthsToTarget(goal) }} months to go
+                    } @else {
+                      No deadline
+                    }
+                  </small>
+                  @if (forecastDate(goal); as forecast) {
+                    <em [style.color]="goalColor(goal)">Forecast: {{ forecast | date: 'MMM yyyy' }}</em>
+                  }
+                </div>
+              </div>
+              <div class="goals__mini-grid">
+                <div>
+                  <span>Remaining</span>
+                  <strong>{{ remainingAmount(goal) | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+                </div>
+                <div>
+                  <span>Funded from</span>
+                  <strong>{{ goal.linkedAccountName || 'Manual' }}</strong>
+                </div>
+                <div>
+                  <span>Next debit</span>
+                  <strong>
+                    @if (goal.autoSaveEnabled) {
+                      25 {{ goal.updatedAt | date: 'MMM' }}
+                    } @else {
+                      —
+                    }
+                  </strong>
+                </div>
+              </div>
+            </div>
+          </section>
+        }
+
+        <section class="goals__kpis" aria-label="Goal metrics">
+          @for (kpi of kpis(); track kpi.label) {
+            <article class="goals__kpi">
+              <span class="goals__kpi-icon">
+                <span class="material-icons">{{ kpi.icon }}</span>
+              </span>
+              <p>{{ kpi.label }}</p>
+              <strong>{{ kpi.value }}</strong>
+              <small [class.goals__positive]="kpi.tone === 'positive'">{{ kpi.sub }}</small>
+            </article>
+          }
+        </section>
+
+        <section class="goals__overview">
+          <div class="goals__cards-column">
+            <div class="goals__section-header">
+              <div>
+                <h2>All goals</h2>
+                <p>Click any card to spotlight · drag to reorder</p>
+              </div>
+              <div class="goals__filters" aria-label="Priority filters">
+                @for (filter of priorityFilters; track filter) {
+                  <button
+                    type="button"
+                    [class.goals__filter--active]="priorityFilter() === filter"
+                    (click)="selectPriorityFilter(filter)"
+                  >
+                    {{ filter }}
+                  </button>
+                }
+              </div>
+            </div>
+
+            <div class="goals__cards-grid">
+              @for (goal of filteredGoals(); track goal.id) {
+                <article
+                  class="goals__goal-card"
+                  [class.goals__goal-card--selected]="goal.id === selectedGoalId()"
+                  [style.--goal-color]="goalColor(goal)"
+                  [style.--goal-color-soft]="goalSoftColor(goal)"
+                >
+                  <button class="goals__goal-select" type="button" (click)="selectGoal(goal)">
+                    <span class="goals__goal-head">
+                      <span class="goals__goal-icon">
+                        <span class="material-icons">{{ goal.icon }}</span>
+                      </span>
+                      <span>
+                        <strong>{{ goal.name }}</strong>
+                        <small>
+                          {{ goal.category }} ·
+                          @if (goal.targetDate) {
+                            {{ goal.targetDate | date: 'MMM yyyy' }}
+                          } @else {
+                            no deadline
+                          }
+                        </small>
+                      </span>
+                    </span>
+                    <span class="goals__goal-amount">
+                      <strong>{{ goal.currentAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
+                      <small>/ {{ goal.targetAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</small>
+                    </span>
+                    <span class="goals__goal-progress">
+                      <span [style.width.%]="goal.progressPercent"></span>
+                      <i></i>
+                      <i></i>
+                      <i></i>
+                    </span>
+                    <span class="goals__goal-foot">
+                      <span>{{ goal.progressPercent }}%</span>
+                      <span>·</span>
+                      <span>{{ monthlyAmount(goal) | currency: 'EUR' : 'symbol' : '1.0-0' }}/mo · {{ monthsLeft(goal) ?? '—' }}m left</span>
+                    </span>
+                  </button>
+                  <button class="goals__goal-edit" type="button" aria-label="Edit goal" (click)="selectGoal(goal); openEditForm()">
+                    <span class="material-icons">settings</span>
+                  </button>
+                </article>
+              } @empty {
+                <button class="goals__add-card" type="button" (click)="openCreateForm()">
+                  <span class="material-icons">add</span>
+                  <strong>Create new goal</strong>
+                  <small>Set a target, pick an account, auto-save monthly</small>
+                </button>
+              }
+            </div>
           </div>
-        </div>
+
+          <aside class="goals__side">
+            <article class="goals__side-card">
+              <header>
+                <div>
+                  <h2>Contributions</h2>
+                  <p>Last 30 days</p>
+                </div>
+                <button type="button">All <span class="material-icons">arrow_forward</span></button>
+              </header>
+              <div class="goals__feed">
+                @for (item of contributionFeed(); track item.contributedAt + item.amount) {
+                  <div class="goals__feed-row">
+                    <span class="goals__feed-dot" [style.background]="item.goal ? goalColor(item.goal) : 'var(--indigo-500)'"></span>
+                    <div>
+                      <strong>{{ item.goal?.name || 'Goal contribution' }}</strong>
+                      <small>{{ item.contributedAt | date: 'dd MMM' }} · {{ item.mode }}</small>
+                    </div>
+                    <span>+{{ item.amount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+                  </div>
+                } @empty {
+                  <p class="goals__empty-feed">No contributions yet.</p>
+                }
+              </div>
+            </article>
+
+            <article class="goals__side-card goals__suggestion">
+              <div class="goals__suggestion-title">
+                <span class="material-icons">auto_awesome</span>
+                <h2>Round-ups for goals</h2>
+              </div>
+              <p>Round every card purchase to the nearest €1 and funnel the change into your most urgent goal.</p>
+              <div>
+                <button type="button">Turn on round-ups</button>
+                <button type="button">Learn more</button>
+              </div>
+            </article>
+          </aside>
+        </section>
       }
     }
   </main>
+
+  @if (activePanel() === 'create') {
+    <app-goal-form
+      [accounts]="accounts()"
+      [saving]="state().saving"
+      (goalSubmitted)="saveGoal($event)"
+      (formClosed)="closePanel()"
+    />
+  } @else if (activePanel() === 'edit') {
+    <app-goal-form
+      [goal]="selectedGoal()"
+      [accounts]="accounts()"
+      [saving]="state().saving"
+      (goalSubmitted)="saveGoal($event)"
+      (formClosed)="closePanel()"
+    />
+  } @else if (activePanel() === 'contribution') {
+    <div class="goals__dialog-layer">
+      <app-contribution-dialog
+        [saving]="state().saving"
+        (contributionSubmitted)="addContribution($event)"
+        (formClosed)="closePanel()"
+      />
+    </div>
+  }
 </div>

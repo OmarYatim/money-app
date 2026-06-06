@@ -12,9 +12,7 @@ import type {
 } from '../../shared/models/goal.model';
 import { AccountService } from '../accounts/account.service';
 import { ContributionDialogComponent } from './contribution-dialog/contribution-dialog.component';
-import { GoalDetailComponent } from './goal-detail/goal-detail.component';
 import { GoalFormComponent } from './goal-form/goal-form.component';
-import { GoalListComponent } from './goal-list/goal-list.component';
 import { GoalService } from './goal.service';
 
 interface GoalsState {
@@ -27,11 +25,27 @@ interface GoalsState {
 
 type GoalsPanel = 'none' | 'create' | 'edit' | 'contribution';
 type GoalsView = 'overview' | 'timeline';
+type PriorityFilter = 'All' | 'Essential' | 'High' | 'Medium' | 'Low';
 
 interface TimelineGoal {
   goal: Goal;
   progressPercent: number;
   targetPosition: number | null;
+}
+
+interface GoalKpi {
+  icon: string;
+  label: string;
+  value: string;
+  sub: string;
+  tone: 'default' | 'positive';
+}
+
+interface ContributionFeedItem {
+  goal: Goal | null;
+  amount: number;
+  contributedAt: string;
+  mode: string;
 }
 
 const INITIAL_STATE: GoalsState = {
@@ -49,9 +63,7 @@ const INITIAL_STATE: GoalsState = {
     DatePipe,
     PageActionsComponent,
     ContributionDialogComponent,
-    GoalDetailComponent,
     GoalFormComponent,
-    GoalListComponent,
   ],
   templateUrl: './goals.component.html',
   styleUrl: './goals.component.scss',
@@ -66,26 +78,34 @@ export class GoalsComponent {
   protected readonly selectedGoalId = signal<number | null>(null);
   protected readonly activePanel = signal<GoalsPanel>('none');
   protected readonly view = signal<GoalsView>('overview');
+  protected readonly priorityFilter = signal<PriorityFilter>('All');
+  protected readonly priorityFilters: PriorityFilter[] = ['All', 'Essential', 'High', 'Medium', 'Low'];
 
   protected readonly selectedGoal = computed(() => {
     const selectedGoalId = this.selectedGoalId();
-    return this.state().goals.find((goal) => goal.id === selectedGoalId) ?? null;
+    return this.state().goals.find((goal) => goal.id === selectedGoalId) ?? this.state().goals[0] ?? null;
   });
 
-  protected readonly activeGoals = computed(() => this.state().goals);
+  protected readonly activeGoals = computed(() => this.state().goals.filter((goal) => !goal.archived));
+  protected readonly filteredGoals = computed(() => {
+    const filter = this.priorityFilter();
+    const goals = this.activeGoals();
+
+    return filter === 'All' ? goals : goals.filter((goal) => goal.priority === filter);
+  });
   protected readonly onTrackGoals = computed(() =>
-    this.state().goals.filter((goal) => goal.projectedCompletionDate && goal.targetDate
+    this.activeGoals().filter((goal) => goal.projectedCompletionDate && goal.targetDate
       ? goal.projectedCompletionDate <= goal.targetDate
       : goal.progressPercent >= 40),
   );
   protected readonly totalSaved = computed(() =>
-    this.state().goals.reduce((sum, goal) => sum + goal.currentAmount, 0),
+    this.activeGoals().reduce((sum, goal) => sum + goal.currentAmount, 0),
   );
   protected readonly totalTarget = computed(() =>
-    this.state().goals.reduce((sum, goal) => sum + goal.targetAmount, 0),
+    this.activeGoals().reduce((sum, goal) => sum + goal.targetAmount, 0),
   );
   protected readonly monthlyPace = computed(() =>
-    this.state().goals.reduce(
+    this.activeGoals().reduce(
       (sum, goal) => sum + (goal.autoSaveEnabled ? goal.plannedMonthlyContribution : goal.monthlyRate),
       0,
     ),
@@ -95,16 +115,90 @@ export class GoalsComponent {
     return target > 0 ? Math.round((this.totalSaved() / target) * 100) : 0;
   });
   protected readonly projectedYearEnd = computed(() => this.totalSaved() + this.monthlyPace() * 6);
+  protected readonly projectedReach = computed(() => this.totalSaved() + this.monthlyPace() * 12);
   protected readonly averageProgress = computed(() => {
-    const goals = this.state().goals;
+    const goals = this.activeGoals();
     if (goals.length === 0) {
       return 0;
     }
 
     return Math.round(goals.reduce((sum, goal) => sum + goal.progressPercent, 0) / goals.length);
   });
+  protected readonly averageStreak = computed(() => {
+    const activeGoals = this.activeGoals().filter((goal) => this.monthlyAmount(goal) > 0);
+    return activeGoals.length > 0 ? Math.round(activeGoals.reduce((sum, goal) => sum + this.goalStreak(goal), 0) / activeGoals.length) : 0;
+  });
+  protected readonly longestStreakGoal = computed(() => {
+    const goals = this.activeGoals();
+    return goals.reduce<Goal | null>((longest, goal) => {
+      if (!longest || this.goalStreak(goal) > this.goalStreak(longest)) {
+        return goal;
+      }
+
+      return longest;
+    }, null);
+  });
+  protected readonly kpis = computed<GoalKpi[]>(() => {
+    const goals = this.activeGoals();
+    const longest = this.longestStreakGoal();
+
+    return [
+      {
+        icon: 'savings',
+        label: 'Total saved',
+        value: formatEuro(this.totalSaved()),
+        sub: `of ${formatEuro(this.totalTarget())} across ${goals.length} goals`,
+        tone: 'positive',
+      },
+      {
+        icon: 'track_changes',
+        label: 'Overall progress',
+        value: `${this.overallProgress()}%`,
+        sub: 'On pace for 2027',
+        tone: 'default',
+      },
+      {
+        icon: 'repeat',
+        label: 'Monthly auto-save',
+        value: formatEuro(this.monthlyPace()),
+        sub: `${goals.filter((goal) => this.monthlyAmount(goal) > 0).length} of ${goals.length} goals active`,
+        tone: 'default',
+      },
+      {
+        icon: 'check_circle',
+        label: 'On track',
+        value: `${this.onTrackGoals().length}/${goals.length}`,
+        sub: `${Math.max(this.onTrackGoals().length - 1, 0)} ahead · ${Math.max(goals.length - this.onTrackGoals().length, 0)} lagging`,
+        tone: 'positive',
+      },
+      {
+        icon: 'flag',
+        label: 'Avg streak',
+        value: `${this.averageStreak()} mo`,
+        sub: longest ? `Longest: ${longest.name} · ${this.goalStreak(longest)}m` : 'No streak yet',
+        tone: 'default',
+      },
+      {
+        icon: 'trending_up',
+        label: 'Projected reach',
+        value: formatEuro(this.projectedReach()),
+        sub: 'By end of 2026 at current pace',
+        tone: 'positive',
+      },
+    ];
+  });
+  protected readonly contributionFeed = computed<ContributionFeedItem[]>(() => {
+    const selectedGoal = this.selectedGoal();
+
+    return this.state().contributions.slice(0, 6).map((contribution) => ({
+      goal: selectedGoal,
+      amount: contribution.amount,
+      contributedAt: contribution.contributedAt,
+      mode: contribution.note?.trim() || (selectedGoal?.autoSaveEnabled ? 'Auto-save' : 'Manual'),
+    }));
+  });
   protected readonly timelineGoals = computed<TimelineGoal[]>(() => {
-    const goals = this.state().goals;
+    const goals = this.activeGoals();
     const targetDates = goals
       .map((goal) => goal.targetDate)
       .filter((targetDate): targetDate is string => targetDate !== null)
@@ -159,8 +253,68 @@ export class GoalsComponent {
     this.view.set(view);
   }
 
+  protected selectPriorityFilter(filter: PriorityFilter): void {
+    this.priorityFilter.set(filter);
+  }
+
   protected goalColor(goal: Goal): string {
     return normalizeGoalColor(goal.color);
+  }
+
+  protected goalSoftColor(goal: Goal, opacity = 14): string {
+    return softColor(this.goalColor(goal), opacity);
+  }
+
+  protected monthlyAmount(goal: Goal): number {
+    return goal.autoSaveEnabled ? goal.plannedMonthlyContribution : goal.monthlyRate;
+  }
+
+  protected remainingAmount(goal: Goal): number {
+    return Math.max(goal.targetAmount - goal.currentAmount, 0);
+  }
+
+  protected monthsLeft(goal: Goal): number | null {
+    const monthly = this.monthlyAmount(goal);
+    return monthly > 0 ? Math.ceil(this.remainingAmount(goal) / monthly) : null;
+  }
+
+  protected monthsToTarget(goal: Goal): number | null {
+    if (!goal.targetDate) {
+      return null;
+    }
+
+    const now = new Date();
+    const target = new Date(goal.targetDate);
+    return Math.max((target.getFullYear() - now.getFullYear()) * 12 + target.getMonth() - now.getMonth(), 0);
+  }
+
+  protected forecastDate(goal: Goal): Date | null {
+    const monthsLeft = this.monthsLeft(goal);
+    if (monthsLeft === null) {
+      return null;
+    }
+
+    const forecast = new Date();
+    forecast.setMonth(forecast.getMonth() + monthsLeft);
+    return forecast;
+  }
+
+  protected goalStreak(goal: Goal): number {
+    const monthly = this.monthlyAmount(goal);
+    if (monthly <= 0) {
+      return 0;
+    }
+
+    return Math.max(1, Math.min(24, Math.round(goal.currentAmount / monthly)));
+  }
+
+  protected priorityClass(priority: string): string {
+    return `goals__priority goals__priority--${priority.toLowerCase()}`;
+  }
+
+  protected progressRingStyle(goal: Goal): string {
+    const progress = Math.min(Math.max(goal.progressPercent, 0), 100);
+    return `conic-gradient(${this.goalColor(goal)} 0% ${progress}%, var(--ink-100) ${progress}% 100%)`;
   }
 
   protected openEditForm(): void {
@@ -265,6 +419,10 @@ export class GoalsComponent {
   }
 }
 
+function formatEuro(amount: number): string {
+  return `€${Math.round(amount).toLocaleString('fr-FR')}`;
+}
+
 function normalizeGoalColor(color: string): string {
   const colors: Record<string, string> = {
     indigo: '#5b5fef',
@@ -275,4 +433,18 @@ function normalizeGoalColor(color: string): string {
   };
 
   return colors[color] ?? color;
+}
+
+function softColor(color: string, opacity: number): string {
+  const normalized = color.startsWith('#') ? color.slice(1) : color;
+
+  if (normalized.length !== 6) {
+    return 'var(--lavender-50)';
+  }
+
+  const alpha = Math.round((opacity / 100) * 255)
+    .toString(16)
+    .padStart(2, '0');
+
+  return `#${normalized}${alpha}`;
 }
