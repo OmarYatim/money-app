@@ -166,7 +166,7 @@ export class LoginComponent {
   });
   readonly passwordHint = computed(() =>
     this.mode() === 'register' && !this.passwordStrong()
-      ? 'Use 12+ characters with uppercase, lowercase, number and symbol.'
+      ? 'Use 12+ characters and at least 3 of: uppercase, lowercase, number, symbol.'
       : null,
   );
   readonly submitLabel = computed(() => {
@@ -325,13 +325,7 @@ export class LoginComponent {
 
   private passwordStrong(): boolean {
     const password = this.passwordValue();
-    return (
-      password.length >= 12 &&
-      /[a-z]/.test(password) &&
-      /[A-Z]/.test(password) &&
-      /[0-9]/.test(password) &&
-      /[^A-Za-z0-9]/.test(password)
-    );
+    return password.length >= 12 && this.passwordScore() >= 4;
   }
 
   private phoneNationalDigits(): string {
