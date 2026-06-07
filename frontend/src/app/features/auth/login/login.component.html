@@ -91,6 +91,8 @@
       <h2 class="login-form__title">
         @if (step() === 'mfa') {
           Enter your code.
+        } @else if (step() === 'register-code') {
+          Confirm your email.
         } @else {
           {{ mode() === 'login' ? 'Welcome back.' : 'Start your free account.' }}
         }
@@ -98,6 +100,8 @@
       <p class="login-form__sub">
         @if (step() === 'mfa') {
           Use the 6-digit code from your authenticator app for {{ mfaEmail() }}.
+        } @else if (step() === 'register-code') {
+          We sent a 6-digit confirmation code to {{ registerEmail() }}.
         } @else {
           {{ mode() === 'login'
             ? 'Sign in to see your full financial picture.'
@@ -122,6 +126,55 @@
             </div>
           </div>
 
+          @if (mode() === 'register') {
+            <div class="login-field-grid">
+              <div class="login-field">
+                <label class="login-label" for="first-name">First name</label>
+                <div class="login-input-wrap">
+                  <span class="material-icons login-input-icon">badge</span>
+                  <input
+                    class="login-input"
+                    id="first-name"
+                    type="text"
+                    formControlName="firstName"
+                    autocomplete="given-name"
+                    placeholder="Omar"
+                  />
+                </div>
+              </div>
+
+              <div class="login-field">
+                <label class="login-label" for="last-name">Last name</label>
+                <div class="login-input-wrap">
+                  <span class="material-icons login-input-icon">person</span>
+                  <input
+                    class="login-input"
+                    id="last-name"
+                    type="text"
+                    formControlName="lastName"
+                    autocomplete="family-name"
+                    placeholder="Yatim"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="login-field">
+              <label class="login-label" for="phone">Phone</label>
+              <div class="login-input-wrap">
+                <span class="material-icons login-input-icon">phone</span>
+                <input
+                  class="login-input"
+                  id="phone"
+                  type="tel"
+                  formControlName="phone"
+                  autocomplete="tel"
+                  placeholder="+15551234567"
+                />
+              </div>
+            </div>
+          }
+
           <div class="login-field">
             <label class="login-label" for="password">Password</label>
             <div class="login-input-wrap">
@@ -135,6 +188,16 @@
                 placeholder="••••••••"
               />
             </div>
+            @if (mode() === 'register') {
+              <div class="login-password-meter" aria-hidden="true">
+                @for (item of [1, 2, 3, 4, 5]; track item) {
+                  <span [class.login-password-meter__bar--active]="passwordScore() >= item"></span>
+                }
+              </div>
+              @if (passwordHint()) {
+                <p class="login-hint">{{ passwordHint() }}</p>
+              }
+            }
           </div>
 
           @if (errorMessage()) {
@@ -150,7 +213,7 @@
             <span class="material-icons" style="font-size: 15px;">arrow_forward</span>
           </button>
         </form>
-      } @else {
+      } @else if (step() === 'mfa') {
         <form [formGroup]="mfaForm" (ngSubmit)="onSubmitMfa()" class="login-form">
           <div class="login-field">
             <label class="login-label" for="mfa-code">Authenticator code</label>
@@ -184,6 +247,42 @@
 
           <button class="login-link-button" type="button" (click)="backToCredentials()">
             Use a different account
+          </button>
+        </form>
+      } @else if (step() === 'register-code') {
+        <form [formGroup]="registerCodeForm" (ngSubmit)="onSubmitRegisterCode()" class="login-form">
+          <div class="login-field">
+            <label class="login-label" for="register-code">Email confirmation code</label>
+            <div class="login-input-wrap">
+              <span class="material-icons login-input-icon">mark_email_read</span>
+              <input
+                class="login-input login-input--code"
+                id="register-code"
+                type="text"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                maxlength="6"
+                formControlName="code"
+                placeholder="123456"
+              />
+            </div>
+          </div>
+
+          @if (errorMessage()) {
+            <p class="login-error" role="alert">{{ errorMessage() }}</p>
+          }
+
+          <button
+            type="submit"
+            class="login-submit"
+            [disabled]="!isRegisterCodeFormValid() || loading()"
+          >
+            {{ registerCodeSubmitLabel() }}
+            <span class="material-icons" style="font-size: 15px;">check_circle</span>
+          </button>
+
+          <button class="login-link-button" type="button" (click)="backToCredentials()">
+            Edit signup details
           </button>
         </form>
       }

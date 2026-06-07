@@ -6,6 +6,19 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
+  firstName: string;
+  lastName: string;
+  phone: string;
+}
+
+export interface RegisterChallengeResponse {
+  email: string;
+  expiresAt: string;
+}
+
+export interface RegisterVerificationRequest {
+  email: string;
+  code: string;
 }
 
 export interface AuthenticatedResponse {

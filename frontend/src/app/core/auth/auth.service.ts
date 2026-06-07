@@ -11,7 +11,9 @@ import {
   MfaEnrolmentResponse,
   MfaStatusResponse,
   MfaValidateRequest,
+  RegisterChallengeResponse,
   RegisterRequest,
+  RegisterVerificationRequest,
 } from '../../shared/models/auth.model';
 
 @Injectable({ providedIn: 'root' })
@@ -40,9 +42,16 @@ export class AuthService {
       );
   }
 
-  register(request: RegisterRequest): Observable<AuthenticatedResponse> {
+  startRegistration(request: RegisterRequest): Observable<RegisterChallengeResponse> {
+    return this.http.post<RegisterChallengeResponse>(
+      `${this.apiBaseUrl}/api/auth/register/start`,
+      request,
+    );
+  }
+
+  verifyRegistration(request: RegisterVerificationRequest): Observable<AuthenticatedResponse> {
     return this.http
-      .post<AuthenticatedResponse>(`${this.apiBaseUrl}/api/auth/register`, request, {
+      .post<AuthenticatedResponse>(`${this.apiBaseUrl}/api/auth/register/verify`, request, {
         withCredentials: true,
       })
       .pipe(tap((res) => this.storeTokens(res)));

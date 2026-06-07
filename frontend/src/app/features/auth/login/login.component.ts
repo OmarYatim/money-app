@@ -7,12 +7,18 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 
 type AuthMode = 'login' | 'register';
-type LoginStep = 'credentials' | 'mfa';
+type LoginStep = 'credentials' | 'mfa' | 'register-code';
 
 @Component({
   selector: 'app-login',
@@ -32,6 +38,7 @@ export class LoginComponent {
   readonly loading = signal(false);
   private readonly mfaToken = signal<string | null>(null);
   readonly mfaEmail = signal<string | null>(null);
+  readonly registerEmail = signal<string | null>(null);
 
   readonly form = new FormGroup({
     email: new FormControl('', {
@@ -40,11 +47,30 @@ export class LoginComponent {
     }),
     password: new FormControl('', {
       nonNullable: true,
+      validators: [Validators.required, this.passwordStrengthValidator],
+    }),
+    firstName: new FormControl('', {
+      nonNullable: true,
       validators: [Validators.required],
+    }),
+    lastName: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+    phone: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/^\+?[0-9]{7,20}$/)],
     }),
   });
 
   readonly mfaForm = new FormGroup({
+    code: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/^\d{6}$/)],
+    }),
+  });
+
+  readonly registerCodeForm = new FormGroup({
     code: new FormControl('', {
       nonNullable: true,
       validators: [Validators.required, Validators.pattern(/^\d{6}$/)],
@@ -57,9 +83,28 @@ export class LoginComponent {
   private readonly mfaFormStatus = toSignal(this.mfaForm.statusChanges, {
     initialValue: this.mfaForm.status,
   });
+  private readonly registerCodeFormStatus = toSignal(this.registerCodeForm.statusChanges, {
+    initialValue: this.registerCodeForm.status,
+  });
 
   readonly isFormValid = computed(() => this.formStatus() === 'VALID');
   readonly isMfaFormValid = computed(() => this.mfaFormStatus() === 'VALID');
+  readonly isRegisterCodeFormValid = computed(() => this.registerCodeFormStatus() === 'VALID');
+  readonly passwordScore = computed(() => {
+    const password = this.form.controls.password.value;
+    return [
+      password.length >= 12,
+      /[a-z]/.test(password),
+      /[A-Z]/.test(password),
+      /[0-9]/.test(password),
+      /[^A-Za-z0-9]/.test(password),
+    ].filter(Boolean).length;
+  });
+  readonly passwordHint = computed(() =>
+    this.mode() === 'register' && this.passwordScore() < 5
+      ? 'Use 12+ characters with uppercase, lowercase, number and symbol.'
+      : null,
+  );
   readonly submitLabel = computed(() => {
     if (this.loading()) {
       return this.mode() === 'login' ? 'Signing in…' : 'Creating account…';
@@ -67,6 +112,9 @@ export class LoginComponent {
     return this.mode() === 'login' ? 'Sign in' : 'Create account';
   });
   readonly mfaSubmitLabel = computed(() => (this.loading() ? 'Verifying…' : 'Verify code'));
+  readonly registerCodeSubmitLabel = computed(() =>
+    this.loading() ? 'Confirming…' : 'Confirm account',
+  );
 
   setMode(mode: AuthMode): void {
     this.mode.set(mode);
@@ -74,8 +122,10 @@ export class LoginComponent {
     this.step.set('credentials');
     this.mfaToken.set(null);
     this.mfaEmail.set(null);
+    this.registerEmail.set(null);
     this.form.reset();
     this.mfaForm.reset();
+    this.registerCodeForm.reset();
   }
 
   toggleMode(): void {
@@ -87,12 +137,26 @@ export class LoginComponent {
     this.errorMessage.set(null);
     this.loading.set(true);
     const { email, password } = this.form.getRawValue();
-    const action$ =
-      this.mode() === 'login'
-        ? this.authService.login({ email, password })
-        : this.authService.register({ email, password });
+    if (this.mode() === 'register') {
+      this.authService
+        .startRegistration(this.form.getRawValue())
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe({
+          next: (result) => {
+            this.loading.set(false);
+            this.registerEmail.set(result.email);
+            this.step.set('register-code');
+            this.registerCodeForm.reset();
+          },
+          error: (err: { status: number }) => {
+            this.loading.set(false);
+            this.errorMessage.set(this.resolveError(err.status));
+          },
+        });
+      return;
+    }
 
-    action$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.authService.login({ email, password }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (result) => {
         this.loading.set(false);
         if (result.status === 'mfa_required') {
@@ -109,6 +173,23 @@ export class LoginComponent {
         this.errorMessage.set(this.resolveError(err.status));
       },
     });
+  }
+
+  onSubmitRegisterCode(): void {
+    const email = this.registerEmail();
+    if (this.registerCodeForm.invalid || email === null) return;
+    this.errorMessage.set(null);
+    this.loading.set(true);
+    this.authService
+      .verifyRegistration({ email, code: this.registerCodeForm.controls.code.value })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: () => this.router.navigate(['/accounts']),
+        error: () => {
+          this.loading.set(false);
+          this.errorMessage.set('Invalid or expired code. Request a new code and try again.');
+        },
+      });
   }
 
   onSubmitMfa(): void {
@@ -132,9 +213,11 @@ export class LoginComponent {
     this.step.set('credentials');
     this.mfaToken.set(null);
     this.mfaEmail.set(null);
+    this.registerEmail.set(null);
     this.errorMessage.set(null);
     this.loading.set(false);
     this.mfaForm.reset();
+    this.registerCodeForm.reset();
   }
 
   private resolveError(status: number): string {
@@ -144,5 +227,16 @@ export class LoginComponent {
     return status === 409
       ? 'An account with this email already exists.'
       : 'Registration failed. Please try again.';
+  }
+
+  private passwordStrengthValidator(control: AbstractControl<string>): { weakPassword: true } | null {
+    const password = control.value;
+    const strong =
+      password.length >= 12 &&
+      /[a-z]/.test(password) &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password) &&
+      /[^A-Za-z0-9]/.test(password);
+    return strong ? null : { weakPassword: true };
   }
 }
