@@ -43,8 +43,16 @@ export class AccountConnectComponent {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: (response) => {
-          window.location.href = response.webviewUrl;
-          this.connected.emit();
+          try {
+            window.location.assign(response.webviewUrl);
+            this.connected.emit();
+            window.setTimeout(() => this.loading.set(false), 3000);
+          } catch {
+            this.loading.set(false);
+            this.snackBar.open('Unable to open bank connection.', 'Dismiss', {
+              duration: 5000,
+            });
+          }
         },
         error: () => {
           this.loading.set(false);

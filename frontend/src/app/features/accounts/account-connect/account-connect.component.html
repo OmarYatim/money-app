@@ -2,7 +2,8 @@
   type="button"
   class="connect-btn"
   [class.connect-btn--card]="variant() === 'card'"
-  [disabled]="loading()"
+  [class.connect-btn--loading]="loading()"
+  [attr.aria-busy]="loading()"
   (click)="connect()"
 >
   <span class="connect-btn__icon">

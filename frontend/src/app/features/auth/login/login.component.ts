@@ -95,6 +95,9 @@ export class LoginComponent {
   private readonly formStatus = toSignal(this.form.statusChanges, {
     initialValue: this.form.status,
   });
+  private readonly formValue = toSignal(this.form.valueChanges, {
+    initialValue: this.form.getRawValue(),
+  });
   private readonly passwordValue = toSignal(this.form.controls.password.valueChanges, {
     initialValue: this.form.controls.password.value,
   });
@@ -117,22 +120,23 @@ export class LoginComponent {
       this.phoneCountries[0],
   );
   readonly normalizedPhone = computed(
-    () => `${this.selectedPhoneCountry().dialCode}${this.phoneDigits()}`,
+    () => `${this.selectedPhoneCountry().dialCode}${this.phoneNationalDigits()}`,
   );
   readonly phoneValid = computed(() => {
-    const digits = this.phoneDigits();
+    const digits = this.phoneNationalDigits();
     return digits.length > 0 && this.selectedPhoneCountry().digits.includes(digits.length);
   });
   readonly phoneHint = computed(() => {
     const country = this.selectedPhoneCountry();
-    if (this.phoneDigits().length === 0) {
+    if (this.phoneNationalDigits().length === 0) {
       return `${country.name}: ${country.hint}`;
     }
     return this.phoneValid()
-      ? `${country.dialCode}${this.phoneDigits()}`
+      ? `${country.dialCode}${this.phoneNationalDigits()}`
       : `${country.name} numbers should use ${country.hint}.`;
   });
   readonly isFormValid = computed(() => {
+    this.formValue();
     this.formStatus();
     if (this.mode() === 'login') {
       return this.form.controls.email.valid && this.form.controls.password.valid;
@@ -193,7 +197,11 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
-    if (!this.isFormValid()) return;
+    if (!this.isFormValid()) {
+      this.form.markAllAsTouched();
+      this.errorMessage.set(this.resolveValidationError());
+      return;
+    }
     this.errorMessage.set(null);
     this.loading.set(true);
     const { email, password } = this.form.getRawValue();
@@ -244,7 +252,10 @@ export class LoginComponent {
 
   onSubmitRegisterCode(): void {
     const email = this.registerEmail();
-    if (this.registerCodeForm.invalid || email === null) return;
+    if (this.registerCodeForm.invalid || email === null) {
+      this.registerCodeForm.markAllAsTouched();
+      return;
+    }
     this.errorMessage.set(null);
     this.loading.set(true);
     this.authService
@@ -261,7 +272,10 @@ export class LoginComponent {
 
   onSubmitMfa(): void {
     const token = this.mfaToken();
-    if (this.mfaForm.invalid || token === null) return;
+    if (this.mfaForm.invalid || token === null) {
+      this.mfaForm.markAllAsTouched();
+      return;
+    }
     this.errorMessage.set(null);
     this.loading.set(true);
     this.authService
@@ -296,6 +310,19 @@ export class LoginComponent {
       : 'Registration failed. Please try again.';
   }
 
+  private resolveValidationError(): string {
+    if (this.mode() === 'login') {
+      return 'Enter a valid email and password.';
+    }
+    if (!this.phoneValid()) {
+      return 'Enter a valid phone number for the selected country.';
+    }
+    if (!this.passwordStrong()) {
+      return 'Use a stronger password before creating the account.';
+    }
+    return 'Complete all required fields before creating the account.';
+  }
+
   private passwordStrong(): boolean {
     const password = this.passwordValue();
     return (
@@ -307,7 +334,9 @@ export class LoginComponent {
     );
   }
 
-  private phoneDigits(): string {
-    return this.phoneNationalValue().replace(/\D/g, '');
+  private phoneNationalDigits(): string {
+    const digits = this.phoneNationalValue().replace(/\D/g, '');
+    const dialDigits = this.selectedPhoneCountry().dialCode.replace(/\D/g, '');
+    return digits.startsWith(dialDigits) ? digits.slice(dialDigits.length) : digits;
   }
 }

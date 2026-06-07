@@ -76,13 +76,11 @@
       <div class="login-tabs">
         <button class="login-tab" type="button"
           [class.login-tab--active]="mode() === 'login'"
-          [disabled]="step() === 'mfa'"
           (click)="setMode('login')">
           Sign in
         </button>
         <button class="login-tab" type="button"
           [class.login-tab--active]="mode() === 'register'"
-          [disabled]="step() === 'mfa'"
           (click)="setMode('register')">
           Create account
         </button>
@@ -221,7 +219,7 @@
           <button
             type="submit"
             class="login-submit"
-            [disabled]="!isFormValid() || loading()"
+            [disabled]="loading()"
           >
             {{ submitLabel() }}
             <span class="material-icons" style="font-size: 15px;">arrow_forward</span>
@@ -253,7 +251,7 @@
           <button
             type="submit"
             class="login-submit"
-            [disabled]="!isMfaFormValid() || loading()"
+            [disabled]="loading()"
           >
             {{ mfaSubmitLabel() }}
             <span class="material-icons" style="font-size: 15px;">verified_user</span>
@@ -289,7 +287,7 @@
           <button
             type="submit"
             class="login-submit"
-            [disabled]="!isRegisterCodeFormValid() || loading()"
+            [disabled]="loading()"
           >
             {{ registerCodeSubmitLabel() }}
             <span class="material-icons" style="font-size: 15px;">check_circle</span>
