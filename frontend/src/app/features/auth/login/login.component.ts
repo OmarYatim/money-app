@@ -6,10 +6,12 @@ import {
   inject,
   signal,
 } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
+import type { ValidationErrorResponse } from '../../../shared/models/api-error.model';
 
 type AuthMode = 'login' | 'register';
 type LoginStep = 'credentials' | 'mfa' | 'register-code';
@@ -223,9 +225,9 @@ export class LoginComponent {
             this.step.set('register-code');
             this.registerCodeForm.reset();
           },
-          error: (err: { status: number }) => {
+          error: (err: HttpErrorResponse) => {
             this.loading.set(false);
-            this.errorMessage.set(this.resolveError(err.status));
+            this.errorMessage.set(this.resolveError(err));
           },
         });
       return;
@@ -243,9 +245,9 @@ export class LoginComponent {
         }
         this.router.navigate(['/accounts']);
       },
-      error: (err: { status: number }) => {
+      error: (err: HttpErrorResponse) => {
         this.loading.set(false);
-        this.errorMessage.set(this.resolveError(err.status));
+        this.errorMessage.set(this.resolveError(err));
       },
     });
   }
@@ -301,13 +303,43 @@ export class LoginComponent {
     this.registerCodeForm.reset();
   }
 
-  private resolveError(status: number): string {
+  private resolveError(error: HttpErrorResponse): string {
     if (this.mode() === 'login') {
-      return status === 401 ? 'Invalid email or password.' : 'Login failed. Please try again.';
+      return error.status === 401 ? 'Invalid email or password.' : 'Login failed. Please try again.';
     }
-    return status === 409
+    if (error.status === 400) {
+      return this.resolveRegistrationValidationError(error.error);
+    }
+    return error.status === 409
       ? 'An account with this email already exists.'
       : 'Registration failed. Please try again.';
+  }
+
+  private resolveRegistrationValidationError(errorBody: unknown): string {
+    if (this.isValidationErrorResponse(errorBody)) {
+      const fields = errorBody.fields;
+      const message = fields['password'] ?? fields['registerRequest'] ?? Object.values(fields)[0];
+      if (message) {
+        return this.formatValidationMessage(message);
+      }
+    }
+    return 'Check the signup fields and try again.';
+  }
+
+  private isValidationErrorResponse(errorBody: unknown): errorBody is ValidationErrorResponse {
+    return (
+      typeof errorBody === 'object' &&
+      errorBody !== null &&
+      'code' in errorBody &&
+      'fields' in errorBody &&
+      errorBody.code === 'VALIDATION_ERROR' &&
+      typeof errorBody.fields === 'object' &&
+      errorBody.fields !== null
+    );
+  }
+
+  private formatValidationMessage(message: string): string {
+    return `${message.charAt(0).toUpperCase()}${message.slice(1)}.`;
   }
 
   private resolveValidationError(): string {
