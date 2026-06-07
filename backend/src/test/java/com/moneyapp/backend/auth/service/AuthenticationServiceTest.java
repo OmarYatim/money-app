@@ -5,9 +5,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.moneyapp.backend.auth.dto.LoginRequest;
 import com.moneyapp.backend.auth.dto.LoginResponse;
+import com.moneyapp.backend.auth.dto.MfaEnrolmentResponse;
 import com.moneyapp.backend.auth.dto.RegisterRequest;
+import com.moneyapp.backend.auth.entity.MfaLoginToken;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.auth.repository.MfaLoginTokenRepository;
 import com.moneyapp.backend.auth.repository.RefreshTokenRepository;
+import dev.samstevens.totp.code.DefaultCodeGenerator;
+import dev.samstevens.totp.exceptions.CodeGenerationException;
+import java.time.Instant;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,11 +38,14 @@ import org.springframework.web.server.ResponseStatusException;
 class AuthenticationServiceTest {
 
   @Autowired private AuthenticationService authenticationService;
+  @Autowired private MfaService mfaService;
   @Autowired private AppUserRepository appUserRepository;
+  @Autowired private MfaLoginTokenRepository mfaLoginTokenRepository;
   @Autowired private RefreshTokenRepository refreshTokenRepository;
 
   @BeforeEach
   void setUp() {
+    mfaLoginTokenRepository.deleteAll();
     refreshTokenRepository.deleteAll();
     appUserRepository.deleteAll();
   }
@@ -48,7 +58,9 @@ class AuthenticationServiceTest {
             new RegisterRequest("newuser@example.com", "password123"), response);
 
     assertThat(result.email()).isEqualTo("newuser@example.com");
+    assertThat(result.status()).isEqualTo("authenticated");
     assertThat(result.accessToken()).isNotBlank();
+    assertThat(result.mfaToken()).isNull();
     assertThat(response.getCookies()).hasSize(1);
     assertThat(response.getCookies()[0].getName()).isEqualTo("refreshToken");
     assertThat(response.getCookies()[0].isHttpOnly()).isTrue();
@@ -77,8 +89,88 @@ class AuthenticationServiceTest {
         authenticationService.login(new LoginRequest("login@example.com", "secret"), res);
 
     assertThat(result.email()).isEqualTo("login@example.com");
+    assertThat(result.status()).isEqualTo("authenticated");
     assertThat(result.accessToken()).isNotBlank();
+    assertThat(result.mfaToken()).isNull();
     assertThat(res.getCookies()[0].getName()).isEqualTo("refreshToken");
+  }
+
+  @Test
+  void loginWithMfaEnabledReturnsMfaTokenWithoutAccessToken() throws CodeGenerationException {
+    MockHttpServletResponse reg = new MockHttpServletResponse();
+    authenticationService.register(new RegisterRequest("mfa-login@example.com", "secret"), reg);
+    MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-login@example.com");
+    mfaService.verifyEnrolment("mfa-login@example.com", currentCode(enrolment.secret()));
+
+    MockHttpServletResponse res = new MockHttpServletResponse();
+    LoginResponse result =
+        authenticationService.login(new LoginRequest("mfa-login@example.com", "secret"), res);
+
+    assertThat(result.status()).isEqualTo("mfa_required");
+    assertThat(result.accessToken()).isNull();
+    assertThat(result.mfaToken()).isNotBlank();
+    assertThat(res.getCookies()).isEmpty();
+  }
+
+  @Test
+  void validateMfaIssuesAccessTokenAndRefreshCookie() throws CodeGenerationException {
+    MockHttpServletResponse reg = new MockHttpServletResponse();
+    authenticationService.register(new RegisterRequest("mfa-valid@example.com", "secret"), reg);
+    MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-valid@example.com");
+    mfaService.verifyEnrolment("mfa-valid@example.com", currentCode(enrolment.secret()));
+    LoginResponse challenge =
+        authenticationService.login(
+            new LoginRequest("mfa-valid@example.com", "secret"), new MockHttpServletResponse());
+
+    MockHttpServletResponse res = new MockHttpServletResponse();
+    LoginResponse result =
+        mfaService.validate(currentCode(enrolment.secret()), challenge.mfaToken(), res);
+
+    assertThat(result.status()).isEqualTo("authenticated");
+    assertThat(result.accessToken()).isNotBlank();
+    assertThat(result.mfaToken()).isNull();
+    assertThat(res.getCookies()[0].getName()).isEqualTo("refreshToken");
+  }
+
+  @Test
+  void validateMfaRejectsInvalidCode() throws CodeGenerationException {
+    MockHttpServletResponse reg = new MockHttpServletResponse();
+    authenticationService.register(new RegisterRequest("mfa-invalid@example.com", "secret"), reg);
+    MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-invalid@example.com");
+    mfaService.verifyEnrolment("mfa-invalid@example.com", currentCode(enrolment.secret()));
+    LoginResponse challenge =
+        authenticationService.login(
+            new LoginRequest("mfa-invalid@example.com", "secret"), new MockHttpServletResponse());
+
+    assertThatThrownBy(
+            () ->
+                mfaService.validate("000000", challenge.mfaToken(), new MockHttpServletResponse()))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("401")
+        .hasMessageContaining("Invalid or expired code");
+  }
+
+  @Test
+  void validateMfaRejectsExpiredToken() throws CodeGenerationException {
+    MockHttpServletResponse reg = new MockHttpServletResponse();
+    authenticationService.register(new RegisterRequest("mfa-expired@example.com", "secret"), reg);
+    MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-expired@example.com");
+    mfaService.verifyEnrolment("mfa-expired@example.com", currentCode(enrolment.secret()));
+    LoginResponse challenge =
+        authenticationService.login(
+            new LoginRequest("mfa-expired@example.com", "secret"), new MockHttpServletResponse());
+    MfaLoginToken token = mfaLoginTokenRepository.findAll().get(0);
+    token.setExpiresAt(LocalDateTime.now().minusMinutes(1));
+    mfaLoginTokenRepository.save(token);
+
+    assertThatThrownBy(
+            () ->
+                mfaService.validate(
+                    currentCode(enrolment.secret()),
+                    challenge.mfaToken(),
+                    new MockHttpServletResponse()))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("401");
   }
 
   @Test
@@ -131,5 +223,9 @@ class AuthenticationServiceTest {
     authenticationService.logout(req, res);
 
     assertThat(res.getCookies()[0].getMaxAge()).isZero();
+  }
+
+  private String currentCode(String secret) throws CodeGenerationException {
+    return new DefaultCodeGenerator().generate(secret, Instant.now().getEpochSecond() / 30);
   }
 }

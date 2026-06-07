@@ -28,6 +28,7 @@ public class AuthenticationService {
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
+  private final MfaLoginTokenService mfaLoginTokenService;
 
   @Transactional
   public LoginResponse register(RegisterRequest request, HttpServletResponse response) {
@@ -52,6 +53,10 @@ public class AuthenticationService {
             .filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
             .orElseThrow(
                 () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bad credentials"));
+    if (user.isMfaEnabled()) {
+      String mfaToken = mfaLoginTokenService.create(user.getId());
+      return LoginResponse.mfaRequired(mfaToken, user.getEmail());
+    }
     refreshTokenService.revokeAllForUser(user.getId());
     return issueTokens(user, response);
   }
@@ -85,11 +90,17 @@ public class AuthenticationService {
     clearRefreshCookie(response);
   }
 
+  @Transactional
+  public LoginResponse issueTokensForMfa(AppUser user, HttpServletResponse response) {
+    refreshTokenService.revokeAllForUser(user.getId());
+    return issueTokens(user, response);
+  }
+
   private LoginResponse issueTokens(AppUser user, HttpServletResponse response) {
     String accessToken = jwtService.generateToken(user.getEmail());
     RefreshToken refreshToken = refreshTokenService.create(user.getId());
     setRefreshCookie(response, refreshToken.getToken());
-    return new LoginResponse(accessToken, user.getEmail());
+    return LoginResponse.authenticated(accessToken, user.getEmail());
   }
 
   private String extractRefreshCookie(HttpServletRequest request) {
