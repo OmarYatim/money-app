@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.moneyapp.backend.auth.dto.MfaEnrolmentResponse;
-import com.moneyapp.backend.auth.dto.RegisterRequest;
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
 import com.moneyapp.backend.auth.repository.MfaLoginTokenRepository;
@@ -16,7 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -33,11 +32,11 @@ import org.springframework.web.server.ResponseStatusException;
 @ActiveProfiles("test")
 class MfaServiceTest {
 
-  @Autowired private AuthenticationService authenticationService;
   @Autowired private MfaService mfaService;
   @Autowired private AppUserRepository appUserRepository;
   @Autowired private MfaLoginTokenRepository mfaLoginTokenRepository;
   @Autowired private RefreshTokenRepository refreshTokenRepository;
+  @Autowired private PasswordEncoder passwordEncoder;
 
   @BeforeEach
   void setUp() {
@@ -48,8 +47,7 @@ class MfaServiceTest {
 
   @Test
   void enrolReturnsQrCodeAndStoresEncryptedSecret() {
-    authenticationService.register(
-        new RegisterRequest("enrol@example.com", "secret"), new MockHttpServletResponse());
+    createUser("enrol@example.com");
 
     MfaEnrolmentResponse result = mfaService.enrol("enrol@example.com");
 
@@ -62,8 +60,7 @@ class MfaServiceTest {
 
   @Test
   void verifyEnrolmentEnablesMfa() throws CodeGenerationException {
-    authenticationService.register(
-        new RegisterRequest("verify@example.com", "secret"), new MockHttpServletResponse());
+    createUser("verify@example.com");
     MfaEnrolmentResponse enrolment = mfaService.enrol("verify@example.com");
 
     mfaService.verifyEnrolment("verify@example.com", currentCode(enrolment.secret()));
@@ -75,8 +72,7 @@ class MfaServiceTest {
 
   @Test
   void verifyEnrolmentRejectsInvalidCode() {
-    authenticationService.register(
-        new RegisterRequest("bad-code@example.com", "secret"), new MockHttpServletResponse());
+    createUser("bad-code@example.com");
     mfaService.enrol("bad-code@example.com");
 
     assertThatThrownBy(() -> mfaService.verifyEnrolment("bad-code@example.com", "000000"))
@@ -86,8 +82,7 @@ class MfaServiceTest {
 
   @Test
   void disableMfaClearsSecret() throws CodeGenerationException {
-    authenticationService.register(
-        new RegisterRequest("disable@example.com", "secret"), new MockHttpServletResponse());
+    createUser("disable@example.com");
     MfaEnrolmentResponse enrolment = mfaService.enrol("disable@example.com");
     mfaService.verifyEnrolment("disable@example.com", currentCode(enrolment.secret()));
 
@@ -100,5 +95,16 @@ class MfaServiceTest {
 
   private String currentCode(String secret) throws CodeGenerationException {
     return new DefaultCodeGenerator().generate(secret, Instant.now().getEpochSecond() / 30);
+  }
+
+  private void createUser(String email) {
+    appUserRepository.save(
+        AppUser.builder()
+            .email(email)
+            .firstName("Test")
+            .lastName("User")
+            .phone("+15551234567")
+            .passwordHash(passwordEncoder.encode("Stronger1!"))
+            .build());
   }
 }

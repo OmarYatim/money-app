@@ -2,7 +2,6 @@ package com.moneyapp.backend.auth.service;
 
 import com.moneyapp.backend.auth.dto.LoginRequest;
 import com.moneyapp.backend.auth.dto.LoginResponse;
-import com.moneyapp.backend.auth.dto.RegisterRequest;
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.entity.RefreshToken;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
@@ -31,16 +30,7 @@ public class AuthenticationService {
   private final MfaLoginTokenService mfaLoginTokenService;
 
   @Transactional
-  public LoginResponse register(RegisterRequest request, HttpServletResponse response) {
-    if (appUserRepository.findByEmail(request.email()).isPresent()) {
-      throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
-    }
-    AppUser user =
-        appUserRepository.save(
-            AppUser.builder()
-                .email(request.email())
-                .passwordHash(passwordEncoder.encode(request.password()))
-                .build());
+  public LoginResponse issueTokensForRegistration(AppUser user, HttpServletResponse response) {
     return issueTokens(user, response);
   }
 

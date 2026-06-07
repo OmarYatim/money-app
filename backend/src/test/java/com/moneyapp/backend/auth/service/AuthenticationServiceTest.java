@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.moneyapp.backend.auth.dto.LoginRequest;
 import com.moneyapp.backend.auth.dto.LoginResponse;
 import com.moneyapp.backend.auth.dto.MfaEnrolmentResponse;
-import com.moneyapp.backend.auth.dto.RegisterRequest;
+import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.entity.MfaLoginToken;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
 import com.moneyapp.backend.auth.repository.MfaLoginTokenRepository;
@@ -21,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -42,6 +43,7 @@ class AuthenticationServiceTest {
   @Autowired private AppUserRepository appUserRepository;
   @Autowired private MfaLoginTokenRepository mfaLoginTokenRepository;
   @Autowired private RefreshTokenRepository refreshTokenRepository;
+  @Autowired private PasswordEncoder passwordEncoder;
 
   @BeforeEach
   void setUp() {
@@ -51,11 +53,11 @@ class AuthenticationServiceTest {
   }
 
   @Test
-  void registerCreatesUserAndReturnsAccessToken() {
+  void issueTokensForRegistrationReturnsAccessToken() {
     MockHttpServletResponse response = new MockHttpServletResponse();
     LoginResponse result =
-        authenticationService.register(
-            new RegisterRequest("newuser@example.com", "password123"), response);
+        authenticationService.issueTokensForRegistration(
+            createUser("newuser@example.com", "Stronger1!"), response);
 
     assertThat(result.email()).isEqualTo("newuser@example.com");
     assertThat(result.status()).isEqualTo("authenticated");
@@ -67,26 +69,12 @@ class AuthenticationServiceTest {
   }
 
   @Test
-  void registerRejectsDuplicateEmail() {
-    MockHttpServletResponse response = new MockHttpServletResponse();
-    authenticationService.register(new RegisterRequest("dup@example.com", "password123"), response);
-
-    assertThatThrownBy(
-            () ->
-                authenticationService.register(
-                    new RegisterRequest("dup@example.com", "other"), new MockHttpServletResponse()))
-        .isInstanceOf(ResponseStatusException.class)
-        .hasMessageContaining("409");
-  }
-
-  @Test
   void loginWithCorrectCredentialsReturnsAccessToken() {
-    MockHttpServletResponse reg = new MockHttpServletResponse();
-    authenticationService.register(new RegisterRequest("login@example.com", "secret"), reg);
+    createUser("login@example.com", "Stronger1!");
 
     MockHttpServletResponse res = new MockHttpServletResponse();
     LoginResponse result =
-        authenticationService.login(new LoginRequest("login@example.com", "secret"), res);
+        authenticationService.login(new LoginRequest("login@example.com", "Stronger1!"), res);
 
     assertThat(result.email()).isEqualTo("login@example.com");
     assertThat(result.status()).isEqualTo("authenticated");
@@ -97,14 +85,13 @@ class AuthenticationServiceTest {
 
   @Test
   void loginWithMfaEnabledReturnsMfaTokenWithoutAccessToken() throws CodeGenerationException {
-    MockHttpServletResponse reg = new MockHttpServletResponse();
-    authenticationService.register(new RegisterRequest("mfa-login@example.com", "secret"), reg);
+    createUser("mfa-login@example.com", "Stronger1!");
     MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-login@example.com");
     mfaService.verifyEnrolment("mfa-login@example.com", currentCode(enrolment.secret()));
 
     MockHttpServletResponse res = new MockHttpServletResponse();
     LoginResponse result =
-        authenticationService.login(new LoginRequest("mfa-login@example.com", "secret"), res);
+        authenticationService.login(new LoginRequest("mfa-login@example.com", "Stronger1!"), res);
 
     assertThat(result.status()).isEqualTo("mfa_required");
     assertThat(result.accessToken()).isNull();
@@ -114,13 +101,12 @@ class AuthenticationServiceTest {
 
   @Test
   void validateMfaIssuesAccessTokenAndRefreshCookie() throws CodeGenerationException {
-    MockHttpServletResponse reg = new MockHttpServletResponse();
-    authenticationService.register(new RegisterRequest("mfa-valid@example.com", "secret"), reg);
+    createUser("mfa-valid@example.com", "Stronger1!");
     MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-valid@example.com");
     mfaService.verifyEnrolment("mfa-valid@example.com", currentCode(enrolment.secret()));
     LoginResponse challenge =
         authenticationService.login(
-            new LoginRequest("mfa-valid@example.com", "secret"), new MockHttpServletResponse());
+            new LoginRequest("mfa-valid@example.com", "Stronger1!"), new MockHttpServletResponse());
 
     MockHttpServletResponse res = new MockHttpServletResponse();
     LoginResponse result =
@@ -134,13 +120,13 @@ class AuthenticationServiceTest {
 
   @Test
   void validateMfaRejectsInvalidCode() throws CodeGenerationException {
-    MockHttpServletResponse reg = new MockHttpServletResponse();
-    authenticationService.register(new RegisterRequest("mfa-invalid@example.com", "secret"), reg);
+    createUser("mfa-invalid@example.com", "Stronger1!");
     MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-invalid@example.com");
     mfaService.verifyEnrolment("mfa-invalid@example.com", currentCode(enrolment.secret()));
     LoginResponse challenge =
         authenticationService.login(
-            new LoginRequest("mfa-invalid@example.com", "secret"), new MockHttpServletResponse());
+            new LoginRequest("mfa-invalid@example.com", "Stronger1!"),
+            new MockHttpServletResponse());
 
     assertThatThrownBy(
             () ->
@@ -152,13 +138,13 @@ class AuthenticationServiceTest {
 
   @Test
   void validateMfaRejectsExpiredToken() throws CodeGenerationException {
-    MockHttpServletResponse reg = new MockHttpServletResponse();
-    authenticationService.register(new RegisterRequest("mfa-expired@example.com", "secret"), reg);
+    createUser("mfa-expired@example.com", "Stronger1!");
     MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-expired@example.com");
     mfaService.verifyEnrolment("mfa-expired@example.com", currentCode(enrolment.secret()));
     LoginResponse challenge =
         authenticationService.login(
-            new LoginRequest("mfa-expired@example.com", "secret"), new MockHttpServletResponse());
+            new LoginRequest("mfa-expired@example.com", "Stronger1!"),
+            new MockHttpServletResponse());
     MfaLoginToken token = mfaLoginTokenRepository.findAll().get(0);
     token.setExpiresAt(LocalDateTime.now().minusMinutes(1));
     mfaLoginTokenRepository.save(token);
@@ -175,8 +161,7 @@ class AuthenticationServiceTest {
 
   @Test
   void loginWithWrongPasswordThrows401() {
-    MockHttpServletResponse reg = new MockHttpServletResponse();
-    authenticationService.register(new RegisterRequest("login2@example.com", "secret"), reg);
+    createUser("login2@example.com", "Stronger1!");
 
     assertThatThrownBy(
             () ->
@@ -189,7 +174,8 @@ class AuthenticationServiceTest {
   @Test
   void refreshIssuesNewAccessTokenAndRotatesRefreshToken() {
     MockHttpServletResponse reg = new MockHttpServletResponse();
-    authenticationService.register(new RegisterRequest("refresh@example.com", "secret"), reg);
+    authenticationService.issueTokensForRegistration(
+        createUser("refresh@example.com", "Stronger1!"), reg);
     String originalRefresh = reg.getCookies()[0].getValue();
 
     MockHttpServletRequest req = new MockHttpServletRequest();
@@ -214,7 +200,8 @@ class AuthenticationServiceTest {
   @Test
   void logoutClearsRefreshCookie() {
     MockHttpServletResponse reg = new MockHttpServletResponse();
-    authenticationService.register(new RegisterRequest("logout@example.com", "secret"), reg);
+    authenticationService.issueTokensForRegistration(
+        createUser("logout@example.com", "Stronger1!"), reg);
     String token = reg.getCookies()[0].getValue();
 
     MockHttpServletRequest req = new MockHttpServletRequest();
@@ -227,5 +214,16 @@ class AuthenticationServiceTest {
 
   private String currentCode(String secret) throws CodeGenerationException {
     return new DefaultCodeGenerator().generate(secret, Instant.now().getEpochSecond() / 30);
+  }
+
+  private AppUser createUser(String email, String password) {
+    return appUserRepository.save(
+        AppUser.builder()
+            .email(email)
+            .firstName("Test")
+            .lastName("User")
+            .phone("+15551234567")
+            .passwordHash(passwordEncoder.encode(password))
+            .build());
   }
 }

@@ -7,9 +7,12 @@ import com.moneyapp.backend.auth.dto.MfaEnrolmentResponse;
 import com.moneyapp.backend.auth.dto.MfaStatusResponse;
 import com.moneyapp.backend.auth.dto.MfaValidateRequest;
 import com.moneyapp.backend.auth.dto.MfaVerifyEnrolmentRequest;
+import com.moneyapp.backend.auth.dto.RegisterChallengeResponse;
 import com.moneyapp.backend.auth.dto.RegisterRequest;
+import com.moneyapp.backend.auth.dto.RegisterVerificationRequest;
 import com.moneyapp.backend.auth.service.AuthenticationService;
 import com.moneyapp.backend.auth.service.MfaService;
+import com.moneyapp.backend.auth.service.RegistrationService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -30,12 +33,18 @@ public class AuthController {
 
   private final AuthenticationService authenticationService;
   private final MfaService mfaService;
+  private final RegistrationService registrationService;
 
-  @PostMapping("/register")
+  @PostMapping("/register/start")
+  public RegisterChallengeResponse startRegistration(@Valid @RequestBody RegisterRequest request) {
+    return registrationService.start(request);
+  }
+
+  @PostMapping("/register/verify")
   @ResponseStatus(HttpStatus.CREATED)
-  public LoginResponse register(
-      @Valid @RequestBody RegisterRequest request, HttpServletResponse response) {
-    return authenticationService.register(request, response);
+  public LoginResponse verifyRegistration(
+      @Valid @RequestBody RegisterVerificationRequest request, HttpServletResponse response) {
+    return registrationService.verify(request, response);
   }
 
   @PostMapping("/login")
