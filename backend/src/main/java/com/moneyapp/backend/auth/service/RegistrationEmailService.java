@@ -2,9 +2,12 @@ package com.moneyapp.backend.auth.service;
 
 import com.moneyapp.backend.config.AppProperties;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +28,11 @@ public class RegistrationEmailService {
         This code expires in 10 minutes. If you did not request it, you can ignore this email.
         """
             .formatted(code));
-    mailSender.send(message);
+    try {
+      mailSender.send(message);
+    } catch (MailException e) {
+      throw new ResponseStatusException(
+          HttpStatus.SERVICE_UNAVAILABLE, "Email confirmation service is not configured");
+    }
   }
 }

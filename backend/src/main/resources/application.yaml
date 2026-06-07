@@ -2,10 +2,10 @@ spring:
   application:
     name: backend
   mail:
-    host: ${MAIL_HOST}
+    host: ${MAIL_HOST:localhost}
     port: ${MAIL_PORT:587}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -29,13 +29,18 @@ app:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:900000}
   mail:
-    from: ${APP_MAIL_FROM}
+    from: ${APP_MAIL_FROM:no-reply@localhost}
   sync:
     cron: ${APP_SYNC_CRON:0 0 2 * * *}
     freshness-threshold-hours: ${APP_SYNC_FRESHNESS_THRESHOLD_HOURS:12}
 
 server:
   port: 8080
+
+management:
+  health:
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:false}
 
 powens:
   domain: ${POWENS_DOMAIN}
