@@ -3,14 +3,23 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { EMPTY, Observable, catchError, finalize, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { LoginRequest, LoginResponse, RegisterRequest } from '../../shared/models/auth.model';
+import {
+  AuthenticatedResponse,
+  LoginRequest,
+  LoginResponse,
+  MfaCodeRequest,
+  MfaEnrolmentResponse,
+  MfaStatusResponse,
+  MfaValidateRequest,
+  RegisterRequest,
+} from '../../shared/models/auth.model';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly apiBaseUrl = environment.apiBaseUrl;
-  private refreshRequest$: Observable<LoginResponse> | null = null;
+  private refreshRequest$: Observable<AuthenticatedResponse> | null = null;
 
   readonly accessToken = signal<string | null>(null);
   readonly currentEmail = signal<string | null>(null);
@@ -22,20 +31,30 @@ export class AuthService {
   login(request: LoginRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${this.apiBaseUrl}/api/auth/login`, request, { withCredentials: true })
-      .pipe(tap((res) => this.storeTokens(res)));
+      .pipe(
+        tap((res) => {
+          if (res.status === 'authenticated') {
+            this.storeTokens(res);
+          }
+        }),
+      );
   }
 
-  register(request: RegisterRequest): Observable<LoginResponse> {
+  register(request: RegisterRequest): Observable<AuthenticatedResponse> {
     return this.http
-      .post<LoginResponse>(`${this.apiBaseUrl}/api/auth/register`, request, {
+      .post<AuthenticatedResponse>(`${this.apiBaseUrl}/api/auth/register`, request, {
         withCredentials: true,
       })
       .pipe(tap((res) => this.storeTokens(res)));
   }
 
-  refresh(): Observable<LoginResponse> {
+  refresh(): Observable<AuthenticatedResponse> {
     this.refreshRequest$ ??= this.http
-      .post<LoginResponse>(`${this.apiBaseUrl}/api/auth/refresh`, {}, { withCredentials: true })
+      .post<AuthenticatedResponse>(
+        `${this.apiBaseUrl}/api/auth/refresh`,
+        {},
+        { withCredentials: true },
+      )
       .pipe(
         tap((res) => this.storeTokens(res)),
         finalize(() => {
@@ -45,6 +64,33 @@ export class AuthService {
       );
 
     return this.refreshRequest$;
+  }
+
+  validateMfa(request: MfaValidateRequest): Observable<AuthenticatedResponse> {
+    return this.http
+      .post<AuthenticatedResponse>(`${this.apiBaseUrl}/api/auth/mfa/validate`, request, {
+        withCredentials: true,
+      })
+      .pipe(tap((res) => this.storeTokens(res)));
+  }
+
+  getMfaStatus(): Observable<MfaStatusResponse> {
+    return this.http.get<MfaStatusResponse>(`${this.apiBaseUrl}/api/auth/mfa/status`);
+  }
+
+  enrolMfa(): Observable<MfaEnrolmentResponse> {
+    return this.http.post<MfaEnrolmentResponse>(`${this.apiBaseUrl}/api/auth/mfa/enrol`, {});
+  }
+
+  verifyMfaEnrolment(request: MfaCodeRequest): Observable<MfaStatusResponse> {
+    return this.http.post<MfaStatusResponse>(
+      `${this.apiBaseUrl}/api/auth/mfa/verify-enrolment`,
+      request,
+    );
+  }
+
+  disableMfa(request: MfaCodeRequest): Observable<MfaStatusResponse> {
+    return this.http.post<MfaStatusResponse>(`${this.apiBaseUrl}/api/auth/mfa/disable`, request);
   }
 
   logout(): Observable<void> {
@@ -62,7 +108,7 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  private storeTokens(res: LoginResponse): void {
+  private storeTokens(res: AuthenticatedResponse): void {
     this.accessToken.set(res.accessToken);
     this.currentEmail.set(res.email);
   }
