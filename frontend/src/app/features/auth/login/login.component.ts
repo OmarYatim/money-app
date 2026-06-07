@@ -11,7 +11,10 @@ import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
-import type { ValidationErrorResponse } from '../../../shared/models/api-error.model';
+import type {
+  ApiErrorResponse,
+  ValidationErrorResponse,
+} from '../../../shared/models/api-error.model';
 
 type AuthMode = 'login' | 'register';
 type LoginStep = 'credentials' | 'mfa' | 'register-code';
@@ -310,6 +313,9 @@ export class LoginComponent {
     if (error.status === 400) {
       return this.resolveRegistrationValidationError(error.error);
     }
+    if (this.isApiErrorResponse(error.error) && error.error.message) {
+      return this.formatValidationMessage(error.error.message);
+    }
     return error.status === 409
       ? 'An account with this email already exists.'
       : 'Registration failed. Please try again.';
@@ -335,6 +341,15 @@ export class LoginComponent {
       errorBody.code === 'VALIDATION_ERROR' &&
       typeof errorBody.fields === 'object' &&
       errorBody.fields !== null
+    );
+  }
+
+  private isApiErrorResponse(errorBody: unknown): errorBody is ApiErrorResponse {
+    return (
+      typeof errorBody === 'object' &&
+      errorBody !== null &&
+      'code' in errorBody &&
+      typeof errorBody.code === 'string'
     );
   }
 

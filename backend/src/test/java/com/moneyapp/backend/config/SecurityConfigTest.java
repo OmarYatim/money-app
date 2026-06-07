@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -74,5 +75,25 @@ class SecurityConfigTest {
                 .header("Access-Control-Request-Method", "POST"))
         .andExpect(status().isOk())
         .andExpect(header().string("Access-Control-Allow-Origin", "http://localhost:4200"));
+  }
+
+  @Test
+  void registrationStartIsPublicAndReturnsValidationErrors() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/auth/register/start")
+                .contentType("application/json")
+                .content(
+                    """
+                    {
+                      "email": "not-an-email",
+                      "password": "short",
+                      "firstName": "Test",
+                      "lastName": "User",
+                      "phone": "+15551234567"
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
   }
 }
