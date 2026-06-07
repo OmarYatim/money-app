@@ -127,51 +127,65 @@
           </div>
 
           @if (mode() === 'register') {
-            <div class="login-field-grid">
-              <div class="login-field">
-                <label class="login-label" for="first-name">First name</label>
-                <div class="login-input-wrap">
-                  <span class="material-icons login-input-icon">badge</span>
-                  <input
-                    class="login-input"
-                    id="first-name"
-                    type="text"
-                    formControlName="firstName"
-                    autocomplete="given-name"
-                    placeholder="Omar"
-                  />
-                </div>
+            <div class="login-field">
+              <label class="login-label" for="first-name">First name</label>
+              <div class="login-input-wrap">
+                <span class="material-icons login-input-icon">badge</span>
+                <input
+                  class="login-input"
+                  id="first-name"
+                  type="text"
+                  formControlName="firstName"
+                  autocomplete="given-name"
+                  placeholder="First name"
+                />
               </div>
+            </div>
 
-              <div class="login-field">
-                <label class="login-label" for="last-name">Last name</label>
-                <div class="login-input-wrap">
-                  <span class="material-icons login-input-icon">person</span>
-                  <input
-                    class="login-input"
-                    id="last-name"
-                    type="text"
-                    formControlName="lastName"
-                    autocomplete="family-name"
-                    placeholder="Yatim"
-                  />
-                </div>
+            <div class="login-field">
+              <label class="login-label" for="last-name">Last name</label>
+              <div class="login-input-wrap">
+                <span class="material-icons login-input-icon">person</span>
+                <input
+                  class="login-input"
+                  id="last-name"
+                  type="text"
+                  formControlName="lastName"
+                  autocomplete="family-name"
+                  placeholder="Last name"
+                />
               </div>
             </div>
 
             <div class="login-field">
               <label class="login-label" for="phone">Phone</label>
-              <div class="login-input-wrap">
-                <span class="material-icons login-input-icon">phone</span>
-                <input
-                  class="login-input"
-                  id="phone"
-                  type="tel"
-                  formControlName="phone"
-                  autocomplete="tel"
-                  placeholder="+15551234567"
-                />
+              <div class="login-phone-row">
+                <label class="login-country">
+                  <span class="material-icons login-input-icon">public</span>
+                  <select formControlName="phoneCountry" aria-label="Phone country">
+                    @for (country of phoneCountries; track country.code) {
+                      <option [value]="country.code">
+                        {{ country.code }} {{ country.dialCode }}
+                      </option>
+                    }
+                  </select>
+                </label>
+                <div class="login-input-wrap">
+                  <span class="material-icons login-input-icon">phone</span>
+                  <input
+                    class="login-input"
+                    id="phone"
+                    type="tel"
+                    formControlName="phoneNational"
+                    autocomplete="tel-national"
+                    placeholder="Phone number"
+                    [attr.aria-invalid]="form.controls.phoneNational.touched && !phoneValid()"
+                  />
+                </div>
               </div>
+              <p class="login-hint" [class.login-hint--error]="form.controls.phoneNational.touched && !phoneValid()">
+                {{ phoneHint() }}
+              </p>
             </div>
           }
 

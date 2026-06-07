@@ -7,18 +7,20 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
-import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
 
 type AuthMode = 'login' | 'register';
 type LoginStep = 'credentials' | 'mfa' | 'register-code';
+
+interface PhoneCountry {
+  code: string;
+  name: string;
+  dialCode: string;
+  digits: number[];
+  hint: string;
+}
 
 @Component({
   selector: 'app-login',
@@ -39,6 +41,15 @@ export class LoginComponent {
   private readonly mfaToken = signal<string | null>(null);
   readonly mfaEmail = signal<string | null>(null);
   readonly registerEmail = signal<string | null>(null);
+  readonly phoneCountries: PhoneCountry[] = [
+    { code: 'US', name: 'United States', dialCode: '+1', digits: [10], hint: '10 digits' },
+    { code: 'CA', name: 'Canada', dialCode: '+1', digits: [10], hint: '10 digits' },
+    { code: 'FR', name: 'France', dialCode: '+33', digits: [9], hint: '9 digits' },
+    { code: 'GB', name: 'United Kingdom', dialCode: '+44', digits: [10], hint: '10 digits' },
+    { code: 'DE', name: 'Germany', dialCode: '+49', digits: [10, 11], hint: '10 or 11 digits' },
+    { code: 'ES', name: 'Spain', dialCode: '+34', digits: [9], hint: '9 digits' },
+    { code: 'IT', name: 'Italy', dialCode: '+39', digits: [9, 10], hint: '9 or 10 digits' },
+  ];
 
   readonly form = new FormGroup({
     email: new FormControl('', {
@@ -47,7 +58,7 @@ export class LoginComponent {
     }),
     password: new FormControl('', {
       nonNullable: true,
-      validators: [Validators.required, this.passwordStrengthValidator],
+      validators: [Validators.required],
     }),
     firstName: new FormControl('', {
       nonNullable: true,
@@ -57,9 +68,13 @@ export class LoginComponent {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    phone: new FormControl('', {
+    phoneCountry: new FormControl('US', {
       nonNullable: true,
-      validators: [Validators.required, Validators.pattern(/^\+?[0-9]{7,20}$/)],
+      validators: [Validators.required],
+    }),
+    phoneNational: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required],
     }),
   });
 
@@ -80,6 +95,15 @@ export class LoginComponent {
   private readonly formStatus = toSignal(this.form.statusChanges, {
     initialValue: this.form.status,
   });
+  private readonly passwordValue = toSignal(this.form.controls.password.valueChanges, {
+    initialValue: this.form.controls.password.value,
+  });
+  private readonly phoneCountryValue = toSignal(this.form.controls.phoneCountry.valueChanges, {
+    initialValue: this.form.controls.phoneCountry.value,
+  });
+  private readonly phoneNationalValue = toSignal(this.form.controls.phoneNational.valueChanges, {
+    initialValue: this.form.controls.phoneNational.value,
+  });
   private readonly mfaFormStatus = toSignal(this.mfaForm.statusChanges, {
     initialValue: this.mfaForm.status,
   });
@@ -87,11 +111,47 @@ export class LoginComponent {
     initialValue: this.registerCodeForm.status,
   });
 
-  readonly isFormValid = computed(() => this.formStatus() === 'VALID');
+  readonly selectedPhoneCountry = computed(
+    () =>
+      this.phoneCountries.find((country) => country.code === this.phoneCountryValue()) ??
+      this.phoneCountries[0],
+  );
+  readonly normalizedPhone = computed(
+    () => `${this.selectedPhoneCountry().dialCode}${this.phoneDigits()}`,
+  );
+  readonly phoneValid = computed(() => {
+    const digits = this.phoneDigits();
+    return digits.length > 0 && this.selectedPhoneCountry().digits.includes(digits.length);
+  });
+  readonly phoneHint = computed(() => {
+    const country = this.selectedPhoneCountry();
+    if (this.phoneDigits().length === 0) {
+      return `${country.name}: ${country.hint}`;
+    }
+    return this.phoneValid()
+      ? `${country.dialCode}${this.phoneDigits()}`
+      : `${country.name} numbers should use ${country.hint}.`;
+  });
+  readonly isFormValid = computed(() => {
+    this.formStatus();
+    if (this.mode() === 'login') {
+      return this.form.controls.email.valid && this.form.controls.password.valid;
+    }
+    return (
+      this.form.controls.email.valid &&
+      this.form.controls.password.valid &&
+      this.form.controls.firstName.valid &&
+      this.form.controls.lastName.valid &&
+      this.form.controls.phoneCountry.valid &&
+      this.form.controls.phoneNational.valid &&
+      this.phoneValid() &&
+      this.passwordStrong()
+    );
+  });
   readonly isMfaFormValid = computed(() => this.mfaFormStatus() === 'VALID');
   readonly isRegisterCodeFormValid = computed(() => this.registerCodeFormStatus() === 'VALID');
   readonly passwordScore = computed(() => {
-    const password = this.form.controls.password.value;
+    const password = this.passwordValue();
     return [
       password.length >= 12,
       /[a-z]/.test(password),
@@ -101,7 +161,7 @@ export class LoginComponent {
     ].filter(Boolean).length;
   });
   readonly passwordHint = computed(() =>
-    this.mode() === 'register' && this.passwordScore() < 5
+    this.mode() === 'register' && !this.passwordStrong()
       ? 'Use 12+ characters with uppercase, lowercase, number and symbol.'
       : null,
   );
@@ -133,13 +193,20 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
-    if (this.form.invalid) return;
+    if (!this.isFormValid()) return;
     this.errorMessage.set(null);
     this.loading.set(true);
     const { email, password } = this.form.getRawValue();
     if (this.mode() === 'register') {
+      const { firstName, lastName } = this.form.getRawValue();
       this.authService
-        .startRegistration(this.form.getRawValue())
+        .startRegistration({
+          email,
+          password,
+          firstName,
+          lastName,
+          phone: this.normalizedPhone(),
+        })
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe({
           next: (result) => {
@@ -229,14 +296,18 @@ export class LoginComponent {
       : 'Registration failed. Please try again.';
   }
 
-  private passwordStrengthValidator(control: AbstractControl<string>): { weakPassword: true } | null {
-    const password = control.value;
-    const strong =
+  private passwordStrong(): boolean {
+    const password = this.passwordValue();
+    return (
       password.length >= 12 &&
       /[a-z]/.test(password) &&
       /[A-Z]/.test(password) &&
       /[0-9]/.test(password) &&
-      /[^A-Za-z0-9]/.test(password);
-    return strong ? null : { weakPassword: true };
+      /[^A-Za-z0-9]/.test(password)
+    );
+  }
+
+  private phoneDigits(): string {
+    return this.phoneNationalValue().replace(/\D/g, '');
   }
 }
