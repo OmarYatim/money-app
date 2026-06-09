@@ -2,6 +2,7 @@ package com.moneyapp.backend.auth.service;
 
 import com.moneyapp.backend.config.AppProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
@@ -11,6 +12,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RegistrationEmailService {
 
   private final JavaMailSender mailSender;
@@ -31,8 +33,9 @@ public class RegistrationEmailService {
     try {
       mailSender.send(message);
     } catch (MailException e) {
+      log.warn("Signup confirmation email send failed for recipient={}", email, e);
       throw new ResponseStatusException(
-          HttpStatus.SERVICE_UNAVAILABLE, "Email confirmation service is not configured");
+          HttpStatus.SERVICE_UNAVAILABLE, "Email confirmation service could not send the code");
     }
   }
 }
