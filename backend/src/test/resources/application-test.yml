@@ -20,6 +20,8 @@ app:
   cors-allowed-origins: http://localhost:4200
   mail:
     from: no-reply@test.nexioo.local
+  auth:
+    refresh-cookie-secure: false
 
 management:
   health:

@@ -5,6 +5,7 @@ import com.moneyapp.backend.auth.dto.LoginResponse;
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.entity.RefreshToken;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
+import com.moneyapp.backend.config.AppProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -28,6 +29,7 @@ public class AuthenticationService {
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
   private final MfaLoginTokenService mfaLoginTokenService;
+  private final AppProperties appProperties;
 
   @Transactional
   public LoginResponse issueTokensForRegistration(AppUser user, HttpServletResponse response) {
@@ -109,7 +111,7 @@ public class AuthenticationService {
   private void setRefreshCookie(HttpServletResponse response, String token) {
     Cookie cookie = new Cookie(REFRESH_COOKIE_NAME, token);
     cookie.setHttpOnly(true);
-    cookie.setSecure(true);
+    cookie.setSecure(appProperties.auth().refreshCookieSecure());
     cookie.setPath("/api/auth");
     cookie.setMaxAge(REFRESH_COOKIE_MAX_AGE);
     response.addCookie(cookie);
@@ -118,7 +120,7 @@ public class AuthenticationService {
   private void clearRefreshCookie(HttpServletResponse response) {
     Cookie cookie = new Cookie(REFRESH_COOKIE_NAME, "");
     cookie.setHttpOnly(true);
-    cookie.setSecure(true);
+    cookie.setSecure(appProperties.auth().refreshCookieSecure());
     cookie.setPath("/api/auth");
     cookie.setMaxAge(0);
     response.addCookie(cookie);

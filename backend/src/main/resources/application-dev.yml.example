@@ -27,6 +27,8 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:900000}   # 15 minutes
   mail:
     from: ${APP_MAIL_FROM:no-reply@local.nexioo.me}
+  auth:
+    refresh-cookie-secure: ${APP_REFRESH_COOKIE_SECURE:false}
 
 powens:
   domain: ${POWENS_DOMAIN}

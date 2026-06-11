@@ -66,6 +66,7 @@ class AuthenticationServiceTest {
     assertThat(response.getCookies()).hasSize(1);
     assertThat(response.getCookies()[0].getName()).isEqualTo("refreshToken");
     assertThat(response.getCookies()[0].isHttpOnly()).isTrue();
+    assertThat(response.getCookies()[0].getSecure()).isFalse();
   }
 
   @Test

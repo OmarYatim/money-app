@@ -30,6 +30,8 @@ app:
     expiration-ms: ${JWT_EXPIRATION_MS:900000}
   mail:
     from: ${APP_MAIL_FROM:no-reply@localhost}
+  auth:
+    refresh-cookie-secure: ${APP_REFRESH_COOKIE_SECURE:true}
   sync:
     cron: ${APP_SYNC_CRON:0 0 2 * * *}
     freshness-threshold-hours: ${APP_SYNC_FRESHNESS_THRESHOLD_HOURS:12}

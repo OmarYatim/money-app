@@ -19,7 +19,8 @@ class JwtServiceTest {
               "http://localhost:4200",
               List.of("http://localhost:4200"),
               new JwtProperties(SECRET, EXPIRATION_MS),
-              new AppProperties.MailProperties("no-reply@test.nexioo.local")));
+              new AppProperties.MailProperties("no-reply@test.nexioo.local"),
+              new AppProperties.AuthProperties(false)));
 
   @Test
   void generateTokenReturnsNonBlankJwt() {

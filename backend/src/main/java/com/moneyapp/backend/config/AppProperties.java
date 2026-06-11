@@ -5,9 +5,15 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties(prefix = "app")
 public record AppProperties(
-    String frontendUrl, List<String> corsAllowedOrigins, JwtProperties jwt, MailProperties mail) {
+    String frontendUrl,
+    List<String> corsAllowedOrigins,
+    JwtProperties jwt,
+    MailProperties mail,
+    AuthProperties auth) {
 
   public record JwtProperties(String secret, long expirationMs) {}
 
   public record MailProperties(String from) {}
+
+  public record AuthProperties(boolean refreshCookieSecure) {}
 }
