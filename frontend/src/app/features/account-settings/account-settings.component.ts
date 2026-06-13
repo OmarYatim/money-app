@@ -40,6 +40,8 @@ export class AccountSettingsComponent {
   protected readonly activeTab = signal<SettingsTab>('profile');
   protected readonly toast = signal<string | null>(null);
   protected readonly confirmDelete = signal(false);
+  protected readonly deleteLoading = signal(false);
+  protected readonly deleteError = signal<string | null>(null);
   protected readonly showPassword = signal(false);
   protected readonly mfaEnabled = signal(false);
   protected readonly mfaLoading = signal(false);
@@ -106,6 +108,11 @@ export class AccountSettingsComponent {
   protected readonly emailForm = new FormGroup({
     newEmail: new FormControl('', { nonNullable: true, validators: [Validators.email] }),
     password: new FormControl('', { nonNullable: true }),
+  });
+
+  protected readonly deleteConfirmation = new FormControl(false, {
+    nonNullable: true,
+    validators: [Validators.requiredTrue],
   });
 
   protected readonly passwordScore = computed(() => {
@@ -224,16 +231,36 @@ export class AccountSettingsComponent {
   }
 
   protected openDeleteConfirmation(): void {
+    this.deleteError.set(null);
+    this.deleteConfirmation.reset(false);
     this.confirmDelete.set(true);
   }
 
   protected cancelDelete(): void {
+    if (this.deleteLoading()) return;
+    this.deleteError.set(null);
+    this.deleteConfirmation.reset(false);
     this.confirmDelete.set(false);
   }
 
   protected confirmDeletion(): void {
-    this.confirmDelete.set(false);
-    this.flash('Account scheduled for deletion.');
+    if (this.deleteConfirmation.invalid || this.deleteLoading()) return;
+
+    this.deleteLoading.set(true);
+    this.deleteError.set(null);
+    this.authService
+      .deleteAccount()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        error: (error: HttpErrorResponse) => {
+          this.deleteLoading.set(false);
+          this.deleteError.set(
+            error.status === 401
+              ? 'Your session expired. Sign in again before deleting your account.'
+              : 'Could not delete the account. Try again or contact support.',
+          );
+        },
+      });
   }
 
   private loadMfaStatus(): void {

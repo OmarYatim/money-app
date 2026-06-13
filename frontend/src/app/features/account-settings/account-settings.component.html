@@ -378,14 +378,14 @@
         <div class="settings-card settings-card--danger">
           <div class="settings-card__head">
             <h2>Delete account</h2>
-            <p>This starts a 30-day deletion window for your Nexioo account and financial data.</p>
+            <p>This permanently erases your Nexioo account and financial data.</p>
           </div>
 
           <div class="delete-panel">
             <mat-icon aria-hidden="true">warning</mat-icon>
             <div>
               <strong>Before deleting</strong>
-              <p>You can export your data first, or pause your account for up to 90 days instead.</p>
+              <p>You can export your data first. Deletion is immediate and cannot be undone.</p>
             </div>
           </div>
 
@@ -408,18 +408,35 @@
   @if (confirmDelete()) {
     <div class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="delete-title">
       <div class="settings-modal__card">
-        <h2 id="delete-title">Schedule account deletion?</h2>
+        <h2 id="delete-title">Delete account permanently?</h2>
         <p>
-          We will send a confirmation link to <strong>{{ email() }}</strong>. Your data is permanently
-          erased 30 days after confirmation unless you cancel.
+          This will revoke your bank data connection and permanently erase the account for
+          <strong>{{ email() }}</strong>, including accounts, transactions, goals, reports and login tokens.
         </p>
         <label class="settings-check">
-          <input type="checkbox" />
-          <span>I understand this action is irreversible after 30 days.</span>
+          <input type="checkbox" [formControl]="deleteConfirmation" />
+          <span>I understand this action is immediate and irreversible.</span>
         </label>
+        @if (deleteError()) {
+          <p class="settings-error" role="alert">{{ deleteError() }}</p>
+        }
         <div class="settings-actions">
-          <button class="settings-actions__secondary" type="button" (click)="cancelDelete()">Cancel</button>
-          <button class="settings-actions__danger" type="button" (click)="confirmDeletion()">Send confirmation</button>
+          <button
+            class="settings-actions__secondary"
+            type="button"
+            [disabled]="deleteLoading()"
+            (click)="cancelDelete()"
+          >
+            Cancel
+          </button>
+          <button
+            class="settings-actions__danger"
+            type="button"
+            [disabled]="deleteConfirmation.invalid || deleteLoading()"
+            (click)="confirmDeletion()"
+          >
+            {{ deleteLoading() ? 'Deleting...' : 'Delete permanently' }}
+          </button>
         </div>
       </div>
     </div>
