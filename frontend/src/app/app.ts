@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { catchError, filter, map, of, startWith, switchMap } from 'rxjs';
 
 import { AuthService } from './core/auth/auth.service';
 import { UnreviewedTransactionCountService } from './features/transactions/unreviewed-transaction-count.service';
@@ -19,6 +19,7 @@ export class App {
   private readonly authService = inject(AuthService);
   private readonly unreviewedTransactionCountService = inject(UnreviewedTransactionCountService);
   protected readonly profileMenuOpen = signal(false);
+  protected readonly mfaWarningDismissed = signal(false);
   protected readonly unreviewedCount = this.unreviewedTransactionCountService.count;
   protected readonly unreviewedCountLabel = this.unreviewedTransactionCountService.label;
 
@@ -28,6 +29,28 @@ export class App {
       map((e) => !e.urlAfterRedirects.startsWith('/login')),
     ),
     { initialValue: !this.router.url.startsWith('/login') },
+  );
+
+  protected readonly mfaStatus = toSignal(
+    this.router.events.pipe(
+      filter((e): e is NavigationEnd => e instanceof NavigationEnd),
+      startWith(null),
+      switchMap(() => {
+        if (this.router.url.startsWith('/login') || !this.authService.isAuthenticated) {
+          return of(null);
+        }
+        return this.authService.getMfaStatus().pipe(catchError(() => of(null)));
+      }),
+    ),
+    { initialValue: null },
+  );
+
+  protected readonly showMfaWarning = computed(
+    () =>
+      this.showShell() &&
+      !this.mfaWarningDismissed() &&
+      this.authService.isAuthenticated &&
+      this.mfaStatus()?.enabled === false,
   );
 
   protected readonly userInitials = computed(() => {
@@ -60,6 +83,10 @@ export class App {
 
   protected closeProfileMenu(): void {
     this.profileMenuOpen.set(false);
+  }
+
+  protected dismissMfaWarning(): void {
+    this.mfaWarningDismissed.set(true);
   }
 
   protected logout(): void {

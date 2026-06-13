@@ -1,6 +1,17 @@
 spring:
   application:
     name: backend
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:true}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:true}
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
@@ -17,12 +28,21 @@ app:
   jwt:
     secret: ${JWT_SECRET}
     expiration-ms: ${JWT_EXPIRATION_MS:900000}
+  mail:
+    from: ${APP_MAIL_FROM:no-reply@localhost}
+  auth:
+    refresh-cookie-secure: ${APP_REFRESH_COOKIE_SECURE:true}
   sync:
     cron: ${APP_SYNC_CRON:0 0 2 * * *}
     freshness-threshold-hours: ${APP_SYNC_FRESHNESS_THRESHOLD_HOURS:12}
 
 server:
   port: 8080
+
+management:
+  health:
+    mail:
+      enabled: ${MAIL_HEALTH_ENABLED:false}
 
 powens:
   domain: ${POWENS_DOMAIN}

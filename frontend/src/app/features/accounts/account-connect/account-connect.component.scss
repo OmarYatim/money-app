@@ -17,14 +17,14 @@
   transition: all 0.15s;
   border: none;
 
-  &:hover:not(:disabled) {
+  &:hover {
     opacity: 0.9;
   }
+}
 
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+.connect-btn--loading {
+  cursor: progress;
+  opacity: 0.72;
 }
 
 .connect-btn__icon {
@@ -63,7 +63,7 @@
     font-size: 22px;
   }
 
-  &:hover:not(:disabled) {
+  &:hover {
     border-color: var(--indigo-400);
     opacity: 1;
   }

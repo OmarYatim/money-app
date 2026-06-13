@@ -1,6 +1,17 @@
 spring:
   config:
     import: optional:file:.env[.properties]
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:2525}
+    username: ${MAIL_USERNAME:test}
+    password: ${MAIL_PASSWORD:test}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS_ENABLE:false}
   datasource:
     url: ${DEV_DB_URL}
     username: ${DEV_DB_USERNAME}
@@ -14,6 +25,10 @@ app:
   jwt:
     secret: ${JWT_SECRET}           # min 32 chars — generate with: openssl rand -base64 32
     expiration-ms: ${JWT_EXPIRATION_MS:900000}   # 15 minutes
+  mail:
+    from: ${APP_MAIL_FROM:no-reply@local.nexioo.me}
+  auth:
+    refresh-cookie-secure: ${APP_REFRESH_COOKIE_SECURE:false}
 
 powens:
   domain: ${POWENS_DOMAIN}

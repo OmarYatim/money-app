@@ -180,6 +180,12 @@
   padding: 14px 20px;
 }
 
+.settings-row--compact {
+  grid-template-columns: minmax(0, 1fr) 180px;
+  border-top: none;
+  padding: 0;
+}
+
 .settings-row strong,
 .settings-toggle strong,
 .settings-radio strong,
@@ -314,6 +320,11 @@
   padding: 16px 20px;
 }
 
+.settings-actions--inline {
+  border-top: none;
+  padding: 0;
+}
+
 .settings-actions__primary,
 .settings-actions__secondary,
 .settings-actions__danger {
@@ -357,6 +368,60 @@
 .settings-tag--green {
   background: var(--green-100);
   color: var(--green-600);
+}
+
+.mfa-panel {
+  display: grid;
+  gap: 14px;
+  border-top: 1px solid var(--ink-100);
+}
+
+.mfa-panel__status {
+  border-top: none;
+}
+
+.mfa-panel__error {
+  margin: 0 20px;
+  color: var(--red-600);
+  font-size: 12.5px;
+}
+
+.mfa-setup {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 18px;
+  padding: 0 20px 16px;
+}
+
+.mfa-setup__qr {
+  border: 1px solid var(--line);
+  inline-size: 150px;
+  block-size: 150px;
+}
+
+.mfa-setup__details,
+.mfa-disable {
+  display: grid;
+  gap: 12px;
+  padding: 0 20px 16px;
+}
+
+.mfa-secret {
+  display: grid;
+  gap: 6px;
+}
+
+.mfa-secret input,
+.settings-row--compact input {
+  min-inline-size: 0;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 9px 11px;
+  background: white;
+  color: var(--ink-900);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  outline: none;
 }
 
 .privacy-banner,

@@ -58,7 +58,15 @@ public class SecurityConfig {
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/api/auth/**")
+                auth.requestMatchers(HttpMethod.GET, "/api/auth/mfa/status")
+                    .authenticated()
+                    .requestMatchers(
+                        HttpMethod.POST,
+                        "/api/auth/mfa/enrol",
+                        "/api/auth/mfa/verify-enrolment",
+                        "/api/auth/mfa/disable")
+                    .authenticated()
+                    .requestMatchers("/api/auth/**")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/actuator/health")
                     .permitAll()

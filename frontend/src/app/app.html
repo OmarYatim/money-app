@@ -87,7 +87,7 @@
                   <small>Preferences, privacy</small>
                 </span>
               </a>
-              <a class="sidebar__profile-item" routerLink="/account-settings" (click)="closeProfileMenu()">
+              <a class="sidebar__profile-item" routerLink="/account-settings" [queryParams]="{ tab: 'security' }" (click)="closeProfileMenu()">
                 <span class="sidebar__profile-item-icon">
                   <mat-icon aria-hidden="true">shield</mat-icon>
                 </span>
@@ -126,6 +126,32 @@
     </aside>
 
     <main class="app-content">
+      @if (showMfaWarning()) {
+        <div class="mfa-warning" role="status">
+          <span class="mfa-warning__icon">
+            <mat-icon aria-hidden="true">shield</mat-icon>
+          </span>
+          <span class="mfa-warning__copy">
+            <strong>Protect your account with MFA</strong>
+            <span>Set up an authenticator app to add a second sign-in check.</span>
+          </span>
+          <a
+            class="mfa-warning__action"
+            routerLink="/account-settings"
+            [queryParams]="{ tab: 'security' }"
+          >
+            Enable MFA
+          </a>
+          <button
+            class="mfa-warning__close"
+            type="button"
+            aria-label="Dismiss MFA reminder"
+            (click)="dismissMfaWarning()"
+          >
+            <mat-icon aria-hidden="true">close</mat-icon>
+          </button>
+        </div>
+      }
       <router-outlet />
     </main>
   </div>

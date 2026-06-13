@@ -15,12 +15,12 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "app_user")
+@Table(name = "pending_registration")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AppUser {
+public class PendingRegistration {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,33 +29,27 @@ public class AppUser {
   @Column(nullable = false, unique = true)
   private String email;
 
-  @Column(name = "first_name", length = 100)
+  @Column(name = "first_name", nullable = false, length = 100)
   private String firstName;
 
-  @Column(name = "last_name", length = 100)
+  @Column(name = "last_name", nullable = false, length = 100)
   private String lastName;
 
-  @Column(length = 32)
+  @Column(nullable = false, length = 32)
   private String phone;
 
-  @Column(name = "email_verified_at")
-  private LocalDateTime emailVerifiedAt;
-
-  @Column(name = "password_hash")
+  @Column(name = "password_hash", nullable = false)
   private String passwordHash;
 
-  @Column(name = "powens_token", length = 500)
-  private String powensToken;
+  @Column(name = "code_hash", nullable = false, length = 128)
+  private String codeHash;
 
-  @Column(name = "powens_user_id")
-  private String powensUserId;
-
-  @Column(name = "totp_secret")
-  private String totpSecret;
-
-  @Column(name = "mfa_enabled", nullable = false)
+  @Column(nullable = false)
   @Builder.Default
-  private boolean mfaEnabled = false;
+  private int attempts = 0;
+
+  @Column(name = "expires_at", nullable = false)
+  private LocalDateTime expiresAt;
 
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;

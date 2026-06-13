@@ -1,10 +1,13 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { PageActionsComponent } from '../../shared/components/page-actions/page-actions.component';
+import type { MfaEnrolmentResponse } from '../../shared/models/auth.model';
 
 type SettingsTab = 'profile' | 'security' | 'email' | 'privacy' | 'delete';
 type RetentionPeriod = '6m' | '24m' | '60m';
@@ -31,14 +34,17 @@ interface RetentionOption {
 })
 export class AccountSettingsComponent {
   private readonly authService = inject(AuthService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly activeTab = signal<SettingsTab>('profile');
   protected readonly toast = signal<string | null>(null);
   protected readonly confirmDelete = signal(false);
   protected readonly showPassword = signal(false);
-  protected readonly twoFactorEnabled = signal(true);
-  protected readonly biometricLoginEnabled = signal(true);
-  protected readonly magicLinkEnabled = signal(false);
+  protected readonly mfaEnabled = signal(false);
+  protected readonly mfaLoading = signal(false);
+  protected readonly mfaError = signal<string | null>(null);
+  protected readonly mfaEnrolment = signal<MfaEnrolmentResponse | null>(null);
   protected readonly marketingConsent = signal(false);
   protected readonly analyticsConsent = signal(true);
   protected readonly thirdPartyConsent = signal(false);
@@ -83,6 +89,20 @@ export class AccountSettingsComponent {
     confirmPassword: new FormControl('', { nonNullable: true }),
   });
 
+  protected readonly mfaVerifyForm = new FormGroup({
+    code: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/^\d{6}$/)],
+    }),
+  });
+
+  protected readonly mfaDisableForm = new FormGroup({
+    code: new FormControl('', {
+      nonNullable: true,
+      validators: [Validators.required, Validators.pattern(/^\d{6}$/)],
+    }),
+  });
+
   protected readonly emailForm = new FormGroup({
     newEmail: new FormControl('', { nonNullable: true, validators: [Validators.email] }),
     password: new FormControl('', { nonNullable: true }),
@@ -97,6 +117,16 @@ export class AccountSettingsComponent {
       /[^A-Za-z0-9]/.test(password),
     ].filter(Boolean).length;
   });
+
+  constructor() {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const tab = params.get('tab');
+      if (this.isSettingsTab(tab)) {
+        this.activeTab.set(tab);
+      }
+    });
+    this.loadMfaStatus();
+  }
 
   protected setActiveTab(tab: SettingsTab): void {
     this.activeTab.set(tab);
@@ -114,6 +144,73 @@ export class AccountSettingsComponent {
   protected updatePassword(): void {
     this.passwordForm.reset();
     this.flash('Password updated.');
+  }
+
+  protected startMfaEnrolment(): void {
+    this.mfaLoading.set(true);
+    this.mfaError.set(null);
+    this.authService
+      .enrolMfa()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.mfaEnrolment.set(response);
+          this.mfaLoading.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.mfaLoading.set(false);
+          this.mfaError.set(this.resolveMfaError(error, 'Could not start MFA setup.'));
+        },
+      });
+  }
+
+  protected verifyMfaEnrolment(): void {
+    if (this.mfaVerifyForm.invalid) return;
+    this.mfaLoading.set(true);
+    this.mfaError.set(null);
+    this.authService
+      .verifyMfaEnrolment({ code: this.mfaVerifyForm.controls.code.value })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.mfaEnabled.set(response.enabled);
+          this.mfaEnrolment.set(null);
+          this.mfaVerifyForm.reset();
+          this.mfaLoading.set(false);
+          this.flash('Two-factor authentication enabled.');
+        },
+        error: (error: HttpErrorResponse) => {
+          this.mfaLoading.set(false);
+          this.mfaError.set(this.resolveMfaError(error, 'Invalid or expired code.'));
+        },
+      });
+  }
+
+  protected cancelMfaEnrolment(): void {
+    this.mfaEnrolment.set(null);
+    this.mfaError.set(null);
+    this.mfaVerifyForm.reset();
+  }
+
+  protected disableMfa(): void {
+    if (this.mfaDisableForm.invalid) return;
+    this.mfaLoading.set(true);
+    this.mfaError.set(null);
+    this.authService
+      .disableMfa({ code: this.mfaDisableForm.controls.code.value })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.mfaEnabled.set(response.enabled);
+          this.mfaDisableForm.reset();
+          this.mfaLoading.set(false);
+          this.flash('Two-factor authentication disabled.');
+        },
+        error: (error: HttpErrorResponse) => {
+          this.mfaLoading.set(false);
+          this.mfaError.set(this.resolveMfaError(error, 'Invalid or expired code.'));
+        },
+      });
   }
 
   protected requestEmailChange(): void {
@@ -137,5 +234,36 @@ export class AccountSettingsComponent {
   protected confirmDeletion(): void {
     this.confirmDelete.set(false);
     this.flash('Account scheduled for deletion.');
+  }
+
+  private loadMfaStatus(): void {
+    this.mfaLoading.set(true);
+    this.authService
+      .getMfaStatus()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (response) => {
+          this.mfaEnabled.set(response.enabled);
+          this.mfaLoading.set(false);
+        },
+        error: (error: HttpErrorResponse) => {
+          this.mfaLoading.set(false);
+          this.mfaError.set(this.resolveMfaError(error, 'Could not load MFA status.'));
+        },
+      });
+  }
+
+  private resolveMfaError(error: HttpErrorResponse, fallback: string): string {
+    if (error.status === 401) {
+      return 'Invalid or expired code.';
+    }
+    if (error.status === 409) {
+      return error.error?.message ?? fallback;
+    }
+    return fallback;
+  }
+
+  private isSettingsTab(tab: string | null): tab is SettingsTab {
+    return this.tabs.some((item) => item.id === tab);
   }
 }
