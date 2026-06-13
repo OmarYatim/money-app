@@ -57,6 +57,9 @@ public class AppUser {
   @Builder.Default
   private boolean mfaEnabled = false;
 
+  @Column(name = "deleted_at")
+  private LocalDateTime deletedAt;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 

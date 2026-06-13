@@ -12,4 +12,6 @@ public interface GoalRepository extends JpaRepository<Goal, Long> {
   Optional<Goal> findByIdAndUserId(Long id, Long userId);
 
   List<Goal> findByUserIdAndLinkedAccountIdInAndArchivedFalse(Long userId, List<Long> accountIds);
+
+  void deleteByUserId(Long userId);
 }

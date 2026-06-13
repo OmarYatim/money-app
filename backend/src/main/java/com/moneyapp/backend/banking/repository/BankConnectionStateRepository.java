@@ -9,4 +9,6 @@ public interface BankConnectionStateRepository extends JpaRepository<BankConnect
   Optional<BankConnectionState> findByUserIdAndStateAndConsumedFalse(Long userId, String state);
 
   Optional<BankConnectionState> findByStateAndConsumedFalse(String state);
+
+  void deleteByUserId(Long userId);
 }

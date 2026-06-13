@@ -20,6 +20,10 @@ public interface PowensClient {
     throw new UnsupportedOperationException("Connection deletion is not supported");
   }
 
+  default void deleteUser(String permanentAccessToken, String powensUserId) {
+    throw new UnsupportedOperationException("User deletion is not supported");
+  }
+
   default PowensTransactionsResponse fetchTransactions(String permanentAccessToken) {
     throw new UnsupportedOperationException("Transaction sync is not supported");
   }

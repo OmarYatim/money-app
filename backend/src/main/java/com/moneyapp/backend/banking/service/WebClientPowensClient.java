@@ -79,6 +79,17 @@ class WebClientPowensClient implements PowensClient {
   }
 
   @Override
+  public void deleteUser(String permanentAccessToken, String powensUserId) {
+    powensWebClient
+        .delete()
+        .uri("/users/{powensUserId}", powensUserId)
+        .header(HttpHeaders.AUTHORIZATION, "Bearer " + permanentAccessToken)
+        .retrieve()
+        .toBodilessEntity()
+        .block();
+  }
+
+  @Override
   public PowensTransactionsResponse fetchTransactions(String permanentAccessToken) {
     return powensWebClient
         .get()
