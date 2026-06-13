@@ -360,11 +360,6 @@
           </div>
 
           <div class="data-rights">
-            <button class="data-right" type="button" (click)="requestDataExport()">
-              <mat-icon aria-hidden="true">content_copy</mat-icon>
-              <span><strong>Export my data</strong><small>Complete account, transaction and metadata export.</small></span>
-              <em>Request export</em>
-            </button>
             <button class="data-right" type="button" (click)="flash('Rectification request opened.')">
               <mat-icon aria-hidden="true">description</mat-icon>
               <span><strong>Rectify my data</strong><small>Open a request to correct personal information.</small></span>
@@ -390,7 +385,6 @@
           </div>
 
           <div class="settings-actions">
-            <button class="settings-actions__secondary" type="button" (click)="requestDataExport()">Export first</button>
             <button class="settings-actions__danger" type="button" (click)="openDeleteConfirmation()">Delete account</button>
           </div>
         </div>

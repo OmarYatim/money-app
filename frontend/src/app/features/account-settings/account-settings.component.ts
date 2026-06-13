@@ -226,10 +226,6 @@ export class AccountSettingsComponent {
     this.flash(`Verification email sent to ${email}.`);
   }
 
-  protected requestDataExport(): void {
-    this.flash('Data export queued. You will receive an email link within 24 h.');
-  }
-
   protected openDeleteConfirmation(): void {
     this.deleteError.set(null);
     this.deleteConfirmation.reset(false);
