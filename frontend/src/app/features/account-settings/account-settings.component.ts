@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { PageActionsComponent } from '../../shared/components/page-actions/page-actions.component';
@@ -35,6 +35,7 @@ interface RetentionOption {
 export class AccountSettingsComponent {
   private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly activeTab = signal<SettingsTab>('profile');
   protected readonly toast = signal<string | null>(null);
@@ -44,8 +45,6 @@ export class AccountSettingsComponent {
   protected readonly mfaLoading = signal(false);
   protected readonly mfaError = signal<string | null>(null);
   protected readonly mfaEnrolment = signal<MfaEnrolmentResponse | null>(null);
-  protected readonly biometricLoginEnabled = signal(true);
-  protected readonly magicLinkEnabled = signal(false);
   protected readonly marketingConsent = signal(false);
   protected readonly analyticsConsent = signal(true);
   protected readonly thirdPartyConsent = signal(false);
@@ -120,6 +119,12 @@ export class AccountSettingsComponent {
   });
 
   constructor() {
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe((params) => {
+      const tab = params.get('tab');
+      if (this.isSettingsTab(tab)) {
+        this.activeTab.set(tab);
+      }
+    });
     this.loadMfaStatus();
   }
 
@@ -256,5 +261,9 @@ export class AccountSettingsComponent {
       return error.error?.message ?? fallback;
     }
     return fallback;
+  }
+
+  private isSettingsTab(tab: string | null): tab is SettingsTab {
+    return this.tabs.some((item) => item.id === tab);
   }
 }

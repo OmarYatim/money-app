@@ -259,22 +259,6 @@
             }
           </div>
 
-          <button class="settings-toggle" type="button" (click)="biometricLoginEnabled.set(!biometricLoginEnabled())">
-            <span>
-              <strong>Biometric sign-in</strong>
-              <small>Touch ID / Face ID on this device.</small>
-            </span>
-            <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="biometricLoginEnabled()"></span>
-          </button>
-
-          <button class="settings-toggle" type="button" (click)="magicLinkEnabled.set(!magicLinkEnabled())">
-            <span>
-              <strong>Email magic links</strong>
-              <small>One-tap sign-in via a link sent to your inbox.</small>
-            </span>
-            <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="magicLinkEnabled()"></span>
-          </button>
-
           <div class="settings-actions">
             <button class="settings-actions__primary" type="submit">Update password</button>
           </div>
