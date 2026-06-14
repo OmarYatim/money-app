@@ -29,6 +29,7 @@ public class SseEmitterService {
         });
     emitter.onError(error -> removeEmitter(userId, emitter));
 
+    sendOrRemove(userId, emitter, StreamEventType.CONNECTED, "connected");
     return emitter;
   }
 

@@ -1,4 +1,4 @@
-export const SSE_EVENT_TYPES = ['ACCOUNTS_UPDATED', 'TRANSACTIONS_UPDATED'] as const;
+export const SSE_EVENT_TYPES = ['CONNECTED', 'ACCOUNTS_UPDATED', 'TRANSACTIONS_UPDATED'] as const;
 
 export type SseEventType = typeof SSE_EVENT_TYPES[number];
 

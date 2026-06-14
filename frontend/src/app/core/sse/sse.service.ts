@@ -64,6 +64,12 @@ export class SseService {
       this.zone.run(() => this.scheduleReconnect());
     };
 
+    source.addEventListener('CONNECTED', () => {
+      this.zone.run(() => {
+        this.reconnectAttempts = 0;
+        this.connectionStatus.set('connected');
+      });
+    });
     source.addEventListener('ACCOUNTS_UPDATED', () => {
       this.zone.run(() => this.handleEvent('ACCOUNTS_UPDATED'));
     });
