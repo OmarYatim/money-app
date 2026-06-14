@@ -19,6 +19,8 @@ import type {
 type AuthMode = 'login' | 'register';
 type LoginStep = 'credentials' | 'mfa' | 'register-code';
 
+const RATE_LIMIT_ERROR_CODE = 'RATE_LIMIT_EXCEEDED';
+
 interface PhoneCountry {
   code: string;
   name: string;
@@ -42,10 +44,12 @@ export class LoginComponent {
   readonly mode = signal<AuthMode>('login');
   readonly step = signal<LoginStep>('credentials');
   readonly errorMessage = signal<string | null>(null);
+  readonly rateLimitRetrySeconds = signal<number | null>(null);
   readonly loading = signal(false);
   private readonly mfaToken = signal<string | null>(null);
   readonly mfaEmail = signal<string | null>(null);
   readonly registerEmail = signal<string | null>(null);
+  private rateLimitTimer: ReturnType<typeof setInterval> | null = null;
   readonly phoneCountries: PhoneCountry[] = [
     { code: 'US', name: 'United States', dialCode: '+1', digits: [10], hint: '10 digits' },
     { code: 'CA', name: 'Canada', dialCode: '+1', digits: [10], hint: '10 digits' },
@@ -159,6 +163,9 @@ export class LoginComponent {
   });
   readonly isMfaFormValid = computed(() => this.mfaFormStatus() === 'VALID');
   readonly isRegisterCodeFormValid = computed(() => this.registerCodeFormStatus() === 'VALID');
+  readonly loginRateLimited = computed(
+    () => this.mode() === 'login' && this.rateLimitRetrySeconds() !== null,
+  );
   readonly passwordScore = computed(() => {
     const password = this.passwordValue();
     return [
@@ -178,6 +185,9 @@ export class LoginComponent {
     if (this.loading()) {
       return this.mode() === 'login' ? 'Signing in…' : 'Creating account…';
     }
+    if (this.loginRateLimited()) {
+      return 'Try again soon';
+    }
     return this.mode() === 'login' ? 'Sign in' : 'Create account';
   });
   readonly mfaSubmitLabel = computed(() => (this.loading() ? 'Verifying…' : 'Verify code'));
@@ -185,9 +195,14 @@ export class LoginComponent {
     this.loading() ? 'Confirming…' : 'Confirm account',
   );
 
+  constructor() {
+    this.destroyRef.onDestroy(() => this.clearRateLimitCountdown());
+  }
+
   setMode(mode: AuthMode): void {
     this.mode.set(mode);
     this.errorMessage.set(null);
+    this.clearRateLimitCountdown();
     this.step.set('credentials');
     this.mfaToken.set(null);
     this.mfaEmail.set(null);
@@ -202,12 +217,16 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
+    if (this.loginRateLimited()) {
+      return;
+    }
     if (!this.isFormValid()) {
       this.form.markAllAsTouched();
       this.errorMessage.set(this.resolveValidationError());
       return;
     }
     this.errorMessage.set(null);
+    this.clearRateLimitCountdown();
     this.loading.set(true);
     const { email, password } = this.form.getRawValue();
     if (this.mode() === 'register') {
@@ -308,6 +327,9 @@ export class LoginComponent {
 
   private resolveError(error: HttpErrorResponse): string {
     if (this.mode() === 'login') {
+      if (this.isRateLimitError(error)) {
+        return this.resolveRateLimitError(error);
+      }
       return error.status === 401 ? 'Invalid email or password.' : 'Login failed. Please try again.';
     }
     if (error.status === 400) {
@@ -351,6 +373,69 @@ export class LoginComponent {
       'code' in errorBody &&
       typeof errorBody.code === 'string'
     );
+  }
+
+  private isRateLimitError(error: HttpErrorResponse): boolean {
+    return (
+      error.status === 429 &&
+      this.isApiErrorResponse(error.error) &&
+      error.error.code === RATE_LIMIT_ERROR_CODE
+    );
+  }
+
+  private resolveRateLimitError(error: HttpErrorResponse): string {
+    const retrySeconds = this.retryAfterSeconds(error);
+    if (retrySeconds !== null) {
+      this.startRateLimitCountdown(retrySeconds);
+      return `Too many requests. Please try again in ${this.formatRetryAfter(retrySeconds)}.`;
+    }
+    this.clearRateLimitCountdown();
+    return this.isApiErrorResponse(error.error) && error.error.message
+      ? this.formatValidationMessage(error.error.message)
+      : 'Too many requests. Please try again later.';
+  }
+
+  private retryAfterSeconds(error: HttpErrorResponse): number | null {
+    const retryAfter = error.headers.get('Retry-After');
+    if (retryAfter === null) {
+      return null;
+    }
+    const retrySeconds = Number.parseInt(retryAfter, 10);
+    return Number.isFinite(retrySeconds) && retrySeconds > 0 ? retrySeconds : null;
+  }
+
+  private startRateLimitCountdown(seconds: number): void {
+    this.clearRateLimitCountdown();
+    this.rateLimitRetrySeconds.set(seconds);
+    this.rateLimitTimer = setInterval(() => {
+      const remaining = this.rateLimitRetrySeconds();
+      if (remaining === null || remaining <= 1) {
+        this.clearRateLimitCountdown();
+        this.errorMessage.set(null);
+        return;
+      }
+      const nextRemaining = remaining - 1;
+      this.rateLimitRetrySeconds.set(nextRemaining);
+      this.errorMessage.set(
+        `Too many requests. Please try again in ${this.formatRetryAfter(nextRemaining)}.`,
+      );
+    }, 1000);
+  }
+
+  private clearRateLimitCountdown(): void {
+    if (this.rateLimitTimer !== null) {
+      clearInterval(this.rateLimitTimer);
+      this.rateLimitTimer = null;
+    }
+    this.rateLimitRetrySeconds.set(null);
+  }
+
+  private formatRetryAfter(seconds: number): string {
+    if (seconds < 60) {
+      return `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
+    }
+    const minutes = Math.ceil(seconds / 60);
+    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
   }
 
   private formatValidationMessage(message: string): string {
