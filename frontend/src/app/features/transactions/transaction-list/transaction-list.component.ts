@@ -268,6 +268,13 @@ export class TransactionListComponent {
 
     void this.loadAccounts();
     void this.reloadTransactions();
+
+    this.transactionService.transactionsUpdated$
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        void this.reloadTransactions();
+        this.unreviewedTransactionCountService.refresh();
+      });
   }
 
   protected async reloadTransactions(): Promise<void> {

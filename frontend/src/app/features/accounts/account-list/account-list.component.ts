@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
-import { catchError, finalize, forkJoin, map, of, startWith, Subject, switchMap } from 'rxjs';
+import { catchError, finalize, forkJoin, map, merge, of, startWith, Subject, switchMap } from 'rxjs';
 
 import type { Account } from '../../../shared/models/account.model';
 import type { SyncStatus } from '../../../shared/models/sync-status.model';
@@ -99,7 +99,7 @@ export class AccountListComponent {
   ];
 
   protected readonly state = toSignal(
-    this.refreshAccounts$.pipe(
+    merge(this.refreshAccounts$, this.accountService.accountsUpdated$).pipe(
       startWith(undefined),
       switchMap(() =>
         forkJoin({

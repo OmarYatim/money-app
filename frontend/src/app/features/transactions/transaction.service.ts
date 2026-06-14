@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import type { CategoryType } from '../../shared/models/category.model';
@@ -23,6 +23,9 @@ export interface TransactionQuery {
 export class TransactionService {
   private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = environment.apiBaseUrl;
+  private readonly transactionsUpdatedSubject = new Subject<void>();
+
+  readonly transactionsUpdated$ = this.transactionsUpdatedSubject.asObservable();
 
   getTransactions(query: TransactionQuery = {}): Observable<Page<Transaction>> {
     const params = this.queryParams(query);
@@ -53,6 +56,10 @@ export class TransactionService {
     return this.http.patch<Transaction>(`${this.apiBaseUrl}/api/transactions/${id}/reviewed`, {
       reviewed,
     });
+  }
+
+  notifyTransactionsUpdated(): void {
+    this.transactionsUpdatedSubject.next();
   }
 
   private queryParams(query: TransactionQuery): HttpParams {

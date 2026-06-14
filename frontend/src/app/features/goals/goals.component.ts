@@ -1,5 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { firstValueFrom } from 'rxjs';
 
 import { PageActionsComponent } from '../../shared/components/page-actions/page-actions.component';
@@ -183,6 +184,12 @@ export class GoalsComponent {
   });
   constructor() {
     void this.loadInitialData();
+
+    this.accountService.accountsUpdated$
+      .pipe(takeUntilDestroyed())
+      .subscribe(() => {
+        void this.loadInitialData();
+      });
   }
 
   protected async loadInitialData(): Promise<void> {

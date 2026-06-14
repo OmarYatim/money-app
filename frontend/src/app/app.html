@@ -126,6 +126,14 @@
     </aside>
 
     <main class="app-content">
+      @if (showSseReconnecting()) {
+        <div class="sse-status" role="status" aria-live="polite">
+          <span class="sse-status__icon">
+            <mat-icon aria-hidden="true">sync</mat-icon>
+          </span>
+          <span>Reconnecting…</span>
+        </div>
+      }
       @if (showMfaWarning()) {
         <div class="mfa-warning" role="status">
           <span class="mfa-warning__icon">

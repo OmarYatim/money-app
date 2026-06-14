@@ -5,6 +5,7 @@ import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } fro
 import { catchError, filter, map, of, startWith, switchMap } from 'rxjs';
 
 import { AuthService } from './core/auth/auth.service';
+import { SseService } from './core/sse/sse.service';
 import { UnreviewedTransactionCountService } from './features/transactions/unreviewed-transaction-count.service';
 
 @Component({
@@ -17,6 +18,7 @@ import { UnreviewedTransactionCountService } from './features/transactions/unrev
 export class App {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly sseService = inject(SseService);
   private readonly unreviewedTransactionCountService = inject(UnreviewedTransactionCountService);
   protected readonly profileMenuOpen = signal(false);
   protected readonly mfaWarningDismissed = signal(false);
@@ -65,6 +67,9 @@ export class App {
   });
 
   protected readonly userEmail = computed(() => this.authService.currentEmail() ?? '');
+  protected readonly showSseReconnecting = computed(
+    () => this.showShell() && this.sseService.reconnecting(),
+  );
 
   protected readonly userName = computed(() => {
     const email = this.userEmail();
