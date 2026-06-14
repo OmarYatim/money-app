@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
-import { catchError, concat, firstValueFrom, map, merge, of, startWith, Subject, switchMap, timer } from 'rxjs';
+import { catchError, concat, exhaustMap, firstValueFrom, map, merge, of, startWith, Subject, switchMap, timer } from 'rxjs';
 import type { Observable } from 'rxjs';
 
 import type { Account } from '../../../shared/models/account.model';
@@ -60,7 +60,7 @@ export class DashboardComponent {
   protected readonly state = toSignal(
     merge(this.refreshSummary$, this.dashboardService.summaryUpdated$).pipe(
       startWith(false),
-      switchMap((syncFirst) =>
+      exhaustMap((syncFirst) =>
         concat(
           of({ summary: null, loading: true, error: null }),
           this.loadSummary(syncFirst).pipe(
