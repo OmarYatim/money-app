@@ -6,6 +6,7 @@ import com.moneyapp.backend.banking.repository.UserConnectionRepository;
 import com.moneyapp.backend.banking.service.AccountService;
 import com.moneyapp.backend.goals.service.GoalService;
 import com.moneyapp.backend.reports.service.NetWorthSnapshotService;
+import com.moneyapp.backend.stream.service.SseEmitterService;
 import com.moneyapp.backend.sync.entity.SyncEvent;
 import com.moneyapp.backend.sync.enums.SyncEventStatus;
 import com.moneyapp.backend.sync.enums.SyncEventTrigger;
@@ -33,6 +34,7 @@ public class DataSyncService {
   private final TaskScheduler taskScheduler;
   private final NetWorthSnapshotService netWorthSnapshotService;
   private final GoalService goalService;
+  private final SseEmitterService sseEmitterService;
 
   public SyncEvent sync(AppUser appUser, SyncEventTrigger triggeredBy, Long connectionId) {
     return sync(appUser, triggeredBy, connectionId, 1);
@@ -70,7 +72,12 @@ public class DataSyncService {
       }
     }
 
-    return syncEventRepository.save(syncEvent);
+    SyncEvent savedSyncEvent = syncEventRepository.save(syncEvent);
+    if (SyncEventStatus.SUCCESS.equals(savedSyncEvent.getStatus())) {
+      sseEmitterService.emitDataUpdated(appUser.getId());
+    }
+
+    return savedSyncEvent;
   }
 
   private void scheduleRetry(
