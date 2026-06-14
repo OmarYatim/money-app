@@ -1,6 +1,7 @@
 package com.moneyapp.backend.auth.repository;
 
 import com.moneyapp.backend.auth.entity.RefreshToken;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -11,4 +12,6 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
   void deleteByUserId(Long userId);
 
   void deleteByToken(String token);
+
+  long deleteByExpiresAtBefore(LocalDateTime expiresAt);
 }

@@ -27,6 +27,9 @@ public interface TransactionRepository
   @Transactional
   void deleteByUserIdAndAccountIdIn(Long userId, List<Long> accountIds);
 
+  @Transactional
+  void deleteByUserId(Long userId);
+
   @Query(
       """
       select distinct t.accountId

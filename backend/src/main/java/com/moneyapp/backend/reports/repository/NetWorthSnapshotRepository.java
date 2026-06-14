@@ -11,4 +11,6 @@ public interface NetWorthSnapshotRepository extends JpaRepository<NetWorthSnapsh
 
   List<NetWorthSnapshot> findByUserIdAndSnapshotDateBetweenOrderBySnapshotDateAsc(
       Long userId, LocalDate startDate, LocalDate endDate);
+
+  void deleteByUserId(Long userId);
 }

@@ -14,4 +14,6 @@ public interface UserConnectionRepository extends JpaRepository<UserConnection, 
   List<UserConnection> findByUserIdAndStatus(Long userId, String status);
 
   List<UserConnection> findByUserIdAndStateIsNotNull(Long userId);
+
+  void deleteByUserId(Long userId);
 }

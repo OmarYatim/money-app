@@ -102,6 +102,12 @@ export class AuthService {
     return this.http.post<MfaStatusResponse>(`${this.apiBaseUrl}/api/auth/mfa/disable`, request);
   }
 
+  deleteAccount(): Observable<void> {
+    return this.http
+      .delete<void>(`${this.apiBaseUrl}/api/users/me`, { withCredentials: true })
+      .pipe(tap(() => this.clearSession()));
+  }
+
   logout(): Observable<void> {
     return this.http
       .post<void>(`${this.apiBaseUrl}/api/auth/logout`, {}, { withCredentials: true })
