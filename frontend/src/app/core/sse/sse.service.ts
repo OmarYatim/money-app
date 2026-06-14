@@ -34,15 +34,19 @@ export class SseService {
   constructor() {
     effect(() => {
       const token = this.authService.accessToken();
-      if (token === null) {
-        this.disconnect();
-        return;
-      }
-
-      if (token !== this.activeToken) {
-        this.connect(token, false);
-      }
+      queueMicrotask(() => this.applyAuthToken(token));
     });
+  }
+
+  private applyAuthToken(token: string | null): void {
+    if (token === null) {
+      this.disconnect();
+      return;
+    }
+
+    if (token !== this.activeToken) {
+      this.connect(token, false);
+    }
   }
 
   private connect(token: string, reconnecting: boolean): void {
