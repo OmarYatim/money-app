@@ -219,7 +219,7 @@
           <button
             type="submit"
             class="login-submit"
-            [disabled]="loading()"
+            [disabled]="loading() || loginRateLimited()"
           >
             {{ submitLabel() }}
             <span class="material-icons" style="font-size: 15px;">arrow_forward</span>
