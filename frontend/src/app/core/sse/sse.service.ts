@@ -1,4 +1,4 @@
-import { computed, effect, inject, Injectable, NgZone, signal } from '@angular/core';
+import { computed, inject, Injectable, NgZone, signal } from '@angular/core';
 import { Subject } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
@@ -6,7 +6,6 @@ import { AccountService } from '../../features/accounts/account.service';
 import { DashboardService } from '../../features/dashboard/dashboard.service';
 import { TransactionService } from '../../features/transactions/transaction.service';
 import type { SseConnectionStatus, SseEventType } from '../../shared/models/sse-event.model';
-import { AuthService } from '../auth/auth.service';
 
 const MAX_RECONNECT_ATTEMPTS = 5;
 const INITIAL_RECONNECT_DELAY_MS = 1000;
@@ -14,7 +13,6 @@ const MAX_RECONNECT_DELAY_MS = 16000;
 
 @Injectable({ providedIn: 'root' })
 export class SseService {
-  private readonly authService = inject(AuthService);
   private readonly accountService = inject(AccountService);
   private readonly dashboardService = inject(DashboardService);
   private readonly transactionService = inject(TransactionService);
@@ -31,22 +29,20 @@ export class SseService {
   readonly reconnecting = computed(() => this.connectionStatus() === 'reconnecting');
   readonly events$ = this.eventsSubject.asObservable();
 
-  constructor() {
-    effect(() => {
-      const token = this.authService.accessToken();
-      queueMicrotask(() => this.applyAuthToken(token));
-    });
-  }
-
-  private applyAuthToken(token: string | null): void {
-    if (token === null) {
-      this.disconnect();
+  connectWithToken(token: string): void {
+    if (token === this.activeToken) {
       return;
     }
 
-    if (token !== this.activeToken) {
-      this.connect(token, false);
-    }
+    this.connect(token, false);
+  }
+
+  disconnect(): void {
+    this.activeToken = null;
+    this.reconnectAttempts = 0;
+    this.clearReconnectTimer();
+    this.closeEventSource();
+    this.connectionStatus.set('idle');
   }
 
   private connect(token: string, reconnecting: boolean): void {
@@ -116,14 +112,6 @@ export class SseService {
     this.reconnectTimer = setTimeout(() => {
       this.zone.run(() => this.connect(token, true));
     }, delay);
-  }
-
-  private disconnect(): void {
-    this.activeToken = null;
-    this.reconnectAttempts = 0;
-    this.clearReconnectTimer();
-    this.closeEventSource();
-    this.connectionStatus.set('idle');
   }
 
   private closeEventSource(): void {
