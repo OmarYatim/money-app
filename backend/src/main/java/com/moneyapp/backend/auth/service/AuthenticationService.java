@@ -29,6 +29,7 @@ public class AuthenticationService {
   private final JwtService jwtService;
   private final RefreshTokenService refreshTokenService;
   private final MfaLoginTokenService mfaLoginTokenService;
+  private final LoginFailureTracker loginFailureTracker;
   private final AppProperties appProperties;
 
   @Transactional
@@ -38,13 +39,18 @@ public class AuthenticationService {
 
   @Transactional
   public LoginResponse login(LoginRequest request, HttpServletResponse response) {
+    loginFailureTracker.delayIfRequired(request.email());
     AppUser user =
         appUserRepository
             .findByEmail(request.email())
             .filter(u -> u.getPasswordHash() != null)
             .filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
             .orElseThrow(
-                () -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bad credentials"));
+                () -> {
+                  loginFailureTracker.recordFailure(request.email());
+                  return new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Bad credentials");
+                });
+    loginFailureTracker.clearFailures(request.email());
     if (user.isMfaEnabled()) {
       String mfaToken = mfaLoginTokenService.create(user.getId());
       return LoginResponse.mfaRequired(mfaToken, user.getEmail());

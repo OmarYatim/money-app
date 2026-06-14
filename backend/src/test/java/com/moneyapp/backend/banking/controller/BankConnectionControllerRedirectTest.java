@@ -22,7 +22,12 @@ class BankConnectionControllerRedirectTest {
           List.of("https://app.example"),
           new JwtProperties("test-secret-key-must-be-at-least-32-chars!!", 900000),
           new AppProperties.MailProperties("no-reply@test.nexioo.local"),
-          new AppProperties.AuthProperties(true));
+          new AppProperties.AuthProperties(true),
+          new AppProperties.RateLimitProperties(
+              false,
+              new AppProperties.EndpointRateLimitProperties(100000, 900),
+              new AppProperties.EndpointRateLimitProperties(100000, 60),
+              new AppProperties.LoginFailureProperties(100000, 0)));
 
   private final StubBankConnectionService bankConnectionService = new StubBankConnectionService();
   private final MockMvc mockMvc =

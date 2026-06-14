@@ -1,0 +1,2 @@
+ALTER TABLE mfa_login_token
+    ADD COLUMN IF NOT EXISTS failed_attempts INTEGER NOT NULL DEFAULT 0;
