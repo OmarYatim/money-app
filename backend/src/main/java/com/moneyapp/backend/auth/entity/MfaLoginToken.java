@@ -37,6 +37,10 @@ public class MfaLoginToken {
   @Column(name = "used_at")
   private LocalDateTime usedAt;
 
+  @Builder.Default
+  @Column(name = "failed_attempts", nullable = false)
+  private int failedAttempts = 0;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private LocalDateTime createdAt;
 

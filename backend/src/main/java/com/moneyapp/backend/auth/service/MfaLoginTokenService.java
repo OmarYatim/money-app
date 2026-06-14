@@ -11,6 +11,7 @@ import java.util.Base64;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -20,6 +21,7 @@ public class MfaLoginTokenService {
 
   private static final int TOKEN_BYTES = 32;
   private static final int EXPIRATION_MINUTES = 5;
+  private static final int MAX_FAILED_ATTEMPTS = 5;
 
   private final MfaLoginTokenRepository mfaLoginTokenRepository;
   private final SecureRandom secureRandom = new SecureRandom();
@@ -41,7 +43,26 @@ public class MfaLoginTokenService {
   }
 
   @Transactional
-  public Long consume(String token) {
+  public Long userIdForValidation(String token) {
+    return findActiveToken(token).getUserId();
+  }
+
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public void recordFailedAttempt(String token) {
+    MfaLoginToken mfaToken = findActiveToken(token);
+    mfaToken.setFailedAttempts(mfaToken.getFailedAttempts() + 1);
+    if (mfaToken.getFailedAttempts() >= MAX_FAILED_ATTEMPTS) {
+      mfaToken.setUsedAt(LocalDateTime.now());
+    }
+  }
+
+  @Transactional
+  public void consume(String token) {
+    MfaLoginToken mfaToken = findActiveToken(token);
+    mfaToken.setUsedAt(LocalDateTime.now());
+  }
+
+  private MfaLoginToken findActiveToken(String token) {
     MfaLoginToken mfaToken =
         mfaLoginTokenRepository
             .findByTokenHash(hash(token))
@@ -51,8 +72,7 @@ public class MfaLoginTokenService {
                 () ->
                     new ResponseStatusException(
                         HttpStatus.UNAUTHORIZED, "Invalid or expired code"));
-    mfaToken.setUsedAt(LocalDateTime.now());
-    return mfaToken.getUserId();
+    return mfaToken;
   }
 
   private String hash(String token) {

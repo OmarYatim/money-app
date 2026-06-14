@@ -138,6 +138,42 @@ class AuthenticationServiceTest {
   }
 
   @Test
+  void validateMfaInvalidatesTokenAfterFiveInvalidCodes() throws CodeGenerationException {
+    createUser("mfa-attempts@example.com", "Stronger1!");
+    MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-attempts@example.com");
+    mfaService.verifyEnrolment("mfa-attempts@example.com", currentCode(enrolment.secret()));
+    LoginResponse challenge =
+        authenticationService.login(
+            new LoginRequest("mfa-attempts@example.com", "Stronger1!"),
+            new MockHttpServletResponse());
+
+    for (int i = 0; i < 5; i++) {
+      assertThatThrownBy(
+              () ->
+                  mfaService.validate(
+                      invalidCode(enrolment.secret()),
+                      challenge.mfaToken(),
+                      new MockHttpServletResponse()))
+          .isInstanceOf(ResponseStatusException.class)
+          .hasMessageContaining("401")
+          .hasMessageContaining("Invalid or expired code");
+    }
+
+    MfaLoginToken token = mfaLoginTokenRepository.findAll().get(0);
+    assertThat(token.getFailedAttempts()).isEqualTo(5);
+    assertThat(token.getUsedAt()).isNotNull();
+    assertThatThrownBy(
+            () ->
+                mfaService.validate(
+                    currentCode(enrolment.secret()),
+                    challenge.mfaToken(),
+                    new MockHttpServletResponse()))
+        .isInstanceOf(ResponseStatusException.class)
+        .hasMessageContaining("401")
+        .hasMessageContaining("Invalid or expired code");
+  }
+
+  @Test
   void validateMfaRejectsExpiredToken() throws CodeGenerationException {
     createUser("mfa-expired@example.com", "Stronger1!");
     MfaEnrolmentResponse enrolment = mfaService.enrol("mfa-expired@example.com");
@@ -215,6 +251,11 @@ class AuthenticationServiceTest {
 
   private String currentCode(String secret) throws CodeGenerationException {
     return new DefaultCodeGenerator().generate(secret, Instant.now().getEpochSecond() / 30);
+  }
+
+  private String invalidCode(String secret) throws CodeGenerationException {
+    String currentCode = currentCode(secret);
+    return "000000".equals(currentCode) ? "111111" : "000000";
   }
 
   private AppUser createUser(String email, String password) {

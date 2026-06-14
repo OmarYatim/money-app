@@ -22,6 +22,17 @@ app:
     from: no-reply@test.nexioo.local
   auth:
     refresh-cookie-secure: false
+  rate-limit:
+    enabled: false
+    login:
+      capacity: 100000
+      refill-seconds: 900
+    refresh:
+      capacity: 100000
+      refill-seconds: 60
+    login-failure:
+      threshold: 100000
+      delay-seconds: 0
 
 management:
   health:

@@ -94,7 +94,7 @@ public class MfaService {
 
   @Transactional
   public LoginResponse validate(String code, String mfaToken, HttpServletResponse response) {
-    Long userId = mfaLoginTokenService.consume(mfaToken);
+    Long userId = mfaLoginTokenService.userIdForValidation(mfaToken);
     AppUser user =
         appUserRepository
             .findById(userId)
@@ -107,9 +107,11 @@ public class MfaService {
 
     String secret = totpSecretCipher.decrypt(user.getTotpSecret());
     if (!isValidCode(secret, code)) {
+      mfaLoginTokenService.recordFailedAttempt(mfaToken);
       throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid or expired code");
     }
 
+    mfaLoginTokenService.consume(mfaToken);
     return authenticationService.issueTokensForMfa(user, response);
   }
 

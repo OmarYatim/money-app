@@ -32,6 +32,17 @@ app:
     from: ${APP_MAIL_FROM:no-reply@localhost}
   auth:
     refresh-cookie-secure: ${APP_REFRESH_COOKIE_SECURE:true}
+  rate-limit:
+    enabled: ${APP_RATE_LIMIT_ENABLED:true}
+    login:
+      capacity: ${APP_RATE_LIMIT_LOGIN_CAPACITY:10}
+      refill-seconds: ${APP_RATE_LIMIT_LOGIN_REFILL_SECONDS:900}
+    refresh:
+      capacity: ${APP_RATE_LIMIT_REFRESH_CAPACITY:20}
+      refill-seconds: ${APP_RATE_LIMIT_REFRESH_REFILL_SECONDS:60}
+    login-failure:
+      threshold: ${APP_RATE_LIMIT_LOGIN_FAILURE_THRESHOLD:5}
+      delay-seconds: ${APP_RATE_LIMIT_LOGIN_FAILURE_DELAY_SECONDS:30}
   sync:
     cron: ${APP_SYNC_CRON:0 0 2 * * *}
     freshness-threshold-hours: ${APP_SYNC_FRESHNESS_THRESHOLD_HOURS:12}
