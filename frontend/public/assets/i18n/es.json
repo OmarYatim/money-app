@@ -67,7 +67,76 @@
     }
   },
   "auth": {
-    "signOut": "Cerrar sesión"
+    "authenticatorCode": "Código de autenticación",
+    "confirmAccount": "Confirmar cuenta",
+    "confirming": "Confirmando…",
+    "creatingAccount": "Creando cuenta…",
+    "editSignupDetails": "Editar datos de registro",
+    "email": "Email",
+    "emailConfirmationCode": "Código de confirmación de email",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "legal": "Cifrado bancario · RGPD · ISO 27001",
+    "login": "Iniciar sesión",
+    "password": "Contraseña",
+    "passwordHint": "Usa 12+ caracteres y al menos 3 de: mayúscula, minúscula, número, símbolo.",
+    "phone": "Teléfono",
+    "phoneCountry": "País del teléfono",
+    "phoneNumber": "Número de teléfono",
+    "register": "Crear cuenta",
+    "signOut": "Cerrar sesión",
+    "signingIn": "Iniciando sesión…",
+    "tryAgainSoon": "Inténtalo pronto",
+    "useDifferentAccount": "Usar otra cuenta",
+    "verifying": "Verificando…",
+    "verifyCode": "Verificar código",
+    "errors": {
+      "accountExists": "Ya existe una cuenta con este email.",
+      "checkSignupFields": "Revisa los campos de registro e inténtalo de nuevo.",
+      "completeRequiredFields": "Completa todos los campos obligatorios antes de crear la cuenta.",
+      "enterEmailPassword": "Introduce un email y una contraseña válidos.",
+      "enterValidPhone": "Introduce un teléfono válido para el país seleccionado.",
+      "invalidCredentials": "Email o contraseña inválidos.",
+      "invalidMfaCode": "Código inválido o caducado. Inicia sesión de nuevo si sigue fallando.",
+      "invalidRegisterCode": "Código inválido o caducado. Solicita uno nuevo e inténtalo de nuevo.",
+      "loginFailed": "Error de inicio de sesión. Inténtalo de nuevo.",
+      "registrationFailed": "Error de registro. Inténtalo de nuevo.",
+      "tooManyRequestsLater": "Demasiadas solicitudes. Inténtalo más tarde.",
+      "tooManyRequestsRetry": "Demasiadas solicitudes. Inténtalo de nuevo en {{time}}.",
+      "useStrongerPassword": "Usa una contraseña más segura antes de crear la cuenta."
+    },
+    "hero": {
+      "copy": "Un panel tranquilo para cada cuenta, transacción y objetivo. Nunca tocamos tus credenciales ni movemos dinero. Solo claridad.",
+      "eyebrow": "Solo lectura · Cifrado de extremo a extremo",
+      "titleStart": "Tu dinero,",
+      "titleEm": "tranquilamente",
+      "titleEnd": "en orden.",
+      "features": {
+        "connect": { "title": "Conectar cuentas", "copy": "200+ bancos, un enlace seguro" },
+        "categorize": { "title": "Autocategorizar", "copy": "Cada transacción ordenada al instante" },
+        "netWorth": { "title": "Seguir patrimonio", "copy": "Mira tu situación cada día" },
+        "readOnly": { "title": "Solo lectura por diseño", "copy": "Literalmente no podemos mover dinero" }
+      }
+    },
+    "phoneHint": {
+      "empty": "{{country}}: {{hint}}",
+      "invalid": "Los números de {{country}} deben usar {{hint}}."
+    },
+    "placeholders": {
+      "email": "tu@email.com"
+    },
+    "subtitles": {
+      "confirmEmail": "Enviamos un código de confirmación de 6 dígitos a {{email}}.",
+      "login": "Inicia sesión para ver toda tu imagen financiera.",
+      "mfa": "Usa el código de 6 dígitos de tu app de autenticación para {{email}}.",
+      "register": "Dos minutos para configurar. Sin tarjeta."
+    },
+    "titles": {
+      "confirmEmail": "Confirma tu email.",
+      "mfa": "Introduce tu código.",
+      "startFreeAccount": "Empieza tu cuenta gratis.",
+      "welcomeBack": "Bienvenido de nuevo."
+    }
   },
   "categories": {
     "groceries": "Supermercado",
@@ -200,6 +269,10 @@
     "reconnecting": "Reconectando…"
   },
   "time": {
+    "minute": "{{count}} minuto",
+    "minutes": "{{count}} minutos",
+    "second": "{{count}} segundo",
+    "seconds": "{{count}} segundos",
     "thisMonth": "este mes",
     "today": "Hoy",
     "yesterday": "Ayer"

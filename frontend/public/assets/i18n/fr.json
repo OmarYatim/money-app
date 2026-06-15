@@ -67,7 +67,76 @@
     }
   },
   "auth": {
-    "signOut": "Se déconnecter"
+    "authenticatorCode": "Code d'authentification",
+    "confirmAccount": "Confirmer le compte",
+    "confirming": "Confirmation…",
+    "creatingAccount": "Création du compte…",
+    "editSignupDetails": "Modifier l'inscription",
+    "email": "Email",
+    "emailConfirmationCode": "Code de confirmation email",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "legal": "Chiffrement bancaire · RGPD · ISO 27001",
+    "login": "Se connecter",
+    "password": "Mot de passe",
+    "passwordHint": "Utilisez 12+ caractères et au moins 3 parmi : majuscule, minuscule, chiffre, symbole.",
+    "phone": "Téléphone",
+    "phoneCountry": "Pays du téléphone",
+    "phoneNumber": "Numéro de téléphone",
+    "register": "Créer un compte",
+    "signOut": "Se déconnecter",
+    "signingIn": "Connexion…",
+    "tryAgainSoon": "Réessayez bientôt",
+    "useDifferentAccount": "Utiliser un autre compte",
+    "verifying": "Vérification…",
+    "verifyCode": "Vérifier le code",
+    "errors": {
+      "accountExists": "Un compte avec cet email existe déjà.",
+      "checkSignupFields": "Vérifiez les champs d'inscription et réessayez.",
+      "completeRequiredFields": "Complétez tous les champs obligatoires avant de créer le compte.",
+      "enterEmailPassword": "Saisissez un email et un mot de passe valides.",
+      "enterValidPhone": "Saisissez un numéro de téléphone valide pour le pays sélectionné.",
+      "invalidCredentials": "Email ou mot de passe invalide.",
+      "invalidMfaCode": "Code invalide ou expiré. Reconnectez-vous si le problème persiste.",
+      "invalidRegisterCode": "Code invalide ou expiré. Demandez un nouveau code et réessayez.",
+      "loginFailed": "Échec de connexion. Veuillez réessayer.",
+      "registrationFailed": "Échec d'inscription. Veuillez réessayer.",
+      "tooManyRequestsLater": "Trop de requêtes. Veuillez réessayer plus tard.",
+      "tooManyRequestsRetry": "Trop de requêtes. Veuillez réessayer dans {{time}}.",
+      "useStrongerPassword": "Utilisez un mot de passe plus robuste avant de créer le compte."
+    },
+    "hero": {
+      "copy": "Un tableau de bord apaisé pour chaque compte, transaction et objectif. Nous ne touchons jamais à vos identifiants et ne déplaçons jamais d'argent. Seulement de la clarté.",
+      "eyebrow": "Lecture seule · Chiffré de bout en bout",
+      "titleStart": "Votre argent,",
+      "titleEm": "simplement",
+      "titleEnd": "en ordre.",
+      "features": {
+        "connect": { "title": "Connecter les comptes", "copy": "200+ banques, un lien sécurisé" },
+        "categorize": { "title": "Catégorisation auto", "copy": "Chaque transaction triée instantanément" },
+        "netWorth": { "title": "Suivre le patrimoine", "copy": "Voyez où vous en êtes chaque jour" },
+        "readOnly": { "title": "Lecture seule par design", "copy": "Nous ne pouvons littéralement pas déplacer d'argent" }
+      }
+    },
+    "phoneHint": {
+      "empty": "{{country}} : {{hint}}",
+      "invalid": "Les numéros {{country}} doivent utiliser {{hint}}."
+    },
+    "placeholders": {
+      "email": "vous@email.com"
+    },
+    "subtitles": {
+      "confirmEmail": "Nous avons envoyé un code de confirmation à 6 chiffres à {{email}}.",
+      "login": "Connectez-vous pour voir toute votre situation financière.",
+      "mfa": "Utilisez le code à 6 chiffres de votre application d'authentification pour {{email}}.",
+      "register": "Deux minutes pour démarrer. Aucune carte requise."
+    },
+    "titles": {
+      "confirmEmail": "Confirmez votre email.",
+      "mfa": "Saisissez votre code.",
+      "startFreeAccount": "Créez votre compte gratuit.",
+      "welcomeBack": "Bon retour."
+    }
   },
   "categories": {
     "groceries": "Courses",
@@ -200,6 +269,10 @@
     "reconnecting": "Reconnexion…"
   },
   "time": {
+    "minute": "{{count}} minute",
+    "minutes": "{{count}} minutes",
+    "second": "{{count}} seconde",
+    "seconds": "{{count}} secondes",
     "thisMonth": "ce mois-ci",
     "today": "Aujourd'hui",
     "yesterday": "Hier"

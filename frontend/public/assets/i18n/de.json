@@ -67,7 +67,76 @@
     }
   },
   "auth": {
-    "signOut": "Abmelden"
+    "authenticatorCode": "Authenticator-Code",
+    "confirmAccount": "Konto bestätigen",
+    "confirming": "Wird bestätigt…",
+    "creatingAccount": "Konto wird erstellt…",
+    "editSignupDetails": "Registrierungsdaten bearbeiten",
+    "email": "E-Mail",
+    "emailConfirmationCode": "E-Mail-Bestätigungscode",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "legal": "Bankübliche Verschlüsselung · DSGVO · ISO 27001",
+    "login": "Anmelden",
+    "password": "Passwort",
+    "passwordHint": "Verwenden Sie 12+ Zeichen und mindestens 3 aus: Großbuchstaben, Kleinbuchstaben, Zahl, Symbol.",
+    "phone": "Telefon",
+    "phoneCountry": "Telefonland",
+    "phoneNumber": "Telefonnummer",
+    "register": "Konto erstellen",
+    "signOut": "Abmelden",
+    "signingIn": "Anmeldung…",
+    "tryAgainSoon": "Bald erneut versuchen",
+    "useDifferentAccount": "Anderes Konto verwenden",
+    "verifying": "Wird geprüft…",
+    "verifyCode": "Code prüfen",
+    "errors": {
+      "accountExists": "Mit dieser E-Mail existiert bereits ein Konto.",
+      "checkSignupFields": "Prüfen Sie die Registrierungsfelder und versuchen Sie es erneut.",
+      "completeRequiredFields": "Füllen Sie alle Pflichtfelder aus, bevor Sie das Konto erstellen.",
+      "enterEmailPassword": "Geben Sie eine gültige E-Mail und ein Passwort ein.",
+      "enterValidPhone": "Geben Sie eine gültige Telefonnummer für das ausgewählte Land ein.",
+      "invalidCredentials": "E-Mail oder Passwort ungültig.",
+      "invalidMfaCode": "Code ungültig oder abgelaufen. Melden Sie sich erneut an, falls es weiter fehlschlägt.",
+      "invalidRegisterCode": "Code ungültig oder abgelaufen. Fordern Sie einen neuen Code an und versuchen Sie es erneut.",
+      "loginFailed": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+      "registrationFailed": "Registrierung fehlgeschlagen. Bitte erneut versuchen.",
+      "tooManyRequestsLater": "Zu viele Anfragen. Bitte später erneut versuchen.",
+      "tooManyRequestsRetry": "Zu viele Anfragen. Bitte in {{time}} erneut versuchen.",
+      "useStrongerPassword": "Verwenden Sie ein stärkeres Passwort, bevor Sie das Konto erstellen."
+    },
+    "hero": {
+      "copy": "Ein ruhiges Dashboard für jedes Konto, jede Transaktion und jedes Ziel. Wir berühren nie Ihre Zugangsdaten und bewegen nie Geld. Nur Klarheit.",
+      "eyebrow": "Schreibgeschützt · Ende-zu-Ende verschlüsselt",
+      "titleStart": "Ihr Geld,",
+      "titleEm": "ruhig",
+      "titleEnd": "in Ordnung.",
+      "features": {
+        "connect": { "title": "Konten verbinden", "copy": "200+ Banken, ein sicherer Link" },
+        "categorize": { "title": "Automatisch kategorisieren", "copy": "Jede Transaktion sofort sortiert" },
+        "netWorth": { "title": "Nettovermögen verfolgen", "copy": "Sehen Sie täglich, wo Sie stehen" },
+        "readOnly": { "title": "Schreibgeschützt konzipiert", "copy": "Wir können buchstäblich kein Geld bewegen" }
+      }
+    },
+    "phoneHint": {
+      "empty": "{{country}}: {{hint}}",
+      "invalid": "Nummern aus {{country}} sollten {{hint}} verwenden."
+    },
+    "placeholders": {
+      "email": "sie@email.com"
+    },
+    "subtitles": {
+      "confirmEmail": "Wir haben einen 6-stelligen Bestätigungscode an {{email}} gesendet.",
+      "login": "Melden Sie sich an, um Ihr vollständiges Finanzbild zu sehen.",
+      "mfa": "Verwenden Sie den 6-stelligen Code aus Ihrer Authenticator-App für {{email}}.",
+      "register": "Zwei Minuten Einrichtung. Keine Karte erforderlich."
+    },
+    "titles": {
+      "confirmEmail": "Bestätigen Sie Ihre E-Mail.",
+      "mfa": "Geben Sie Ihren Code ein.",
+      "startFreeAccount": "Starten Sie Ihr kostenloses Konto.",
+      "welcomeBack": "Willkommen zurück."
+    }
   },
   "categories": {
     "groceries": "Lebensmittel",
@@ -200,6 +269,10 @@
     "reconnecting": "Verbindung wird wiederhergestellt…"
   },
   "time": {
+    "minute": "{{count}} Minute",
+    "minutes": "{{count}} Minuten",
+    "second": "{{count}} Sekunde",
+    "seconds": "{{count}} Sekunden",
     "thisMonth": "diesen Monat",
     "today": "Heute",
     "yesterday": "Gestern"
