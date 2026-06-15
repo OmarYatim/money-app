@@ -5,6 +5,90 @@
   "auth": {
     "signOut": "Cerrar sesión"
   },
+  "categories": {
+    "groceries": "Supermercado",
+    "dining": "Restaurantes",
+    "transport": "Transporte",
+    "utilities": "Servicios",
+    "rent": "Alquiler",
+    "health": "Salud",
+    "entertainment": "Ocio",
+    "shopping": "Compras",
+    "travel": "Viajes",
+    "education": "Educación",
+    "income": "Ingresos",
+    "transfer": "Transferencia",
+    "savings": "Ahorro",
+    "subscription": "Suscripción",
+    "other": "Otro"
+  },
+  "common": {
+    "breadcrumb": "Ruta de navegación",
+    "comingSoon": "Próximamente",
+    "details": "Detalles",
+    "refresh": "Actualizar",
+    "retry": "Reintentar",
+    "viewAll": "Ver todo"
+  },
+  "dashboard": {
+    "cashFlow": {
+      "title": "Flujo de caja",
+      "subtitle": "Últimos 30 días · entradas/salidas diarias",
+      "in": "Entradas",
+      "out": "Salidas"
+    },
+    "empty": {
+      "connectFirstBank": "Conecta tu primera cuenta bancaria para empezar.",
+      "goToAccounts": "Ir a cuentas"
+    },
+    "errors": {
+      "openReauth": "No se pudo abrir la reautenticación bancaria.",
+      "refreshSummary": "No se pudo actualizar el resumen del panel."
+    },
+    "goalsSoon": {
+      "copy": "Sigue objetivos de ahorro, importes objetivo y progreso a lo largo del tiempo."
+    },
+    "hero": {
+      "netWorthLive": "Patrimonio neto · en vivo",
+      "twelveMonthEvolution": "Evolución de 12 meses"
+    },
+    "kpi": {
+      "cashAvailable": "Efectivo disponible",
+      "currentBalancesOnly": "Solo saldos actuales",
+      "futureBalance": "Saldo futuro",
+      "afterScheduledDebits": "Después de cargos programados · 30 d",
+      "incomeThisMonth": "Ingresos · este mes",
+      "upVsLastMonth": "↑ vs mes anterior",
+      "expensesThisMonth": "Gastos · este mes",
+      "downVsLastMonth": "↓ vs mes anterior",
+      "todaySpending": "Gasto de hoy",
+      "todayTransactions": "Transacciones de hoy",
+      "savingsRate": "Tasa de ahorro",
+      "incomeKeptThisMonth": "Ingresos conservados este mes"
+    },
+    "recent": {
+      "title": "Actividad reciente",
+      "subtitle": "Últimas transacciones",
+      "seeAllTransactions": "Ver todas las transacciones",
+      "empty": "No hay transacciones recientes"
+    },
+    "spending": {
+      "title": "Desglose de gastos",
+      "subtitle": "Este mes · {{total}} total",
+      "empty": "No hay gastos registrados este mes"
+    },
+    "sync": {
+      "lastSynced": "Última sincronización {{time}}",
+      "never": "Nunca sincronizado",
+      "justNow": "ahora mismo",
+      "minutesAgo": "hace {{count}} min",
+      "oneHourAgo": "hace 1 hora",
+      "hoursAgo": "hace {{count}} horas",
+      "oneConnectionNeedsAction": "Una conexión bancaria requiere atención. Haz clic para reautenticarte.",
+      "connectionsNeedAction": "{{count}} conexiones bancarias requieren atención. Haz clic para reautenticarte.",
+      "lastSyncFailed": "La última sincronización bancaria falló. Haz clic para reconectar y actualizar tus datos."
+    }
+  },
   "language": {
     "selectorLabel": "Idioma",
     "english": "English",
@@ -39,5 +123,13 @@
   },
   "status": {
     "reconnecting": "Reconectando…"
+  },
+  "time": {
+    "thisMonth": "este mes"
+  },
+  "transactions": {
+    "review": {
+      "unreviewed": "Sin revisar"
+    }
   }
 }

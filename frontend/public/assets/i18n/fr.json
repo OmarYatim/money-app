@@ -5,6 +5,90 @@
   "auth": {
     "signOut": "Se déconnecter"
   },
+  "categories": {
+    "groceries": "Courses",
+    "dining": "Restaurants",
+    "transport": "Transport",
+    "utilities": "Charges",
+    "rent": "Loyer",
+    "health": "Santé",
+    "entertainment": "Loisirs",
+    "shopping": "Achats",
+    "travel": "Voyage",
+    "education": "Éducation",
+    "income": "Revenus",
+    "transfer": "Virement",
+    "savings": "Épargne",
+    "subscription": "Abonnement",
+    "other": "Autre"
+  },
+  "common": {
+    "breadcrumb": "Fil d'Ariane",
+    "comingSoon": "Bientôt disponible",
+    "details": "Détails",
+    "refresh": "Actualiser",
+    "retry": "Réessayer",
+    "viewAll": "Tout voir"
+  },
+  "dashboard": {
+    "cashFlow": {
+      "title": "Flux de trésorerie",
+      "subtitle": "30 derniers jours · entrées/sorties quotidiennes",
+      "in": "Entrées",
+      "out": "Sorties"
+    },
+    "empty": {
+      "connectFirstBank": "Connectez votre premier compte bancaire pour commencer.",
+      "goToAccounts": "Aller aux comptes"
+    },
+    "errors": {
+      "openReauth": "Impossible d'ouvrir la réauthentification bancaire.",
+      "refreshSummary": "Impossible d'actualiser le résumé du tableau de bord."
+    },
+    "goalsSoon": {
+      "copy": "Suivez vos objectifs d'épargne, les montants cibles et la progression dans le temps."
+    },
+    "hero": {
+      "netWorthLive": "Patrimoine net · en direct",
+      "twelveMonthEvolution": "Évolution sur 12 mois"
+    },
+    "kpi": {
+      "cashAvailable": "Liquidités disponibles",
+      "currentBalancesOnly": "Soldes actuels uniquement",
+      "futureBalance": "Solde futur",
+      "afterScheduledDebits": "Après débits planifiés · 30 j",
+      "incomeThisMonth": "Revenus · ce mois-ci",
+      "upVsLastMonth": "↑ vs mois dernier",
+      "expensesThisMonth": "Dépenses · ce mois-ci",
+      "downVsLastMonth": "↓ vs mois dernier",
+      "todaySpending": "Dépenses du jour",
+      "todayTransactions": "Transactions du jour",
+      "savingsRate": "Taux d'épargne",
+      "incomeKeptThisMonth": "Revenus conservés ce mois-ci"
+    },
+    "recent": {
+      "title": "Activité récente",
+      "subtitle": "Dernières transactions",
+      "seeAllTransactions": "Voir toutes les transactions",
+      "empty": "Aucune transaction récente"
+    },
+    "spending": {
+      "title": "Répartition des dépenses",
+      "subtitle": "Ce mois-ci · {{total}} au total",
+      "empty": "Aucune dépense enregistrée ce mois-ci"
+    },
+    "sync": {
+      "lastSynced": "Dernière synchro {{time}}",
+      "never": "Jamais synchronisé",
+      "justNow": "à l'instant",
+      "minutesAgo": "il y a {{count}} min",
+      "oneHourAgo": "il y a 1 heure",
+      "hoursAgo": "il y a {{count}} heures",
+      "oneConnectionNeedsAction": "Une connexion bancaire nécessite votre attention. Cliquez pour vous réauthentifier.",
+      "connectionsNeedAction": "{{count}} connexions bancaires nécessitent votre attention. Cliquez pour vous réauthentifier.",
+      "lastSyncFailed": "La dernière synchronisation bancaire a échoué. Cliquez pour vous reconnecter et actualiser vos données."
+    }
+  },
   "language": {
     "selectorLabel": "Langue",
     "english": "English",
@@ -39,5 +123,13 @@
   },
   "status": {
     "reconnecting": "Reconnexion…"
+  },
+  "time": {
+    "thisMonth": "ce mois-ci"
+  },
+  "transactions": {
+    "review": {
+      "unreviewed": "Non vérifiée"
+    }
   }
 }

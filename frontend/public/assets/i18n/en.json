@@ -5,6 +5,90 @@
   "auth": {
     "signOut": "Sign out"
   },
+  "categories": {
+    "groceries": "Groceries",
+    "dining": "Dining",
+    "transport": "Transport",
+    "utilities": "Utilities",
+    "rent": "Rent",
+    "health": "Health",
+    "entertainment": "Entertainment",
+    "shopping": "Shopping",
+    "travel": "Travel",
+    "education": "Education",
+    "income": "Income",
+    "transfer": "Transfer",
+    "savings": "Savings",
+    "subscription": "Subscription",
+    "other": "Other"
+  },
+  "common": {
+    "breadcrumb": "Breadcrumb",
+    "comingSoon": "Coming soon",
+    "details": "Details",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "viewAll": "View all"
+  },
+  "dashboard": {
+    "cashFlow": {
+      "title": "Cash flow",
+      "subtitle": "Last 30 days · daily in/out",
+      "in": "In",
+      "out": "Out"
+    },
+    "empty": {
+      "connectFirstBank": "Connect your first bank account to get started.",
+      "goToAccounts": "Go to accounts"
+    },
+    "errors": {
+      "openReauth": "Unable to open bank re-authentication.",
+      "refreshSummary": "Unable to refresh dashboard summary."
+    },
+    "goalsSoon": {
+      "copy": "Track savings goals, target amounts, and progress over time."
+    },
+    "hero": {
+      "netWorthLive": "Net worth · live",
+      "twelveMonthEvolution": "12-month evolution"
+    },
+    "kpi": {
+      "cashAvailable": "Cash available",
+      "currentBalancesOnly": "Current balances only",
+      "futureBalance": "Future balance",
+      "afterScheduledDebits": "After scheduled debits · 30d",
+      "incomeThisMonth": "Income · this month",
+      "upVsLastMonth": "↑ vs last month",
+      "expensesThisMonth": "Expenses · this month",
+      "downVsLastMonth": "↓ vs last month",
+      "todaySpending": "Today's spending",
+      "todayTransactions": "Today's transactions",
+      "savingsRate": "Savings rate",
+      "incomeKeptThisMonth": "Income kept this month"
+    },
+    "recent": {
+      "title": "Recent activity",
+      "subtitle": "Latest transactions",
+      "seeAllTransactions": "See all transactions",
+      "empty": "No recent transactions"
+    },
+    "spending": {
+      "title": "Spending breakdown",
+      "subtitle": "This month · {{total}} total",
+      "empty": "No expenses recorded this month"
+    },
+    "sync": {
+      "lastSynced": "Last synced {{time}}",
+      "never": "Never synced",
+      "justNow": "just now",
+      "minutesAgo": "{{count}} min ago",
+      "oneHourAgo": "1 hour ago",
+      "hoursAgo": "{{count}} hours ago",
+      "oneConnectionNeedsAction": "One bank connection needs attention. Click to re-authenticate.",
+      "connectionsNeedAction": "{{count}} bank connections need attention. Click to re-authenticate.",
+      "lastSyncFailed": "The last bank sync failed. Click to reconnect and refresh your data."
+    }
+  },
   "language": {
     "selectorLabel": "Language",
     "english": "English",
@@ -39,5 +123,13 @@
   },
   "status": {
     "reconnecting": "Reconnecting…"
+  },
+  "time": {
+    "thisMonth": "this month"
+  },
+  "transactions": {
+    "review": {
+      "unreviewed": "Unreviewed"
+    }
   }
 }

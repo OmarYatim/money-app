@@ -1,22 +1,22 @@
 <div class="dashboard">
   <header class="topbar">
     <div class="topbar__left">
-      <nav class="topbar__crumb" aria-label="Breadcrumb">
+      <nav class="topbar__crumb" [attr.aria-label]="'common.breadcrumb' | translate">
         <span class="material-icons" style="font-size: 12px;">home</span>
-        <span>Workspace</span>
+        <span>{{ 'nav.workspace' | translate }}</span>
         <span class="material-icons" style="font-size: 12px;">chevron_right</span>
-        <span class="topbar__crumb-current">Dashboard</span>
+        <span class="topbar__crumb-current">{{ 'nav.dashboard' | translate }}</span>
       </nav>
-      <h1 class="topbar__title">Dashboard</h1>
+      <h1 class="topbar__title">{{ 'nav.dashboard' | translate }}</h1>
       @if (state().summary) {
-        <p class="topbar__subtitle">Last synced {{ lastSyncedLabel() }}</p>
+        <p class="topbar__subtitle">{{ 'dashboard.sync.lastSynced' | translate:{ time: lastSyncedLabel() } }}</p>
       }
     </div>
     <div class="topbar__right">
       <app-page-actions />
       <button class="topbar__action-btn" type="button" (click)="reloadSummary()">
         <mat-icon aria-hidden="true">refresh</mat-icon>
-        <span>Refresh</span>
+        <span>{{ 'common.refresh' | translate }}</span>
       </button>
     </div>
   </header>
@@ -29,7 +29,7 @@
         </span>
         <span class="sync-banner__content">
           <span class="sync-banner__title">{{ syncBannerText() }}</span>
-          <span class="sync-banner__meta">Last synced {{ lastSyncedLabel() }}</span>
+          <span class="sync-banner__meta">{{ 'dashboard.sync.lastSynced' | translate:{ time: lastSyncedLabel() } }}</span>
         </span>
         <mat-icon class="sync-banner__chevron icon-18" aria-hidden="true">arrow_forward</mat-icon>
       </button>
@@ -52,13 +52,13 @@
     } @else if (state().error) {
       <div class="notice-card">
         <p>{{ state().error }}</p>
-        <button class="btn-ghost" type="button" (click)="reloadSummary()">Retry</button>
+        <button class="btn-ghost" type="button" (click)="reloadSummary()">{{ 'common.retry' | translate }}</button>
       </div>
     } @else if (state().summary; as summary) {
       @if (emptySummary()) {
         <div class="notice-card">
-          <p>Connect your first bank account to get started.</p>
-          <a class="btn-primary" routerLink="/accounts">Go to accounts</a>
+          <p>{{ 'dashboard.empty.connectFirstBank' | translate }}</p>
+          <a class="btn-primary" routerLink="/accounts">{{ 'dashboard.empty.goToAccounts' | translate }}</a>
         </div>
       } @else {
 
@@ -67,7 +67,7 @@
           <div class="hero__left">
             <div class="hero__label">
               <span class="hero__dot"></span>
-              Net worth · live
+              {{ 'dashboard.hero.netWorthLive' | translate }}
             </div>
             <div class="hero__figure">
               <span class="hero__num">{{ netWorthInt() | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
@@ -78,7 +78,7 @@
                 <mat-icon class="icon-14" aria-hidden="true">trending_up</mat-icon>
                 +{{ summary.monthlyIncome | currency: 'EUR' : 'symbol' : '1.0-0' }}
               </span>
-              <span class="hero__delta-time">this month</span>
+              <span class="hero__delta-time">{{ 'time.thisMonth' | translate }}</span>
             </div>
             <div class="hero__accounts-row">
               @for (account of heroAccounts(); track account.label) {
@@ -89,14 +89,14 @@
                 </div>
               }
               <a routerLink="/accounts" class="hero__chip-more">
-                View all <mat-icon class="icon-12" aria-hidden="true">arrow_forward</mat-icon>
+                {{ 'common.viewAll' | translate }} <mat-icon class="icon-12" aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
           </div>
 
           <div class="hero__right">
             <div class="hero__chart-header">
-              <span class="hero__chart-label">12-month evolution</span>
+              <span class="hero__chart-label">{{ 'dashboard.hero.twelveMonthEvolution' | translate }}</span>
               <div class="hero__time-tabs">
                 @for (period of chartPeriods; track period) {
                   <button
@@ -147,50 +147,50 @@
           <div class="kpi">
             <div class="kpi__head">
               <span class="kpi__icon"><mat-icon class="icon-14" aria-hidden="true">account_balance_wallet</mat-icon></span>
-              <span class="kpi__label">Cash available</span>
+              <span class="kpi__label">{{ 'dashboard.kpi.cashAvailable' | translate }}</span>
             </div>
             <div class="kpi__value">{{ cashAvailable() | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
-            <div class="kpi__sub">Current balances only</div>
+            <div class="kpi__sub">{{ 'dashboard.kpi.currentBalancesOnly' | translate }}</div>
           </div>
           <div class="kpi">
             <div class="kpi__head">
               <span class="kpi__icon"><mat-icon class="icon-14" aria-hidden="true">calendar_month</mat-icon></span>
-              <span class="kpi__label">Future balance</span>
+              <span class="kpi__label">{{ 'dashboard.kpi.futureBalance' | translate }}</span>
             </div>
             <div class="kpi__value">{{ summary.futureBalance | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
-            <div class="kpi__sub">After scheduled debits · 30d</div>
+            <div class="kpi__sub">{{ 'dashboard.kpi.afterScheduledDebits' | translate }}</div>
           </div>
           <div class="kpi">
             <div class="kpi__head">
               <span class="kpi__icon kpi__icon--up"><mat-icon class="icon-14" aria-hidden="true">trending_up</mat-icon></span>
-              <span class="kpi__label">Income · this month</span>
+              <span class="kpi__label">{{ 'dashboard.kpi.incomeThisMonth' | translate }}</span>
             </div>
             <div class="kpi__value kpi__value--up">{{ summary.monthlyIncome | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
-            <div class="kpi__sub kpi__sub--up">↑ vs last month</div>
+            <div class="kpi__sub kpi__sub--up">{{ 'dashboard.kpi.upVsLastMonth' | translate }}</div>
           </div>
           <div class="kpi">
             <div class="kpi__head">
               <span class="kpi__icon kpi__icon--down"><mat-icon class="icon-14" aria-hidden="true">trending_down</mat-icon></span>
-              <span class="kpi__label">Expenses · this month</span>
+              <span class="kpi__label">{{ 'dashboard.kpi.expensesThisMonth' | translate }}</span>
             </div>
             <div class="kpi__value kpi__value--down">{{ summary.monthlyExpenses | currency: 'EUR' : 'symbol' : '1.0-0' }}</div>
-            <div class="kpi__sub kpi__sub--down">↓ vs last month</div>
+            <div class="kpi__sub kpi__sub--down">{{ 'dashboard.kpi.downVsLastMonth' | translate }}</div>
           </div>
           <div class="kpi">
             <div class="kpi__head">
               <span class="kpi__icon"><mat-icon class="icon-14" aria-hidden="true">payments</mat-icon></span>
-              <span class="kpi__label">Today's spending</span>
+              <span class="kpi__label">{{ 'dashboard.kpi.todaySpending' | translate }}</span>
             </div>
             <div class="kpi__value">{{ summary.dailySpending | currency: 'EUR' : 'symbol' : '1.2-2' }}</div>
-            <div class="kpi__sub">Today's transactions</div>
+            <div class="kpi__sub">{{ 'dashboard.kpi.todayTransactions' | translate }}</div>
           </div>
           <div class="kpi">
             <div class="kpi__head">
               <span class="kpi__icon kpi__icon--up"><mat-icon class="icon-14" aria-hidden="true">savings</mat-icon></span>
-              <span class="kpi__label">Savings rate</span>
+              <span class="kpi__label">{{ 'dashboard.kpi.savingsRate' | translate }}</span>
             </div>
             <div class="kpi__value">{{ savingsRate() }}%</div>
-            <div class="kpi__sub">Income kept this month</div>
+            <div class="kpi__sub">{{ 'dashboard.kpi.incomeKeptThisMonth' | translate }}</div>
           </div>
         </section>
 
@@ -199,15 +199,15 @@
           <div class="card">
             <div class="card__header">
               <div>
-                <div class="card__title">Cash flow</div>
-                <div class="card__sub">Last 30 days · daily in/out</div>
+                <div class="card__title">{{ 'dashboard.cashFlow.title' | translate }}</div>
+                <div class="card__sub">{{ 'dashboard.cashFlow.subtitle' | translate }}</div>
               </div>
               <div class="legend">
                 <span class="legend__item">
-                  <span class="legend__dot" style="background: #2cad6a"></span> In
+                  <span class="legend__dot" style="background: #2cad6a"></span> {{ 'dashboard.cashFlow.in' | translate }}
                 </span>
                 <span class="legend__item">
-                  <span class="legend__dot" style="background: #c5c7d4"></span> Out
+                  <span class="legend__dot" style="background: #c5c7d4"></span> {{ 'dashboard.cashFlow.out' | translate }}
                 </span>
               </div>
             </div>
@@ -235,15 +235,15 @@
           <div class="card">
             <div class="card__header">
               <div>
-                <div class="card__title">Spending breakdown</div>
-                <div class="card__sub">This month · {{ spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0' }} total</div>
+                <div class="card__title">{{ 'dashboard.spending.title' | translate }}</div>
+                <div class="card__sub">{{ 'dashboard.spending.subtitle' | translate:{ total: (spendingTotal() | currency: 'EUR' : 'symbol' : '1.0-0') } }}</div>
               </div>
               <a routerLink="/transactions" class="card__link">
-                Details <mat-icon class="icon-14" aria-hidden="true">arrow_forward</mat-icon>
+                {{ 'common.details' | translate }} <mat-icon class="icon-14" aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
             @if (spendingData().length === 0) {
-              <div class="spending-empty">No expenses recorded this month</div>
+              <div class="spending-empty">{{ 'dashboard.spending.empty' | translate }}</div>
             } @else {
               <!-- Stacked bar -->
               <div class="spending-bar">
@@ -275,16 +275,16 @@
           <div class="card card--wide">
             <div class="card__header">
               <div>
-                <div class="card__title">Recent activity</div>
-                <div class="card__sub">Latest transactions</div>
+                <div class="card__title">{{ 'dashboard.recent.title' | translate }}</div>
+                <div class="card__sub">{{ 'dashboard.recent.subtitle' | translate }}</div>
               </div>
               <a routerLink="/transactions" class="card__link">
-                See all transactions <mat-icon class="icon-14" aria-hidden="true">arrow_forward</mat-icon>
+                {{ 'dashboard.recent.seeAllTransactions' | translate }} <mat-icon class="icon-14" aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
             <div class="tx-list">
               @if (recentTransactions().length === 0) {
-                <div class="tx-list__empty">No recent transactions</div>
+                <div class="tx-list__empty">{{ 'dashboard.recent.empty' | translate }}</div>
               }
               @for (tx of recentTransactions(); track tx.id) {
                 <a class="tx-row" [routerLink]="['/transactions']" [queryParams]="{ transactionId: tx.id }">
@@ -306,7 +306,7 @@
                       {{ tx.value | currency: 'EUR' : 'symbol' : '1.2-2' }}
                     </span>
                     @if (!tx.reviewed) {
-                      <span class="tx-row__unreviewed" title="Unreviewed"></span>
+                      <span class="tx-row__unreviewed" [title]="'transactions.review.unreviewed' | translate"></span>
                     }
                   </div>
                 </a>
@@ -317,16 +317,16 @@
           <div class="card">
             <div class="card__header">
               <div>
-                <div class="card__title">Goals</div>
-                <div class="card__sub">Coming soon</div>
+                <div class="card__title">{{ 'nav.goals' | translate }}</div>
+                <div class="card__sub">{{ 'common.comingSoon' | translate }}</div>
               </div>
-              <a routerLink="/goals" class="card__icon-link" title="Goals">
+              <a routerLink="/goals" class="card__icon-link" [title]="'nav.goals' | translate">
                 <mat-icon class="icon-15" aria-hidden="true">arrow_forward</mat-icon>
               </a>
             </div>
             <div class="goals-soon">
               <mat-icon class="goals-soon__icon" aria-hidden="true">flag</mat-icon>
-              <p class="goals-soon__text">Track savings goals, target amounts, and progress over time.</p>
+              <p class="goals-soon__text">{{ 'dashboard.goalsSoon.copy' | translate }}</p>
             </div>
           </div>
         </section>
