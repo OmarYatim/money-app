@@ -265,6 +265,49 @@
     "passwordSessions": "Password and sessions",
     "endSession": "End this session"
   },
+  "reports": {
+    "acrossCategories": "{{total}} across {{count}} categories",
+    "categorised": "{{total}} categorised",
+    "dateRange": "Report date range",
+    "errors": { "load": "Unable to load reports." },
+    "fixedFlexible": {
+      "fixedCosts": "Fixed costs",
+      "flexibleSpend": "Flexible spend",
+      "recurringSubs": "Recurring subs"
+    },
+    "fixedVsFlexible": "Fixed vs flexible",
+    "fixedVsFlexibleSub": "Recurring commitments compared with variable spend",
+    "highestSpend": "Highest spend in this period",
+    "incomeKept": "Income kept",
+    "incomeMinusSpending": "Income minus spending",
+    "incomeVersusSpendingChart": "Income versus spending chart",
+    "incomeVsSpending": "Income vs spending",
+    "monthlyCashFlow": "Monthly cash flow",
+    "netFlow": "Net flow",
+    "netKept": "Net kept",
+    "netLineIncluded": "net line included",
+    "noCashFlowData": "No cash flow data for this period.",
+    "noMerchantSpend": "No merchant spend in this period.",
+    "noSpendingData": "No spending data for this period.",
+    "percentOfSpending": "{{percent}}% of spending",
+    "periodSummary": "Period summary",
+    "pointsVsTarget": "{{points}} pts vs target",
+    "ranges": {
+      "month": "This Month",
+      "quarter": "Last 3 Months",
+      "sixMonths": "Last 6 Months",
+      "ytd": "YTD",
+      "year": "Year"
+    },
+    "selectedAccount": "Selected account",
+    "selectedPeriod": "Selected period",
+    "spending": "Spending",
+    "spendingByCategoryChart": "Spending by category chart",
+    "topMerchants": "Top merchants",
+    "totalSpent": "Total spent",
+    "vsGoal": "vs goal · {{goal}}",
+    "whereItGoes": "Where it goes"
+  },
   "status": {
     "reconnecting": "Reconnecting…"
   },

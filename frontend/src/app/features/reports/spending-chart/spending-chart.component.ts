@@ -1,8 +1,10 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import type { ChartData, ChartEvent, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
+import { LanguageService } from '../../../core/i18n/language.service';
 import type { SpendingByCategory } from '../../../shared/models/report.model';
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -25,12 +27,15 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 @Component({
   selector: 'app-spending-chart',
-  imports: [BaseChartDirective, CurrencyPipe],
+  imports: [BaseChartDirective, CurrencyPipe, TranslatePipe],
   templateUrl: './spending-chart.component.html',
   styleUrl: './spending-chart.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SpendingChartComponent {
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
+
   readonly data = input.required<SpendingByCategory[]>();
   readonly categorySelected = output<string>();
 
@@ -62,7 +67,7 @@ export class SpendingChartComponent {
           label: (context) => {
             const label = context.label ?? '';
             const value = Number(context.parsed ?? 0);
-            return `${label}: ${new Intl.NumberFormat('fr-FR', {
+            return `${label}: ${new Intl.NumberFormat(this.dateLocale(), {
               style: 'currency',
               currency: 'EUR',
             }).format(value)}`;
@@ -89,11 +94,12 @@ export class SpendingChartComponent {
   }
 
   protected categoryLabel(category: string): string {
-    return category
-      .toLowerCase()
-      .split('_')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
+    this.languageService.currentLang();
+    return this.translate.instant(`categories.${category.toLowerCase()}`);
+  }
+
+  private dateLocale(): string {
+    return this.languageService.currentLang() === 'en' ? 'en-GB' : this.languageService.currentLang();
   }
 
   private hasChartElementIndex(value: object | undefined): value is { index: number } {

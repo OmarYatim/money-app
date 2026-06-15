@@ -265,6 +265,49 @@
     "passwordSessions": "Mot de passe et sessions",
     "endSession": "Terminer cette session"
   },
+  "reports": {
+    "acrossCategories": "{{total}} sur {{count}} catégories",
+    "categorised": "{{total}} catégorisés",
+    "dateRange": "Plage de dates du rapport",
+    "errors": { "load": "Impossible de charger les rapports." },
+    "fixedFlexible": {
+      "fixedCosts": "Coûts fixes",
+      "flexibleSpend": "Dépenses flexibles",
+      "recurringSubs": "Abonnements récurrents"
+    },
+    "fixedVsFlexible": "Fixe vs flexible",
+    "fixedVsFlexibleSub": "Engagements récurrents comparés aux dépenses variables",
+    "highestSpend": "Plus fortes dépenses sur cette période",
+    "incomeKept": "Revenus conservés",
+    "incomeMinusSpending": "Revenus moins dépenses",
+    "incomeVersusSpendingChart": "Graphique revenus contre dépenses",
+    "incomeVsSpending": "Revenus vs dépenses",
+    "monthlyCashFlow": "Flux mensuel",
+    "netFlow": "Flux net",
+    "netKept": "Net conservé",
+    "netLineIncluded": "ligne nette incluse",
+    "noCashFlowData": "Aucune donnée de flux pour cette période.",
+    "noMerchantSpend": "Aucune dépense marchand sur cette période.",
+    "noSpendingData": "Aucune donnée de dépense pour cette période.",
+    "percentOfSpending": "{{percent}} % des dépenses",
+    "periodSummary": "Résumé de période",
+    "pointsVsTarget": "{{points}} pts vs objectif",
+    "ranges": {
+      "month": "Ce mois-ci",
+      "quarter": "3 derniers mois",
+      "sixMonths": "6 derniers mois",
+      "ytd": "Année à date",
+      "year": "Année"
+    },
+    "selectedAccount": "Compte sélectionné",
+    "selectedPeriod": "Période sélectionnée",
+    "spending": "Dépenses",
+    "spendingByCategoryChart": "Graphique des dépenses par catégorie",
+    "topMerchants": "Principaux marchands",
+    "totalSpent": "Total dépensé",
+    "vsGoal": "vs objectif · {{goal}}",
+    "whereItGoes": "Où va l'argent"
+  },
   "status": {
     "reconnecting": "Reconnexion…"
   },

@@ -265,6 +265,49 @@
     "passwordSessions": "Contraseña y sesiones",
     "endSession": "Finalizar esta sesión"
   },
+  "reports": {
+    "acrossCategories": "{{total}} en {{count}} categorías",
+    "categorised": "{{total}} categorizados",
+    "dateRange": "Rango de fechas del informe",
+    "errors": { "load": "No se pudieron cargar los informes." },
+    "fixedFlexible": {
+      "fixedCosts": "Costes fijos",
+      "flexibleSpend": "Gasto flexible",
+      "recurringSubs": "Suscripciones recurrentes"
+    },
+    "fixedVsFlexible": "Fijo vs flexible",
+    "fixedVsFlexibleSub": "Compromisos recurrentes comparados con gasto variable",
+    "highestSpend": "Mayor gasto en este periodo",
+    "incomeKept": "Ingresos conservados",
+    "incomeMinusSpending": "Ingresos menos gastos",
+    "incomeVersusSpendingChart": "Gráfico ingresos frente a gastos",
+    "incomeVsSpending": "Ingresos vs gastos",
+    "monthlyCashFlow": "Flujo mensual",
+    "netFlow": "Flujo neto",
+    "netKept": "Neto conservado",
+    "netLineIncluded": "línea neta incluida",
+    "noCashFlowData": "No hay datos de flujo para este periodo.",
+    "noMerchantSpend": "No hay gasto por comercio en este periodo.",
+    "noSpendingData": "No hay datos de gasto para este periodo.",
+    "percentOfSpending": "{{percent}} % del gasto",
+    "periodSummary": "Resumen del periodo",
+    "pointsVsTarget": "{{points}} pts vs objetivo",
+    "ranges": {
+      "month": "Este mes",
+      "quarter": "Últimos 3 meses",
+      "sixMonths": "Últimos 6 meses",
+      "ytd": "Año hasta hoy",
+      "year": "Año"
+    },
+    "selectedAccount": "Cuenta seleccionada",
+    "selectedPeriod": "Periodo seleccionado",
+    "spending": "Gasto",
+    "spendingByCategoryChart": "Gráfico de gasto por categoría",
+    "topMerchants": "Principales comercios",
+    "totalSpent": "Total gastado",
+    "vsGoal": "vs objetivo · {{goal}}",
+    "whereItGoes": "Dónde va"
+  },
   "status": {
     "reconnecting": "Reconectando…"
   },

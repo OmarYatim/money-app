@@ -265,6 +265,49 @@
     "passwordSessions": "Passwort und Sitzungen",
     "endSession": "Diese Sitzung beenden"
   },
+  "reports": {
+    "acrossCategories": "{{total}} über {{count}} Kategorien",
+    "categorised": "{{total}} kategorisiert",
+    "dateRange": "Berichtszeitraum",
+    "errors": { "load": "Berichte konnten nicht geladen werden." },
+    "fixedFlexible": {
+      "fixedCosts": "Fixkosten",
+      "flexibleSpend": "Flexible Ausgaben",
+      "recurringSubs": "Wiederkehrende Abos"
+    },
+    "fixedVsFlexible": "Fix vs flexibel",
+    "fixedVsFlexibleSub": "Wiederkehrende Verpflichtungen im Vergleich zu variablen Ausgaben",
+    "highestSpend": "Höchste Ausgaben in diesem Zeitraum",
+    "incomeKept": "Behaltenes Einkommen",
+    "incomeMinusSpending": "Einnahmen minus Ausgaben",
+    "incomeVersusSpendingChart": "Diagramm Einnahmen gegen Ausgaben",
+    "incomeVsSpending": "Einnahmen vs Ausgaben",
+    "monthlyCashFlow": "Monatlicher Cashflow",
+    "netFlow": "Nettofluss",
+    "netKept": "Netto behalten",
+    "netLineIncluded": "Nettolinie enthalten",
+    "noCashFlowData": "Keine Cashflow-Daten für diesen Zeitraum.",
+    "noMerchantSpend": "Keine Händlerausgaben in diesem Zeitraum.",
+    "noSpendingData": "Keine Ausgabendaten für diesen Zeitraum.",
+    "percentOfSpending": "{{percent}} % der Ausgaben",
+    "periodSummary": "Zeitraumübersicht",
+    "pointsVsTarget": "{{points}} Pkt. ggü. Ziel",
+    "ranges": {
+      "month": "Dieser Monat",
+      "quarter": "Letzte 3 Monate",
+      "sixMonths": "Letzte 6 Monate",
+      "ytd": "Jahr bis heute",
+      "year": "Jahr"
+    },
+    "selectedAccount": "Ausgewähltes Konto",
+    "selectedPeriod": "Ausgewählter Zeitraum",
+    "spending": "Ausgaben",
+    "spendingByCategoryChart": "Diagramm Ausgaben nach Kategorie",
+    "topMerchants": "Top-Händler",
+    "totalSpent": "Gesamt ausgegeben",
+    "vsGoal": "ggü. Ziel · {{goal}}",
+    "whereItGoes": "Wohin es geht"
+  },
   "status": {
     "reconnecting": "Verbindung wird wiederhergestellt…"
   },
