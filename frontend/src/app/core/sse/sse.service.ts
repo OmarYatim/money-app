@@ -10,6 +10,7 @@ import type { SseConnectionStatus, SseEventType } from '../../shared/models/sse-
 const MAX_RECONNECT_ATTEMPTS = 5;
 const INITIAL_RECONNECT_DELAY_MS = 1000;
 const MAX_RECONNECT_DELAY_MS = 16000;
+const HEARTBEAT_TIMEOUT_MS = 45000;
 
 @Injectable({ providedIn: 'root' })
 export class SseService {
@@ -22,6 +23,7 @@ export class SseService {
 
   private eventSource: EventSource | null = null;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
+  private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
   private activeToken: string | null = null;
 
@@ -41,6 +43,7 @@ export class SseService {
     this.activeToken = null;
     this.reconnectAttempts = 0;
     this.clearReconnectTimer();
+    this.clearHeartbeatTimer();
     this.closeEventSource();
     this.connectionStatus.set('idle');
   }
@@ -57,6 +60,7 @@ export class SseService {
     source.onopen = () => {
       this.zone.run(() => {
         this.reconnectAttempts = 0;
+        this.scheduleHeartbeatTimeout();
         this.connectionStatus.set('connected');
       });
     };
@@ -67,8 +71,12 @@ export class SseService {
     source.addEventListener('CONNECTED', () => {
       this.zone.run(() => {
         this.reconnectAttempts = 0;
+        this.scheduleHeartbeatTimeout();
         this.connectionStatus.set('connected');
       });
+    });
+    source.addEventListener('HEARTBEAT', () => {
+      this.zone.run(() => this.scheduleHeartbeatTimeout());
     });
     source.addEventListener('ACCOUNTS_UPDATED', () => {
       this.zone.run(() => this.handleEvent('ACCOUNTS_UPDATED'));
@@ -79,6 +87,7 @@ export class SseService {
   }
 
   private handleEvent(eventType: SseEventType): void {
+    this.scheduleHeartbeatTimeout();
     this.eventsSubject.next(eventType);
     this.dashboardService.notifySummaryUpdated();
 
@@ -91,6 +100,7 @@ export class SseService {
   }
 
   private scheduleReconnect(): void {
+    this.clearHeartbeatTimer();
     if (this.activeToken === null) {
       this.disconnect();
       return;
@@ -119,6 +129,17 @@ export class SseService {
     this.eventSource = null;
   }
 
+  private scheduleHeartbeatTimeout(): void {
+    this.clearHeartbeatTimer();
+    if (this.activeToken === null) {
+      return;
+    }
+
+    this.heartbeatTimer = setTimeout(() => {
+      this.zone.run(() => this.scheduleReconnect());
+    }, HEARTBEAT_TIMEOUT_MS);
+  }
+
   private clearReconnectTimer(): void {
     if (this.reconnectTimer === null) {
       return;
@@ -126,6 +147,15 @@ export class SseService {
 
     clearTimeout(this.reconnectTimer);
     this.reconnectTimer = null;
+  }
+
+  private clearHeartbeatTimer(): void {
+    if (this.heartbeatTimer === null) {
+      return;
+    }
+
+    clearTimeout(this.heartbeatTimer);
+    this.heartbeatTimer = null;
   }
 
   private streamUrl(token: string): string {

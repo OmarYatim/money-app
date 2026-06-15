@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -57,6 +58,16 @@ public class SseEmitterService {
   public void emitDataUpdated(Long userId) {
     emit(userId, StreamEventType.ACCOUNTS_UPDATED);
     emit(userId, StreamEventType.TRANSACTIONS_UPDATED);
+  }
+
+  @Scheduled(fixedDelay = 15000)
+  public void emitHeartbeat() {
+    emittersByUser.forEach(
+        (userId, emitters) ->
+            emitters.forEach(
+                emitter ->
+                    sendOrRemove(
+                        userId, emitter, StreamEventType.HEARTBEAT, Instant.now().toString())));
   }
 
   void emit(Long userId, StreamEventType eventType) {
