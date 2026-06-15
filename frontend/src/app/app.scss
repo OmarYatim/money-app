@@ -427,3 +427,33 @@
     block-size: 17px;
   }
 }
+
+.sse-status {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(217, 152, 56, 0.22);
+  padding: 8px 18px;
+  background: var(--amber-100);
+  color: var(--ink-800);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sse-status__icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 7px;
+  inline-size: 26px;
+  block-size: 26px;
+  background: rgba(217, 152, 56, 0.16);
+  color: var(--amber-500);
+
+  mat-icon {
+    font-size: 16px;
+    inline-size: 16px;
+    block-size: 16px;
+  }
+}

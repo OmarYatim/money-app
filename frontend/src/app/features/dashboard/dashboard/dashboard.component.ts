@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
-import { catchError, concat, firstValueFrom, map, of, startWith, Subject, switchMap, timer } from 'rxjs';
+import { catchError, concat, exhaustMap, firstValueFrom, map, merge, of, startWith, Subject, switchMap, timer } from 'rxjs';
 import type { Observable } from 'rxjs';
 
 import type { Account } from '../../../shared/models/account.model';
@@ -58,9 +58,9 @@ export class DashboardComponent {
   protected readonly syncActionError = signal<string | null>(null);
 
   protected readonly state = toSignal(
-    this.refreshSummary$.pipe(
+    merge(this.refreshSummary$, this.dashboardService.summaryUpdated$).pipe(
       startWith(false),
-      switchMap((syncFirst) =>
+      exhaustMap((syncFirst) =>
         concat(
           of({ summary: null, loading: true, error: null }),
           this.loadSummary(syncFirst).pipe(
@@ -74,25 +74,36 @@ export class DashboardComponent {
   );
 
   protected readonly recentTransactions = toSignal(
-    this.transactionService.getTransactions({ size: 6 }).pipe(
-      map((page) => page.content),
-      catchError(() => of([] as Transaction[])),
+    this.transactionService.transactionsUpdated$.pipe(
+      startWith(undefined),
+      switchMap(() =>
+        this.transactionService.getTransactions({ size: 6 }).pipe(
+          map((page) => page.content),
+          catchError(() => of([] as Transaction[])),
+        ),
+      ),
     ),
     { initialValue: [] as Transaction[] },
   );
   protected readonly accounts = toSignal(
-    this.accountService.getAccounts().pipe(catchError(() => of([] as Account[]))),
+    this.accountService.accountsUpdated$.pipe(
+      startWith(undefined),
+      switchMap(() => this.accountService.getAccounts().pipe(catchError(() => of([] as Account[])))),
+    ),
     { initialValue: [] as Account[] },
   );
   protected readonly syncStatus = toSignal(
-    timer(0, 60000).pipe(
+    merge(timer(0, 60000), this.accountService.accountsUpdated$, this.transactionService.transactionsUpdated$).pipe(
       switchMap(() => this.accountService.getSyncStatus()),
       catchError(() => of(EMPTY_SYNC_STATUS)),
     ),
     { initialValue: EMPTY_SYNC_STATUS },
   );
   protected readonly chartTransactions = toSignal(
-    this.loadChartTransactions().pipe(catchError(() => of([] as Transaction[]))),
+    this.transactionService.transactionsUpdated$.pipe(
+      startWith(undefined),
+      switchMap(() => this.loadChartTransactions().pipe(catchError(() => of([] as Transaction[])))),
+    ),
     { initialValue: [] as Transaction[] },
   );
 

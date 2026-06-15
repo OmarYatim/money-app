@@ -14,6 +14,7 @@ import com.moneyapp.backend.banking.dto.SyncStatusResponse;
 import com.moneyapp.backend.banking.repository.UserConnectionRepository;
 import com.moneyapp.backend.goals.service.GoalService;
 import com.moneyapp.backend.reports.service.NetWorthSnapshotService;
+import com.moneyapp.backend.stream.service.SseEmitterService;
 import com.moneyapp.backend.sync.repository.SyncEventRepository;
 import com.moneyapp.backend.sync.service.DataSyncService;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
@@ -105,7 +106,8 @@ class ConnectionStatusServiceTest {
             transactionService,
             new ConcurrentTaskScheduler(),
             netWorthSnapshotService,
-            goalService);
+            goalService,
+            new SseEmitterService());
     ConnectionStatusService service =
         new ConnectionStatusService(
             currentAppUserService,

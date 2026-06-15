@@ -15,11 +15,13 @@ import {
   RegisterRequest,
   RegisterVerificationRequest,
 } from '../../shared/models/auth.model';
+import { SseService } from '../sse/sse.service';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
+  private readonly sseService = inject(SseService);
   private readonly apiBaseUrl = environment.apiBaseUrl;
   private refreshRequest$: Observable<AuthenticatedResponse> | null = null;
 
@@ -120,11 +122,13 @@ export class AuthService {
   clearSession(): void {
     this.accessToken.set(null);
     this.currentEmail.set(null);
+    this.sseService.disconnect();
     this.router.navigate(['/login']);
   }
 
   private storeTokens(res: AuthenticatedResponse): void {
     this.accessToken.set(res.accessToken);
     this.currentEmail.set(res.email);
+    this.sseService.connectWithToken(res.accessToken);
   }
 }

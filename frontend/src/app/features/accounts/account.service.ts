@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 
 import { environment } from '../../../environments/environment';
 import type { Account } from '../../shared/models/account.model';
@@ -11,6 +11,9 @@ import type { SyncStatus } from '../../shared/models/sync-status.model';
 export class AccountService {
   private readonly http = inject(HttpClient);
   private readonly apiBaseUrl = environment.apiBaseUrl;
+  private readonly accountsUpdatedSubject = new Subject<void>();
+
+  readonly accountsUpdated$ = this.accountsUpdatedSubject.asObservable();
 
   connectBank(): Observable<BankConnectResponse> {
     return this.http.get<BankConnectResponse>(`${this.apiBaseUrl}/api/bank/connect`);
@@ -37,5 +40,9 @@ export class AccountService {
 
   getSyncStatus(): Observable<SyncStatus> {
     return this.http.get<SyncStatus>(`${this.apiBaseUrl}/api/sync/status`);
+  }
+
+  notifyAccountsUpdated(): void {
+    this.accountsUpdatedSubject.next();
   }
 }
