@@ -9,5 +9,5 @@
   <span class="connect-btn__icon">
     <span class="material-icons" aria-hidden="true">{{ icon() }}</span>
   </span>
-  <span>{{ loading() ? loadingLabel() : label() }}</span>
+  <span>{{ (loading() ? loadingLabelKey() : labelKey()) | translate }}</span>
 </button>

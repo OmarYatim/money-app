@@ -2,6 +2,70 @@
   "app": {
     "tagline": "Personal Finance"
   },
+  "accountTypes": {
+    "account": "account",
+    "checking": "Checking",
+    "savings": "Savings",
+    "credit": "Credit",
+    "investment": "Investments"
+  },
+  "accounts": {
+    "accountOptions": "Account options",
+    "bank": "Bank",
+    "connectAnotherBank": "Connect another bank",
+    "connectBank": "Connect a bank",
+    "connectedCount": "{{count}} connected",
+    "connecting": "Connecting…",
+    "connectionNeedsAttention": "One of your bank connections needs attention. Click to re-authenticate.",
+    "currencyAccount": "{{currency}} account",
+    "disconnect": "Disconnect",
+    "disconnecting": "Disconnecting…",
+    "disconnectInstitution": "Disconnect {{institution}}",
+    "ending": "ending {{lastFour}}",
+    "renameAccount": "Rename account",
+    "synced": "Synced",
+    "viewActivity": "View activity",
+    "viewTransactions": "View transactions",
+    "connectedBanks": {
+      "title": "Connected banks",
+      "subtitle": "{{count}} bank(s) linked · disconnect any time",
+      "accountCountSynced": "{{count}} account(s) · synced"
+    },
+    "disconnectDialog": {
+      "title": "Disconnect {{institution}}?",
+      "copy": "Choose what should happen to the local data linked to this bank connection.",
+      "keepHistoryTitle": "Keep transaction history",
+      "keepHistoryCopy": "Past transactions will remain visible but will no longer be updated.",
+      "deleteDataTitle": "Delete all associated data",
+      "deleteDataCopy": "Accounts and all transactions from this bank will be permanently deleted."
+    },
+    "empty": {
+      "noConnectedAccounts": "No connected accounts yet. Connect your first bank to get started."
+    },
+    "errors": {
+      "disconnect": "Unable to disconnect this bank connection.",
+      "loadConnected": "Unable to load connected accounts.",
+      "openConnection": "Unable to open bank connection.",
+      "rename": "Unable to rename this account.",
+      "startConnection": "Unable to start bank connection."
+    },
+    "filters": {
+      "allAccounts": "All accounts"
+    },
+    "messages": {
+      "disconnected": "Bank connection disconnected.",
+      "refreshed": "Accounts refreshed.",
+      "renamed": "Account renamed.",
+      "useConnectToReauth": "Use Connect a bank to re-authenticate the connection."
+    },
+    "summary": {
+      "connections": "Connections",
+      "healthyCount": "{{healthy}}/{{total}} healthy",
+      "netWorth": "Net worth",
+      "totalAssets": "Total assets",
+      "totalLiabilities": "Total liabilities"
+    }
+  },
   "auth": {
     "signOut": "Sign out"
   },
@@ -24,8 +88,10 @@
   },
   "common": {
     "breadcrumb": "Breadcrumb",
+    "cancel": "Cancel",
     "comingSoon": "Coming soon",
     "details": "Details",
+    "dismiss": "Dismiss",
     "refresh": "Refresh",
     "retry": "Retry",
     "viewAll": "View all"

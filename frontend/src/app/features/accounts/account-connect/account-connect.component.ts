@@ -9,19 +9,20 @@ import {
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AccountService } from '../account.service';
 
 @Component({
   selector: 'app-account-connect',
-  imports: [],
+  imports: [TranslatePipe],
   templateUrl: './account-connect.component.html',
   styleUrl: './account-connect.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AccountConnectComponent {
-  readonly label = input('Connect a bank');
-  readonly loadingLabel = input('Connecting…');
+  readonly labelKey = input('accounts.connectBank');
+  readonly loadingLabelKey = input('accounts.connecting');
   readonly icon = input('add_card');
   readonly variant = input<'button' | 'card'>('button');
   readonly connected = output<void>();
@@ -31,6 +32,7 @@ export class AccountConnectComponent {
   private readonly accountService = inject(AccountService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly translate = inject(TranslateService);
 
   connect(): void {
     if (this.loading()) {
@@ -49,17 +51,21 @@ export class AccountConnectComponent {
             window.setTimeout(() => this.loading.set(false), 3000);
           } catch {
             this.loading.set(false);
-            this.snackBar.open('Unable to open bank connection.', 'Dismiss', {
+            this.snackBar.open(this.t('accounts.errors.openConnection'), this.t('common.dismiss'), {
               duration: 5000,
             });
           }
         },
         error: () => {
           this.loading.set(false);
-          this.snackBar.open('Unable to start bank connection.', 'Dismiss', {
+          this.snackBar.open(this.t('accounts.errors.startConnection'), this.t('common.dismiss'), {
             duration: 5000,
           });
         },
       });
+  }
+
+  private t(key: string): string {
+    return this.translate.instant(key);
   }
 }

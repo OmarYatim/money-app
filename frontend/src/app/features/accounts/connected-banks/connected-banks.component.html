@@ -1,9 +1,9 @@
 <section class="connected-banks">
   <div class="connected-banks__header">
     <div>
-      <h2 class="connected-banks__title">Connected banks</h2>
+      <h2 class="connected-banks__title">{{ 'accounts.connectedBanks.title' | translate }}</h2>
       <p class="connected-banks__subtitle">
-        {{ bankGroups().length }} bank{{ bankGroups().length === 1 ? '' : 's' }} linked · disconnect any time
+        {{ 'accounts.connectedBanks.subtitle' | translate:{ count: bankGroups().length } }}
       </p>
     </div>
   </div>
@@ -15,7 +15,7 @@
         <div class="connected-banks__details">
           <div class="connected-banks__name">{{ group.institutionName }}</div>
           <div class="connected-banks__meta">
-            {{ group.accounts.length }} account{{ group.accounts.length === 1 ? '' : 's' }} · synced
+            {{ 'accounts.connectedBanks.accountCountSynced' | translate:{ count: group.accounts.length } }}
           </div>
         </div>
         <span
@@ -32,7 +32,7 @@
         >
           <mat-icon aria-hidden="true">link_off</mat-icon>
           <span>
-            {{ disconnectingConnectionId() === group.connectionId ? 'Disconnecting…' : 'Disconnect' }}
+            {{ (disconnectingConnectionId() === group.connectionId ? 'accounts.disconnecting' : 'accounts.disconnect') | translate }}
           </span>
         </button>
       </div>

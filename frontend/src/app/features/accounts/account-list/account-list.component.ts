@@ -12,10 +12,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { catchError, finalize, forkJoin, map, merge, of, startWith, Subject, switchMap } from 'rxjs';
 
 import type { Account } from '../../../shared/models/account.model';
 import type { SyncStatus } from '../../../shared/models/sync-status.model';
+import { LanguageService } from '../../../core/i18n/language.service';
 import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
 import { AccountConnectComponent } from '../account-connect/account-connect.component';
 import { AccountService } from '../account.service';
@@ -37,6 +39,12 @@ interface AccountListState {
   error: string | null;
 }
 
+interface AccountTypeTab {
+  readonly id: string;
+  readonly labelKey: string;
+  readonly count: (accounts: Account[]) => number;
+}
+
 const EMPTY_SYNC_STATUS: SyncStatus = {
   lastSyncedAt: null,
   connectionsRequiringAction: [],
@@ -50,6 +58,7 @@ const EMPTY_SYNC_STATUS: SyncStatus = {
     MatIconModule,
     MatProgressSpinnerModule,
     RouterLink,
+    TranslatePipe,
     PageActionsComponent,
     AccountConnectComponent,
     ConnectedBanksComponent,
@@ -62,6 +71,8 @@ export class AccountListComponent {
   private readonly accountService = inject(AccountService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly snackBar = inject(MatSnackBar);
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
   private readonly refreshAccounts$ = new Subject<void>();
 
   protected readonly filterType = signal<string>('all');
@@ -73,26 +84,26 @@ export class AccountListComponent {
   protected readonly openAccountMenuId = signal<number | null>(null);
   protected readonly renameDraft = signal('');
 
-  protected readonly accountTypeTabs = [
-    { id: 'all', label: 'All accounts', count: (a: Account[]) => a.length },
+  protected readonly accountTypeTabs: readonly AccountTypeTab[] = [
+    { id: 'all', labelKey: 'accounts.filters.allAccounts', count: (a: Account[]) => a.length },
     {
       id: 'checking',
-      label: 'Checking',
+      labelKey: 'accountTypes.checking',
       count: (a: Account[]) => a.filter((x) => (x.type ?? '').toLowerCase() === 'checking').length,
     },
     {
       id: 'savings',
-      label: 'Savings',
+      labelKey: 'accountTypes.savings',
       count: (a: Account[]) => a.filter((x) => (x.type ?? '').toLowerCase() === 'savings').length,
     },
     {
       id: 'credit',
-      label: 'Credit',
+      labelKey: 'accountTypes.credit',
       count: (a: Account[]) => a.filter((x) => (x.type ?? '').toLowerCase() === 'credit').length,
     },
     {
       id: 'investment',
-      label: 'Investments',
+      labelKey: 'accountTypes.investment',
       count: (a: Account[]) =>
         a.filter((x) => (x.type ?? '').toLowerCase() === 'investment').length,
     },
@@ -119,7 +130,7 @@ export class AccountListComponent {
               accounts: [],
               syncStatus: EMPTY_SYNC_STATUS,
               loading: false,
-              error: 'Unable to load connected accounts.',
+              error: this.t('accounts.errors.loadConnected'),
             }),
           ),
         ),
@@ -211,7 +222,7 @@ export class AccountListComponent {
 
   protected reloadAccounts(): void {
     this.refreshAccounts$.next();
-    this.snackBar.open('Accounts refreshed.', 'Dismiss', {
+    this.snackBar.open(this.t('accounts.messages.refreshed'), this.t('common.dismiss'), {
       duration: 3000,
     });
   }
@@ -222,6 +233,11 @@ export class AccountListComponent {
 
   protected accountLastFour(account: Account): string {
     return account.accountNumberLastFour ?? '----';
+  }
+
+  protected accountTypeLabel(type: string | null): string {
+    this.languageService.currentLang();
+    return this.t(`accountTypes.${(type ?? 'account').toLowerCase()}`);
   }
 
   protected toggleAccountMenu(accountId: number): void {
@@ -263,12 +279,12 @@ export class AccountListComponent {
       .subscribe({
         next: () => {
           this.refreshAccounts$.next();
-          this.snackBar.open('Account renamed.', 'Dismiss', {
+          this.snackBar.open(this.t('accounts.messages.renamed'), this.t('common.dismiss'), {
             duration: 3000,
           });
         },
         error: () => {
-          this.snackBar.open('Unable to rename this account.', 'Dismiss', {
+          this.snackBar.open(this.t('accounts.errors.rename'), this.t('common.dismiss'), {
             duration: 5000,
           });
         },
@@ -291,8 +307,8 @@ export class AccountListComponent {
 
   protected reconnect(): void {
     this.snackBar.open(
-      'Use Connect a bank to re-authenticate the connection.',
-      'Dismiss',
+      this.t('accounts.messages.useConnectToReauth'),
+      this.t('common.dismiss'),
       { duration: 5000 },
     );
   }
@@ -343,12 +359,12 @@ export class AccountListComponent {
         next: () => {
           this.disconnectDialog.set(null);
           this.refreshAccounts$.next();
-          this.snackBar.open('Bank connection disconnected.', 'Dismiss', {
+          this.snackBar.open(this.t('accounts.messages.disconnected'), this.t('common.dismiss'), {
             duration: 4000,
           });
         },
         error: () => {
-          this.snackBar.open('Unable to disconnect this bank connection.', 'Dismiss', {
+          this.snackBar.open(this.t('accounts.errors.disconnect'), this.t('common.dismiss'), {
             duration: 5000,
           });
         },
@@ -359,5 +375,9 @@ export class AccountListComponent {
     return account.connectionId === null
       ? `account-${account.id}`
       : `connection-${account.connectionId}`;
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params);
   }
 }

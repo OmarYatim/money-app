@@ -2,6 +2,70 @@
   "app": {
     "tagline": "Finanzas personales"
   },
+  "accountTypes": {
+    "account": "cuenta",
+    "checking": "Corriente",
+    "savings": "Ahorro",
+    "credit": "Crédito",
+    "investment": "Inversiones"
+  },
+  "accounts": {
+    "accountOptions": "Opciones de cuenta",
+    "bank": "Banco",
+    "connectAnotherBank": "Conectar otro banco",
+    "connectBank": "Conectar un banco",
+    "connectedCount": "{{count}} conectadas",
+    "connecting": "Conectando…",
+    "connectionNeedsAttention": "Una de tus conexiones bancarias requiere atención. Haz clic para reautenticarte.",
+    "currencyAccount": "Cuenta {{currency}}",
+    "disconnect": "Desconectar",
+    "disconnecting": "Desconectando…",
+    "disconnectInstitution": "Desconectar {{institution}}",
+    "ending": "terminada en {{lastFour}}",
+    "renameAccount": "Renombrar cuenta",
+    "synced": "Sincronizada",
+    "viewActivity": "Ver actividad",
+    "viewTransactions": "Ver transacciones",
+    "connectedBanks": {
+      "title": "Bancos conectados",
+      "subtitle": "{{count}} banco(s) vinculado(s) · desconecta cuando quieras",
+      "accountCountSynced": "{{count}} cuenta(s) · sincronizada(s)"
+    },
+    "disconnectDialog": {
+      "title": "¿Desconectar {{institution}}?",
+      "copy": "Elige qué debe ocurrir con los datos locales vinculados a esta conexión bancaria.",
+      "keepHistoryTitle": "Conservar historial de transacciones",
+      "keepHistoryCopy": "Las transacciones pasadas seguirán visibles, pero ya no se actualizarán.",
+      "deleteDataTitle": "Eliminar todos los datos asociados",
+      "deleteDataCopy": "Las cuentas y todas las transacciones de este banco se eliminarán permanentemente."
+    },
+    "empty": {
+      "noConnectedAccounts": "Aún no hay cuentas conectadas. Conecta tu primer banco para empezar."
+    },
+    "errors": {
+      "disconnect": "No se pudo desconectar esta conexión bancaria.",
+      "loadConnected": "No se pudieron cargar las cuentas conectadas.",
+      "openConnection": "No se pudo abrir la conexión bancaria.",
+      "rename": "No se pudo renombrar esta cuenta.",
+      "startConnection": "No se pudo iniciar la conexión bancaria."
+    },
+    "filters": {
+      "allAccounts": "Todas las cuentas"
+    },
+    "messages": {
+      "disconnected": "Conexión bancaria desconectada.",
+      "refreshed": "Cuentas actualizadas.",
+      "renamed": "Cuenta renombrada.",
+      "useConnectToReauth": "Usa Conectar un banco para reautenticar la conexión."
+    },
+    "summary": {
+      "connections": "Conexiones",
+      "healthyCount": "{{healthy}}/{{total}} correctas",
+      "netWorth": "Patrimonio neto",
+      "totalAssets": "Activos totales",
+      "totalLiabilities": "Pasivos totales"
+    }
+  },
   "auth": {
     "signOut": "Cerrar sesión"
   },
@@ -24,8 +88,10 @@
   },
   "common": {
     "breadcrumb": "Ruta de navegación",
+    "cancel": "Cancelar",
     "comingSoon": "Próximamente",
     "details": "Detalles",
+    "dismiss": "Cerrar",
     "refresh": "Actualizar",
     "retry": "Reintentar",
     "viewAll": "Ver todo"

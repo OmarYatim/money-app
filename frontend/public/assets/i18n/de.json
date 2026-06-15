@@ -2,6 +2,70 @@
   "app": {
     "tagline": "Persönliche Finanzen"
   },
+  "accountTypes": {
+    "account": "Konto",
+    "checking": "Girokonto",
+    "savings": "Sparkonto",
+    "credit": "Kredit",
+    "investment": "Investments"
+  },
+  "accounts": {
+    "accountOptions": "Kontooptionen",
+    "bank": "Bank",
+    "connectAnotherBank": "Weitere Bank verbinden",
+    "connectBank": "Bank verbinden",
+    "connectedCount": "{{count}} verbunden",
+    "connecting": "Verbindung wird hergestellt…",
+    "connectionNeedsAttention": "Eine Ihrer Bankverbindungen benötigt Aufmerksamkeit. Klicken Sie, um sich erneut zu authentifizieren.",
+    "currencyAccount": "{{currency}}-Konto",
+    "disconnect": "Trennen",
+    "disconnecting": "Wird getrennt…",
+    "disconnectInstitution": "{{institution}} trennen",
+    "ending": "endet auf {{lastFour}}",
+    "renameAccount": "Konto umbenennen",
+    "synced": "Synchronisiert",
+    "viewActivity": "Aktivität anzeigen",
+    "viewTransactions": "Transaktionen anzeigen",
+    "connectedBanks": {
+      "title": "Verbundene Banken",
+      "subtitle": "{{count}} Bank(en) verbunden · jederzeit trennbar",
+      "accountCountSynced": "{{count}} Konto/Konten · synchronisiert"
+    },
+    "disconnectDialog": {
+      "title": "{{institution}} trennen?",
+      "copy": "Wählen Sie, was mit den lokalen Daten dieser Bankverbindung geschehen soll.",
+      "keepHistoryTitle": "Transaktionshistorie behalten",
+      "keepHistoryCopy": "Vergangene Transaktionen bleiben sichtbar, werden aber nicht mehr aktualisiert.",
+      "deleteDataTitle": "Alle zugehörigen Daten löschen",
+      "deleteDataCopy": "Konten und alle Transaktionen dieser Bank werden dauerhaft gelöscht."
+    },
+    "empty": {
+      "noConnectedAccounts": "Noch keine Konten verbunden. Verbinden Sie Ihre erste Bank, um zu beginnen."
+    },
+    "errors": {
+      "disconnect": "Diese Bankverbindung konnte nicht getrennt werden.",
+      "loadConnected": "Verbundene Konten konnten nicht geladen werden.",
+      "openConnection": "Bankverbindung konnte nicht geöffnet werden.",
+      "rename": "Dieses Konto konnte nicht umbenannt werden.",
+      "startConnection": "Bankverbindung konnte nicht gestartet werden."
+    },
+    "filters": {
+      "allAccounts": "Alle Konten"
+    },
+    "messages": {
+      "disconnected": "Bankverbindung getrennt.",
+      "refreshed": "Konten aktualisiert.",
+      "renamed": "Konto umbenannt.",
+      "useConnectToReauth": "Nutzen Sie Bank verbinden, um die Verbindung erneut zu authentifizieren."
+    },
+    "summary": {
+      "connections": "Verbindungen",
+      "healthyCount": "{{healthy}}/{{total}} fehlerfrei",
+      "netWorth": "Nettovermögen",
+      "totalAssets": "Gesamtvermögen",
+      "totalLiabilities": "Gesamtverbindlichkeiten"
+    }
+  },
   "auth": {
     "signOut": "Abmelden"
   },
@@ -24,8 +88,10 @@
   },
   "common": {
     "breadcrumb": "Breadcrumb",
+    "cancel": "Abbrechen",
     "comingSoon": "Demnächst",
     "details": "Details",
+    "dismiss": "Schließen",
     "refresh": "Aktualisieren",
     "retry": "Erneut versuchen",
     "viewAll": "Alle anzeigen"
