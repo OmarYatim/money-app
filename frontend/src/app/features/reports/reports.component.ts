@@ -77,7 +77,7 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const FIXED_FLEXIBLE_CATEGORY_GROUPS: readonly {
   key: string;
-  label: string;
+  labelKey: string;
   icon: string;
   color: string;
   categories: readonly string[];
