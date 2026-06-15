@@ -9,6 +9,152 @@
     "credit": "Credit",
     "investment": "Investments"
   },
+  "accountSettings": {
+    "accountId": "Account ID",
+    "backToDashboard": "Back to dashboard",
+    "breadcrumb": {
+      "account": "Account",
+      "workspace": "Workspace"
+    },
+    "delete": {
+      "beforeCopy": "You can export your data first. Deletion is immediate and cannot be undone.",
+      "beforeTitle": "Before deleting",
+      "confirmation": "I understand this action is immediate and irreversible.",
+      "deleteAccount": "Delete account",
+      "deletePermanently": "Delete permanently",
+      "deleting": "Deleting…",
+      "modalCopyEnd": ", including accounts, transactions, goals, reports and login tokens.",
+      "modalCopyStart": "This will revoke your bank data connection and permanently erase the account for",
+      "modalTitle": "Delete account permanently?",
+      "subtitle": "This permanently erases your Nexioo account and financial data.",
+      "title": "Delete account"
+    },
+    "email": {
+      "confirmPassword": "Confirm with password",
+      "confirmPasswordHint": "Required to change the address used for sign-in.",
+      "currentEmail": "Current email",
+      "newEmail": "New email",
+      "newEmailHint": "We will send a verification link before switching.",
+      "sendVerification": "Send verification",
+      "subtitle": "Used for sign-in, statements and security alerts.",
+      "title": "Email address",
+      "verified": "Verified"
+    },
+    "errors": {
+      "deleteExpired": "Your session expired. Sign in again before deleting your account.",
+      "deleteFailed": "Could not delete the account. Try again or contact support.",
+      "invalidCode": "Invalid or expired code.",
+      "mfaLoad": "Could not load MFA status.",
+      "mfaStart": "Could not start MFA setup."
+    },
+    "memberSince": "Member since March 2024",
+    "messages": {
+      "mfaDisabled": "Two-factor authentication disabled.",
+      "mfaEnabled": "Two-factor authentication enabled.",
+      "passwordUpdated": "Password updated.",
+      "profileSaved": "Profile saved.",
+      "rectificationOpened": "Rectification request opened.",
+      "verificationSent": "Verification email sent to {{email}}."
+    },
+    "privacy": {
+      "analytics": "Anonymous analytics",
+      "analyticsHint": "Helps us improve the product. No personal data.",
+      "bannerCopy": "Under EU GDPR you can access, rectify, port and erase your personal data at any time.",
+      "bannerTitle": "Your data, your rules",
+      "consentSubtitle": "Granular control over how Nexioo uses your data.",
+      "consentTitle": "Consent",
+      "dataRights": {
+        "openRequest": "Open request",
+        "rectify": "Rectify my data",
+        "rectifyHint": "Open a request to correct personal information.",
+        "subtitle": "Exercise any of these at no cost.",
+        "title": "Your data rights"
+      },
+      "marketing": "Marketing communications",
+      "marketingHint": "Product updates, tips, occasional offers.",
+      "profiling": "Automated profiling",
+      "profilingHint": "Personalise insights based on your spending patterns.",
+      "retention": {
+        "options": {
+          "24m": {
+            "hint": "Recommended for tax-year data",
+            "label": "24 months"
+          },
+          "60m": {
+            "hint": "Full statutory window for audits",
+            "label": "5 years"
+          },
+          "6m": {
+            "hint": "Minimum legal retention for financial records",
+            "label": "6 months"
+          }
+        },
+        "subtitle": "How long Nexioo keeps your transaction history after closure.",
+        "title": "Data retention"
+      },
+      "thirdParty": "Third-party integrations",
+      "thirdPartyHint": "Allow categorisation by partner enrichment services."
+    },
+    "profile": {
+      "countries": {
+        "belgium": "Belgium",
+        "france": "France",
+        "germany": "Germany",
+        "ireland": "Ireland",
+        "italy": "Italy",
+        "netherlands": "Netherlands",
+        "portugal": "Portugal",
+        "spain": "Spain"
+      },
+      "country": "Country",
+      "currency": "Default currency",
+      "displayName": "Display name",
+      "displayNameHint": "Shown in greetings and reports.",
+      "phone": "Phone number",
+      "phoneHint": "For SMS verification only. Never shared.",
+      "saveChanges": "Save changes",
+      "subtitle": "Used across your dashboard, exports and statements.",
+      "title": "Personal information",
+      "username": "Username",
+      "usernameHint": "Lowercase letters, numbers and dots."
+    },
+    "sectionsLabel": "Account settings sections",
+    "security": {
+      "changePassword": "Change password",
+      "confirmPassword": "Confirm new password",
+      "currentPassword": "Current password",
+      "loginMethods": "Login methods",
+      "loginMethodsHint": "Choose how you sign in to Nexioo.",
+      "mfa": {
+        "checking": "Checking",
+        "disable": "Disable MFA",
+        "disableHint": "Enter your current authenticator code to turn it off.",
+        "enable": "Enable MFA",
+        "enabled": "Enabled",
+        "manualKey": "Manual setup key",
+        "off": "Off",
+        "qrAlt": "Authenticator app setup QR code",
+        "setup": "Set up authenticator",
+        "subtitle": "Authenticator app (TOTP).",
+        "title": "Two-factor authentication",
+        "verificationCode": "Verification code",
+        "verificationHint": "Enter the 6-digit code generated by your app."
+      },
+      "newPassword": "New password",
+      "passwordHint": "Use 12+ characters with mixed cases, numbers and symbols.",
+      "showPasswords": "Show passwords",
+      "updatePassword": "Update password"
+    },
+    "subtitle": "Manage your profile, login methods, privacy and data",
+    "tabs": {
+      "delete": "Delete account",
+      "email": "Email",
+      "privacy": "Privacy (GDPR)",
+      "profile": "Profile",
+      "security": "Login & security"
+    },
+    "title": "Account settings"
+  },
   "accounts": {
     "accountOptions": "Account options",
     "bank": "Bank",

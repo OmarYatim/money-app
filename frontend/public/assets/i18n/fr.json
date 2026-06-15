@@ -9,6 +9,152 @@
     "credit": "Crédit",
     "investment": "Investissements"
   },
+  "accountSettings": {
+    "accountId": "ID du compte",
+    "backToDashboard": "Retour au tableau de bord",
+    "breadcrumb": {
+      "account": "Compte",
+      "workspace": "Espace de travail"
+    },
+    "delete": {
+      "beforeCopy": "Vous pouvez d'abord exporter vos données. La suppression est immédiate et irréversible.",
+      "beforeTitle": "Avant de supprimer",
+      "confirmation": "Je comprends que cette action est immédiate et irréversible.",
+      "deleteAccount": "Supprimer le compte",
+      "deletePermanently": "Supprimer définitivement",
+      "deleting": "Suppression…",
+      "modalCopyEnd": ", y compris les comptes, transactions, objectifs, rapports et jetons de connexion.",
+      "modalCopyStart": "Cette action révoquera votre connexion aux données bancaires et supprimera définitivement le compte pour",
+      "modalTitle": "Supprimer définitivement le compte ?",
+      "subtitle": "Cette action supprime définitivement votre compte Nexioo et vos données financières.",
+      "title": "Supprimer le compte"
+    },
+    "email": {
+      "confirmPassword": "Confirmer avec le mot de passe",
+      "confirmPasswordHint": "Requis pour modifier l'adresse utilisée pour la connexion.",
+      "currentEmail": "E-mail actuel",
+      "newEmail": "Nouvel e-mail",
+      "newEmailHint": "Nous enverrons un lien de vérification avant le changement.",
+      "sendVerification": "Envoyer la vérification",
+      "subtitle": "Utilisé pour la connexion, les relevés et les alertes de sécurité.",
+      "title": "Adresse e-mail",
+      "verified": "Vérifié"
+    },
+    "errors": {
+      "deleteExpired": "Votre session a expiré. Reconnectez-vous avant de supprimer votre compte.",
+      "deleteFailed": "Impossible de supprimer le compte. Réessayez ou contactez le support.",
+      "invalidCode": "Code invalide ou expiré.",
+      "mfaLoad": "Impossible de charger le statut MFA.",
+      "mfaStart": "Impossible de démarrer la configuration MFA."
+    },
+    "memberSince": "Membre depuis mars 2024",
+    "messages": {
+      "mfaDisabled": "Authentification à deux facteurs désactivée.",
+      "mfaEnabled": "Authentification à deux facteurs activée.",
+      "passwordUpdated": "Mot de passe mis à jour.",
+      "profileSaved": "Profil enregistré.",
+      "rectificationOpened": "Demande de rectification ouverte.",
+      "verificationSent": "E-mail de vérification envoyé à {{email}}."
+    },
+    "privacy": {
+      "analytics": "Analyses anonymes",
+      "analyticsHint": "Nous aide à améliorer le produit. Aucune donnée personnelle.",
+      "bannerCopy": "Conformément au RGPD européen, vous pouvez accéder, rectifier, porter et supprimer vos données personnelles à tout moment.",
+      "bannerTitle": "Vos données, vos règles",
+      "consentSubtitle": "Contrôle détaillé de la façon dont Nexioo utilise vos données.",
+      "consentTitle": "Consentement",
+      "dataRights": {
+        "openRequest": "Ouvrir une demande",
+        "rectify": "Rectifier mes données",
+        "rectifyHint": "Ouvrir une demande pour corriger des informations personnelles.",
+        "subtitle": "Exercez chacun de ces droits sans frais.",
+        "title": "Vos droits sur les données"
+      },
+      "marketing": "Communications marketing",
+      "marketingHint": "Actualités produit, conseils, offres occasionnelles.",
+      "profiling": "Profilage automatisé",
+      "profilingHint": "Personnaliser les insights selon vos habitudes de dépenses.",
+      "retention": {
+        "options": {
+          "24m": {
+            "hint": "Recommandé pour les données d'année fiscale",
+            "label": "24 mois"
+          },
+          "60m": {
+            "hint": "Fenêtre légale complète pour les audits",
+            "label": "5 ans"
+          },
+          "6m": {
+            "hint": "Conservation légale minimale des documents financiers",
+            "label": "6 mois"
+          }
+        },
+        "subtitle": "Durée pendant laquelle Nexioo conserve votre historique de transactions après la clôture.",
+        "title": "Conservation des données"
+      },
+      "thirdParty": "Intégrations tierces",
+      "thirdPartyHint": "Autoriser la catégorisation par des services partenaires d'enrichissement."
+    },
+    "profile": {
+      "countries": {
+        "belgium": "Belgique",
+        "france": "France",
+        "germany": "Allemagne",
+        "ireland": "Irlande",
+        "italy": "Italie",
+        "netherlands": "Pays-Bas",
+        "portugal": "Portugal",
+        "spain": "Espagne"
+      },
+      "country": "Pays",
+      "currency": "Devise par défaut",
+      "displayName": "Nom d'affichage",
+      "displayNameHint": "Affiché dans les salutations et les rapports.",
+      "phone": "Numéro de téléphone",
+      "phoneHint": "Uniquement pour la vérification SMS. Jamais partagé.",
+      "saveChanges": "Enregistrer les modifications",
+      "subtitle": "Utilisé dans votre tableau de bord, vos exports et vos relevés.",
+      "title": "Informations personnelles",
+      "username": "Nom d'utilisateur",
+      "usernameHint": "Lettres minuscules, chiffres et points."
+    },
+    "sectionsLabel": "Sections des paramètres du compte",
+    "security": {
+      "changePassword": "Changer le mot de passe",
+      "confirmPassword": "Confirmer le nouveau mot de passe",
+      "currentPassword": "Mot de passe actuel",
+      "loginMethods": "Méthodes de connexion",
+      "loginMethodsHint": "Choisissez comment vous connecter à Nexioo.",
+      "mfa": {
+        "checking": "Vérification",
+        "disable": "Désactiver la MFA",
+        "disableHint": "Saisissez votre code d'authentification actuel pour la désactiver.",
+        "enable": "Activer la MFA",
+        "enabled": "Activée",
+        "manualKey": "Clé de configuration manuelle",
+        "off": "Désactivée",
+        "qrAlt": "Code QR de configuration de l'application d'authentification",
+        "setup": "Configurer l'authentificateur",
+        "subtitle": "Application d'authentification (TOTP).",
+        "title": "Authentification à deux facteurs",
+        "verificationCode": "Code de vérification",
+        "verificationHint": "Saisissez le code à 6 chiffres généré par votre application."
+      },
+      "newPassword": "Nouveau mot de passe",
+      "passwordHint": "Utilisez 12 caractères ou plus avec des majuscules, minuscules, chiffres et symboles.",
+      "showPasswords": "Afficher les mots de passe",
+      "updatePassword": "Mettre à jour le mot de passe"
+    },
+    "subtitle": "Gérez votre profil, vos méthodes de connexion, la confidentialité et les données",
+    "tabs": {
+      "delete": "Supprimer le compte",
+      "email": "E-mail",
+      "privacy": "Confidentialité (RGPD)",
+      "profile": "Profil",
+      "security": "Connexion et sécurité"
+    },
+    "title": "Paramètres du compte"
+  },
   "accounts": {
     "accountOptions": "Options du compte",
     "bank": "Banque",

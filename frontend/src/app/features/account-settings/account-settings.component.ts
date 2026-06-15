@@ -4,6 +4,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import { AuthService } from '../../core/auth/auth.service';
 import { PageActionsComponent } from '../../shared/components/page-actions/page-actions.component';
@@ -14,20 +15,25 @@ type RetentionPeriod = '6m' | '24m' | '60m';
 
 interface SettingsTabItem {
   id: SettingsTab;
-  label: string;
+  labelKey: string;
   icon: string;
   danger?: boolean;
 }
 
 interface RetentionOption {
   value: RetentionPeriod;
-  label: string;
-  hint: string;
+  labelKey: string;
+  hintKey: string;
+}
+
+interface CountryOption {
+  value: string;
+  labelKey: string;
 }
 
 @Component({
   selector: 'app-account-settings',
-  imports: [MatIconModule, ReactiveFormsModule, RouterLink, PageActionsComponent],
+  imports: [MatIconModule, ReactiveFormsModule, RouterLink, TranslatePipe, PageActionsComponent],
   templateUrl: './account-settings.component.html',
   styleUrl: './account-settings.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -36,6 +42,7 @@ export class AccountSettingsComponent {
   private readonly authService = inject(AuthService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly route = inject(ActivatedRoute);
+  private readonly translate = inject(TranslateService);
 
   protected readonly activeTab = signal<SettingsTab>('profile');
   protected readonly toast = signal<string | null>(null);
@@ -64,17 +71,40 @@ export class AccountSettingsComponent {
   });
 
   protected readonly tabs: SettingsTabItem[] = [
-    { id: 'profile', label: 'Profile', icon: 'person' },
-    { id: 'security', label: 'Login & security', icon: 'lock' },
-    { id: 'email', label: 'Email', icon: 'mail' },
-    { id: 'privacy', label: 'Privacy (GDPR)', icon: 'shield' },
-    { id: 'delete', label: 'Delete account', icon: 'logout', danger: true },
+    { id: 'profile', labelKey: 'accountSettings.tabs.profile', icon: 'person' },
+    { id: 'security', labelKey: 'accountSettings.tabs.security', icon: 'lock' },
+    { id: 'email', labelKey: 'accountSettings.tabs.email', icon: 'mail' },
+    { id: 'privacy', labelKey: 'accountSettings.tabs.privacy', icon: 'shield' },
+    { id: 'delete', labelKey: 'accountSettings.tabs.delete', icon: 'logout', danger: true },
   ];
 
   protected readonly retentionOptions: RetentionOption[] = [
-    { value: '6m', label: '6 months', hint: 'Minimum legal retention for financial records' },
-    { value: '24m', label: '24 months', hint: 'Recommended for tax-year data' },
-    { value: '60m', label: '5 years', hint: 'Full statutory window for audits' },
+    {
+      value: '6m',
+      labelKey: 'accountSettings.privacy.retention.options.6m.label',
+      hintKey: 'accountSettings.privacy.retention.options.6m.hint',
+    },
+    {
+      value: '24m',
+      labelKey: 'accountSettings.privacy.retention.options.24m.label',
+      hintKey: 'accountSettings.privacy.retention.options.24m.hint',
+    },
+    {
+      value: '60m',
+      labelKey: 'accountSettings.privacy.retention.options.60m.label',
+      hintKey: 'accountSettings.privacy.retention.options.60m.hint',
+    },
+  ];
+
+  protected readonly countryOptions: CountryOption[] = [
+    { value: 'France', labelKey: 'accountSettings.profile.countries.france' },
+    { value: 'Spain', labelKey: 'accountSettings.profile.countries.spain' },
+    { value: 'Germany', labelKey: 'accountSettings.profile.countries.germany' },
+    { value: 'Italy', labelKey: 'accountSettings.profile.countries.italy' },
+    { value: 'Portugal', labelKey: 'accountSettings.profile.countries.portugal' },
+    { value: 'Netherlands', labelKey: 'accountSettings.profile.countries.netherlands' },
+    { value: 'Belgium', labelKey: 'accountSettings.profile.countries.belgium' },
+    { value: 'Ireland', labelKey: 'accountSettings.profile.countries.ireland' },
   ];
 
   protected readonly profileForm = new FormGroup({
@@ -139,18 +169,22 @@ export class AccountSettingsComponent {
     this.activeTab.set(tab);
   }
 
+  protected flashKey(key: string): void {
+    this.flash(this.translate.instant(key));
+  }
+
   protected flash(message: string): void {
     this.toast.set(message);
     window.setTimeout(() => this.toast.set(null), 2400);
   }
 
   protected saveProfile(): void {
-    this.flash('Profile saved.');
+    this.flashKey('accountSettings.messages.profileSaved');
   }
 
   protected updatePassword(): void {
     this.passwordForm.reset();
-    this.flash('Password updated.');
+    this.flashKey('accountSettings.messages.passwordUpdated');
   }
 
   protected startMfaEnrolment(): void {
@@ -166,7 +200,7 @@ export class AccountSettingsComponent {
         },
         error: (error: HttpErrorResponse) => {
           this.mfaLoading.set(false);
-          this.mfaError.set(this.resolveMfaError(error, 'Could not start MFA setup.'));
+          this.mfaError.set(this.resolveMfaError(error, 'accountSettings.errors.mfaStart'));
         },
       });
   }
@@ -184,11 +218,11 @@ export class AccountSettingsComponent {
           this.mfaEnrolment.set(null);
           this.mfaVerifyForm.reset();
           this.mfaLoading.set(false);
-          this.flash('Two-factor authentication enabled.');
+          this.flashKey('accountSettings.messages.mfaEnabled');
         },
         error: (error: HttpErrorResponse) => {
           this.mfaLoading.set(false);
-          this.mfaError.set(this.resolveMfaError(error, 'Invalid or expired code.'));
+          this.mfaError.set(this.resolveMfaError(error, 'accountSettings.errors.invalidCode'));
         },
       });
   }
@@ -211,11 +245,11 @@ export class AccountSettingsComponent {
           this.mfaEnabled.set(response.enabled);
           this.mfaDisableForm.reset();
           this.mfaLoading.set(false);
-          this.flash('Two-factor authentication disabled.');
+          this.flashKey('accountSettings.messages.mfaDisabled');
         },
         error: (error: HttpErrorResponse) => {
           this.mfaLoading.set(false);
-          this.mfaError.set(this.resolveMfaError(error, 'Invalid or expired code.'));
+          this.mfaError.set(this.resolveMfaError(error, 'accountSettings.errors.invalidCode'));
         },
       });
   }
@@ -223,7 +257,7 @@ export class AccountSettingsComponent {
   protected requestEmailChange(): void {
     const email = this.emailForm.controls.newEmail.value;
     this.emailForm.reset();
-    this.flash(`Verification email sent to ${email}.`);
+    this.flash(this.translate.instant('accountSettings.messages.verificationSent', { email }));
   }
 
   protected openDeleteConfirmation(): void {
@@ -252,8 +286,8 @@ export class AccountSettingsComponent {
           this.deleteLoading.set(false);
           this.deleteError.set(
             error.status === 401
-              ? 'Your session expired. Sign in again before deleting your account.'
-              : 'Could not delete the account. Try again or contact support.',
+              ? this.translate.instant('accountSettings.errors.deleteExpired')
+              : this.translate.instant('accountSettings.errors.deleteFailed'),
           );
         },
       });
@@ -271,19 +305,19 @@ export class AccountSettingsComponent {
         },
         error: (error: HttpErrorResponse) => {
           this.mfaLoading.set(false);
-          this.mfaError.set(this.resolveMfaError(error, 'Could not load MFA status.'));
+          this.mfaError.set(this.resolveMfaError(error, 'accountSettings.errors.mfaLoad'));
         },
       });
   }
 
-  private resolveMfaError(error: HttpErrorResponse, fallback: string): string {
+  private resolveMfaError(error: HttpErrorResponse, fallbackKey: string): string {
     if (error.status === 401) {
-      return 'Invalid or expired code.';
+      return this.translate.instant('accountSettings.errors.invalidCode');
     }
     if (error.status === 409) {
-      return error.error?.message ?? fallback;
+      return error.error?.message ?? this.translate.instant(fallbackKey);
     }
-    return fallback;
+    return this.translate.instant(fallbackKey);
   }
 
   private isSettingsTab(tab: string | null): tab is SettingsTab {

@@ -9,6 +9,152 @@
     "credit": "Kredit",
     "investment": "Investments"
   },
+  "accountSettings": {
+    "accountId": "Konto-ID",
+    "backToDashboard": "Zurück zum Dashboard",
+    "breadcrumb": {
+      "account": "Konto",
+      "workspace": "Arbeitsbereich"
+    },
+    "delete": {
+      "beforeCopy": "Sie können Ihre Daten zuerst exportieren. Die Löschung erfolgt sofort und kann nicht rückgängig gemacht werden.",
+      "beforeTitle": "Vor dem Löschen",
+      "confirmation": "Ich verstehe, dass diese Aktion sofort und unwiderruflich ist.",
+      "deleteAccount": "Konto löschen",
+      "deletePermanently": "Endgültig löschen",
+      "deleting": "Wird gelöscht…",
+      "modalCopyEnd": ", einschließlich Konten, Transaktionen, Ziele, Berichte und Login-Tokens.",
+      "modalCopyStart": "Dadurch wird Ihre Bankdatenverbindung widerrufen und das Konto dauerhaft gelöscht für",
+      "modalTitle": "Konto endgültig löschen?",
+      "subtitle": "Dadurch werden Ihr Nexioo-Konto und Ihre Finanzdaten dauerhaft gelöscht.",
+      "title": "Konto löschen"
+    },
+    "email": {
+      "confirmPassword": "Mit Passwort bestätigen",
+      "confirmPasswordHint": "Erforderlich, um die für die Anmeldung verwendete Adresse zu ändern.",
+      "currentEmail": "Aktuelle E-Mail",
+      "newEmail": "Neue E-Mail",
+      "newEmailHint": "Wir senden vor der Umstellung einen Bestätigungslink.",
+      "sendVerification": "Bestätigung senden",
+      "subtitle": "Wird für Anmeldung, Kontoauszüge und Sicherheitswarnungen verwendet.",
+      "title": "E-Mail-Adresse",
+      "verified": "Bestätigt"
+    },
+    "errors": {
+      "deleteExpired": "Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an, bevor Sie Ihr Konto löschen.",
+      "deleteFailed": "Das Konto konnte nicht gelöscht werden. Versuchen Sie es erneut oder kontaktieren Sie den Support.",
+      "invalidCode": "Ungültiger oder abgelaufener Code.",
+      "mfaLoad": "MFA-Status konnte nicht geladen werden.",
+      "mfaStart": "MFA-Einrichtung konnte nicht gestartet werden."
+    },
+    "memberSince": "Mitglied seit März 2024",
+    "messages": {
+      "mfaDisabled": "Zwei-Faktor-Authentifizierung deaktiviert.",
+      "mfaEnabled": "Zwei-Faktor-Authentifizierung aktiviert.",
+      "passwordUpdated": "Passwort aktualisiert.",
+      "profileSaved": "Profil gespeichert.",
+      "rectificationOpened": "Berichtigungsanfrage geöffnet.",
+      "verificationSent": "Bestätigungs-E-Mail an {{email}} gesendet."
+    },
+    "privacy": {
+      "analytics": "Anonyme Analysen",
+      "analyticsHint": "Hilft uns, das Produkt zu verbessern. Keine personenbezogenen Daten.",
+      "bannerCopy": "Nach der EU-DSGVO können Sie jederzeit auf Ihre personenbezogenen Daten zugreifen, sie berichtigen, übertragen und löschen.",
+      "bannerTitle": "Ihre Daten, Ihre Regeln",
+      "consentSubtitle": "Feingranulare Kontrolle darüber, wie Nexioo Ihre Daten verwendet.",
+      "consentTitle": "Einwilligung",
+      "dataRights": {
+        "openRequest": "Anfrage öffnen",
+        "rectify": "Meine Daten berichtigen",
+        "rectifyHint": "Öffnen Sie eine Anfrage zur Korrektur personenbezogener Informationen.",
+        "subtitle": "Üben Sie diese Rechte kostenlos aus.",
+        "title": "Ihre Datenrechte"
+      },
+      "marketing": "Marketing-Kommunikation",
+      "marketingHint": "Produktupdates, Tipps und gelegentliche Angebote.",
+      "profiling": "Automatisiertes Profiling",
+      "profilingHint": "Insights anhand Ihrer Ausgabemuster personalisieren.",
+      "retention": {
+        "options": {
+          "24m": {
+            "hint": "Empfohlen für Steuerjahresdaten",
+            "label": "24 Monate"
+          },
+          "60m": {
+            "hint": "Vollständiger gesetzlicher Zeitraum für Prüfungen",
+            "label": "5 Jahre"
+          },
+          "6m": {
+            "hint": "Gesetzliche Mindestaufbewahrung für Finanzunterlagen",
+            "label": "6 Monate"
+          }
+        },
+        "subtitle": "Wie lange Nexioo Ihren Transaktionsverlauf nach der Schließung aufbewahrt.",
+        "title": "Datenaufbewahrung"
+      },
+      "thirdParty": "Drittanbieter-Integrationen",
+      "thirdPartyHint": "Kategorisierung durch Partnerdienste zur Anreicherung erlauben."
+    },
+    "profile": {
+      "countries": {
+        "belgium": "Belgien",
+        "france": "Frankreich",
+        "germany": "Deutschland",
+        "ireland": "Irland",
+        "italy": "Italien",
+        "netherlands": "Niederlande",
+        "portugal": "Portugal",
+        "spain": "Spanien"
+      },
+      "country": "Land",
+      "currency": "Standardwährung",
+      "displayName": "Anzeigename",
+      "displayNameHint": "Wird in Begrüßungen und Berichten angezeigt.",
+      "phone": "Telefonnummer",
+      "phoneHint": "Nur für SMS-Verifizierung. Wird nie geteilt.",
+      "saveChanges": "Änderungen speichern",
+      "subtitle": "Wird in Ihrem Dashboard, Exporten und Kontoauszügen verwendet.",
+      "title": "Persönliche Informationen",
+      "username": "Benutzername",
+      "usernameHint": "Kleinbuchstaben, Zahlen und Punkte."
+    },
+    "sectionsLabel": "Abschnitte der Kontoeinstellungen",
+    "security": {
+      "changePassword": "Passwort ändern",
+      "confirmPassword": "Neues Passwort bestätigen",
+      "currentPassword": "Aktuelles Passwort",
+      "loginMethods": "Anmeldemethoden",
+      "loginMethodsHint": "Wählen Sie, wie Sie sich bei Nexioo anmelden.",
+      "mfa": {
+        "checking": "Prüfung",
+        "disable": "MFA deaktivieren",
+        "disableHint": "Geben Sie Ihren aktuellen Authenticator-Code ein, um MFA auszuschalten.",
+        "enable": "MFA aktivieren",
+        "enabled": "Aktiviert",
+        "manualKey": "Manueller Einrichtungsschlüssel",
+        "off": "Aus",
+        "qrAlt": "QR-Code zur Einrichtung der Authenticator-App",
+        "setup": "Authenticator einrichten",
+        "subtitle": "Authenticator-App (TOTP).",
+        "title": "Zwei-Faktor-Authentifizierung",
+        "verificationCode": "Bestätigungscode",
+        "verificationHint": "Geben Sie den 6-stelligen Code aus Ihrer App ein."
+      },
+      "newPassword": "Neues Passwort",
+      "passwordHint": "Verwenden Sie 12+ Zeichen mit Groß- und Kleinbuchstaben, Zahlen und Symbolen.",
+      "showPasswords": "Passwörter anzeigen",
+      "updatePassword": "Passwort aktualisieren"
+    },
+    "subtitle": "Verwalten Sie Profil, Anmeldemethoden, Datenschutz und Daten",
+    "tabs": {
+      "delete": "Konto löschen",
+      "email": "E-Mail",
+      "privacy": "Datenschutz (DSGVO)",
+      "profile": "Profil",
+      "security": "Anmeldung und Sicherheit"
+    },
+    "title": "Kontoeinstellungen"
+  },
   "accounts": {
     "accountOptions": "Kontooptionen",
     "bank": "Bank",
