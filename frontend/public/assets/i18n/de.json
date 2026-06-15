@@ -1,0 +1,43 @@
+{
+  "app": {
+    "tagline": "Persönliche Finanzen"
+  },
+  "auth": {
+    "signOut": "Abmelden"
+  },
+  "language": {
+    "selectorLabel": "Sprache",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "german": "Deutsch"
+  },
+  "mfa": {
+    "warningTitle": "Schützen Sie Ihr Konto mit MFA",
+    "warningCopy": "Richten Sie eine Authenticator-App für eine zweite Anmeldeprüfung ein.",
+    "enable": "MFA aktivieren",
+    "dismissReminder": "MFA-Erinnerung schließen"
+  },
+  "nav": {
+    "workspace": "Arbeitsbereich",
+    "dashboard": "Dashboard",
+    "accounts": "Konten",
+    "transactions": "Transaktionen",
+    "goals": "Ziele",
+    "reports": "Berichte",
+    "unreviewedTransactions": "{{count}} ungeprüfte Transaktionen"
+  },
+  "profile": {
+    "planStatus": "Kostenloser Tarif · sicherer Arbeitsbereich",
+    "yourProfile": "Ihr Profil",
+    "viewEditDetails": "Details ansehen und bearbeiten",
+    "accountSettings": "Kontoeinstellungen",
+    "preferencesPrivacy": "Einstellungen, Datenschutz",
+    "security": "Sicherheit",
+    "passwordSessions": "Passwort und Sitzungen",
+    "endSession": "Diese Sitzung beenden"
+  },
+  "status": {
+    "reconnecting": "Verbindung wird wiederhergestellt…"
+  }
+}

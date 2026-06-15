@@ -1,0 +1,43 @@
+{
+  "app": {
+    "tagline": "Finanzas personales"
+  },
+  "auth": {
+    "signOut": "Cerrar sesión"
+  },
+  "language": {
+    "selectorLabel": "Idioma",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "german": "Deutsch"
+  },
+  "mfa": {
+    "warningTitle": "Protege tu cuenta con MFA",
+    "warningCopy": "Configura una aplicación de autenticación para añadir una segunda verificación.",
+    "enable": "Activar MFA",
+    "dismissReminder": "Cerrar recordatorio de MFA"
+  },
+  "nav": {
+    "workspace": "Espacio de trabajo",
+    "dashboard": "Panel",
+    "accounts": "Cuentas",
+    "transactions": "Transacciones",
+    "goals": "Objetivos",
+    "reports": "Informes",
+    "unreviewedTransactions": "{{count}} transacciones sin revisar"
+  },
+  "profile": {
+    "planStatus": "Plan gratuito · espacio seguro",
+    "yourProfile": "Tu perfil",
+    "viewEditDetails": "Ver y editar detalles",
+    "accountSettings": "Configuración de cuenta",
+    "preferencesPrivacy": "Preferencias, privacidad",
+    "security": "Seguridad",
+    "passwordSessions": "Contraseña y sesiones",
+    "endSession": "Finalizar esta sesión"
+  },
+  "status": {
+    "reconnecting": "Reconectando…"
+  }
+}

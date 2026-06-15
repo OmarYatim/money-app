@@ -1,0 +1,43 @@
+{
+  "app": {
+    "tagline": "Personal Finance"
+  },
+  "auth": {
+    "signOut": "Sign out"
+  },
+  "language": {
+    "selectorLabel": "Language",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "german": "Deutsch"
+  },
+  "mfa": {
+    "warningTitle": "Protect your account with MFA",
+    "warningCopy": "Set up an authenticator app to add a second sign-in check.",
+    "enable": "Enable MFA",
+    "dismissReminder": "Dismiss MFA reminder"
+  },
+  "nav": {
+    "workspace": "Workspace",
+    "dashboard": "Dashboard",
+    "accounts": "Accounts",
+    "transactions": "Transactions",
+    "goals": "Goals",
+    "reports": "Reports",
+    "unreviewedTransactions": "{{count}} unreviewed transactions"
+  },
+  "profile": {
+    "planStatus": "Free plan · secure workspace",
+    "yourProfile": "Your profile",
+    "viewEditDetails": "View & edit details",
+    "accountSettings": "Account settings",
+    "preferencesPrivacy": "Preferences, privacy",
+    "security": "Security",
+    "passwordSessions": "Password and sessions",
+    "endSession": "End this session"
+  },
+  "status": {
+    "reconnecting": "Reconnecting…"
+  }
+}
