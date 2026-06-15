@@ -1,8 +1,10 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, ViewEncapsulation, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
+import { LanguageService } from '../../core/i18n/language.service';
 import { PageActionsComponent } from '../../shared/components/page-actions/page-actions.component';
 import type { Account } from '../../shared/models/account.model';
 import type {
@@ -55,6 +57,7 @@ const INITIAL_STATE: GoalsState = {
   imports: [
     CurrencyPipe,
     DatePipe,
+    TranslatePipe,
     PageActionsComponent,
     ContributionDialogComponent,
     GoalFormComponent,
@@ -67,6 +70,8 @@ const INITIAL_STATE: GoalsState = {
 export class GoalsComponent {
   private readonly accountService = inject(AccountService);
   private readonly goalService = inject(GoalService);
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
 
   protected readonly state = signal<GoalsState>(INITIAL_STATE);
   protected readonly accounts = signal<Account[]>([]);
@@ -126,48 +131,60 @@ export class GoalsComponent {
   protected readonly kpis = computed<GoalKpi[]>(() => {
     const goals = this.activeGoals();
     const longest = this.longestStreakGoal();
+    this.languageService.currentLang();
 
     return [
       {
         icon: 'savings',
-        label: 'Total saved',
+        label: this.t('goals.kpi.totalSaved'),
         value: formatEuro(this.totalSaved()),
-        sub: `of ${formatEuro(this.totalTarget())} across ${goals.length} goals`,
+        sub: this.t('goals.kpi.totalSavedSub', {
+          target: formatEuro(this.totalTarget()),
+          count: goals.length,
+        }),
         tone: 'positive',
       },
       {
         icon: 'track_changes',
-        label: 'Overall progress',
+        label: this.t('goals.kpi.overallProgress'),
         value: `${this.overallProgress()}%`,
-        sub: 'On pace for 2027',
+        sub: this.t('goals.kpi.onPace'),
         tone: 'default',
       },
       {
         icon: 'repeat',
-        label: 'Monthly auto-save',
+        label: this.t('goals.kpi.monthlyAutoSave'),
         value: formatEuro(this.monthlyPace()),
-        sub: `${goals.filter((goal) => this.monthlyAmount(goal) > 0).length} of ${goals.length} goals active`,
+        sub: this.t('goals.kpi.goalsActive', {
+          active: goals.filter((goal) => this.monthlyAmount(goal) > 0).length,
+          total: goals.length,
+        }),
         tone: 'default',
       },
       {
         icon: 'check_circle',
-        label: 'On track',
+        label: this.t('goals.kpi.onTrack'),
         value: `${this.onTrackGoals().length}/${goals.length}`,
-        sub: `${Math.max(this.onTrackGoals().length - 1, 0)} ahead · ${Math.max(goals.length - this.onTrackGoals().length, 0)} lagging`,
+        sub: this.t('goals.kpi.trackSub', {
+          ahead: Math.max(this.onTrackGoals().length - 1, 0),
+          lagging: Math.max(goals.length - this.onTrackGoals().length, 0),
+        }),
         tone: 'positive',
       },
       {
         icon: 'flag',
-        label: 'Avg streak',
-        value: `${this.averageStreak()} mo`,
-        sub: longest ? `Longest: ${longest.name} · ${this.goalStreak(longest)}m` : 'No streak yet',
+        label: this.t('goals.kpi.avgStreak'),
+        value: this.t('goals.kpi.monthCount', { count: this.averageStreak() }),
+        sub: longest
+          ? this.t('goals.kpi.longestStreak', { name: longest.name, count: this.goalStreak(longest) })
+          : this.t('goals.kpi.noStreak'),
         tone: 'default',
       },
       {
         icon: 'trending_up',
-        label: 'Projected reach',
+        label: this.t('goals.kpi.projectedReach'),
         value: formatEuro(this.projectedReach()),
-        sub: 'By end of 2026 at current pace',
+        sub: this.t('goals.kpi.byEndOfYear'),
         tone: 'positive',
       },
     ];
@@ -179,7 +196,9 @@ export class GoalsComponent {
       goal: goalsById.get(contribution.goalId) ?? null,
       amount: contribution.amount,
       contributedAt: contribution.contributedAt,
-      mode: contribution.note?.trim() || (goalsById.get(contribution.goalId)?.autoSaveEnabled ? 'Auto-save' : 'Manual'),
+      mode: contribution.note?.trim() || (goalsById.get(contribution.goalId)?.autoSaveEnabled
+        ? this.t('goals.autoSave')
+        : this.t('goals.manual')),
     }));
   });
   constructor() {
@@ -206,7 +225,7 @@ export class GoalsComponent {
       this.selectedGoalId.set(goals[0]?.id ?? null);
       await this.loadAllContributions(goals);
     } catch {
-      this.state.set({ ...this.state(), loading: false, error: 'Unable to load goals.' });
+      this.state.set({ ...this.state(), loading: false, error: this.t('goals.errors.load') });
     }
   }
 
@@ -311,7 +330,7 @@ export class GoalsComponent {
       await this.loadAllContributions();
       this.state.set({ ...this.state(), saving: false, error: null });
     } catch {
-      this.state.set({ ...this.state(), saving: false, error: 'Unable to save goal.' });
+      this.state.set({ ...this.state(), saving: false, error: this.t('goals.errors.save') });
     }
   }
 
@@ -331,7 +350,7 @@ export class GoalsComponent {
       await this.loadAllContributions();
       this.state.set({ ...this.state(), saving: false, error: null });
     } catch {
-      this.state.set({ ...this.state(), saving: false, error: 'Unable to add contribution.' });
+      this.state.set({ ...this.state(), saving: false, error: this.t('goals.errors.addContribution') });
     }
   }
 
@@ -344,7 +363,7 @@ export class GoalsComponent {
       this.selectedGoalId.set(goals[0]?.id ?? null);
       await this.loadAllContributions(goals);
     } catch {
-      this.state.set({ ...this.state(), saving: false, error: 'Unable to archive goal.' });
+      this.state.set({ ...this.state(), saving: false, error: this.t('goals.errors.archive') });
     }
   }
 
@@ -385,6 +404,26 @@ export class GoalsComponent {
     }
 
     return left.id - right.id;
+  }
+
+  protected priorityLabel(priority: string): string {
+    return this.t(`goals.priority.${priority.toLowerCase()}`);
+  }
+
+  protected goalCategoryLabel(category: string): string {
+    return this.t(`goals.category.${this.key(category)}`);
+  }
+
+  protected priorityFilterLabel(filter: PriorityFilter): string {
+    return filter === 'All' ? this.t('goals.priority.all') : this.priorityLabel(filter);
+  }
+
+  private key(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params);
   }
 
 }

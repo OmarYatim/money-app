@@ -1,16 +1,19 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
 import type { Goal, GoalContribution } from '../../../shared/models/goal.model';
 
 @Component({
   selector: 'app-goal-detail',
-  imports: [CurrencyPipe, DatePipe],
+  imports: [CurrencyPipe, DatePipe, TranslatePipe],
   templateUrl: './goal-detail.component.html',
   styleUrl: './goal-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GoalDetailComponent {
+  private readonly translate = inject(TranslateService);
+
   goal = input<Goal | null>(null);
   contributions = input<GoalContribution[]>([]);
   addContribution = output<void>();
@@ -32,6 +35,14 @@ export class GoalDetailComponent {
 
   protected goalColor(goal: Goal): string {
     return normalizeGoalColor(goal.color);
+  }
+
+  protected priorityLabel(priority: string): string {
+    return this.translate.instant(`goals.priority.${priority.toLowerCase()}`);
+  }
+
+  protected goalCategoryLabel(category: string): string {
+    return this.translate.instant(`goals.category.${category.toLowerCase().replace(/[^a-z0-9]+/g, '')}`);
   }
 }
 

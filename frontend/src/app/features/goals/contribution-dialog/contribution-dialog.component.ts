@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { GoalContributionPayload } from '../../../shared/models/goal.model';
 
@@ -11,7 +12,7 @@ interface ContributionFormValue {
 
 @Component({
   selector: 'app-contribution-dialog',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, TranslatePipe],
   templateUrl: './contribution-dialog.component.html',
   styleUrl: './contribution-dialog.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
