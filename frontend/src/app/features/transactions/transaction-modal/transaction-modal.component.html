@@ -2,25 +2,25 @@
   <button
     class="tx-modal__backdrop"
     type="button"
-    aria-label="Close transaction detail"
+    [attr.aria-label]="'transactions.modal.closeDetail' | translate"
     (click)="closed.emit()"
   ></button>
   <div class="tx-modal__panel">
     <header class="tx-modal__head">
-      <nav class="tx-modal__crumb" aria-label="Transaction detail breadcrumb">
+      <nav class="tx-modal__crumb" [attr.aria-label]="'transactions.modal.breadcrumb' | translate">
         <mat-icon aria-hidden="true">receipt_long</mat-icon>
-        <span>Transactions</span>
+        <span>{{ 'nav.transactions' | translate }}</span>
         <mat-icon aria-hidden="true">chevron_right</mat-icon>
-        <span class="tx-modal__crumb-current">Detail</span>
+        <span class="tx-modal__crumb-current">{{ 'transactions.modal.detail' | translate }}</span>
       </nav>
       <div class="tx-modal__head-actions">
-        <button class="tx-modal__icon-btn" type="button" title="Copy reference">
+        <button class="tx-modal__icon-btn" type="button" [title]="'transactions.modal.copyReference' | translate">
           <mat-icon aria-hidden="true">content_copy</mat-icon>
         </button>
-        <button class="tx-modal__icon-btn" type="button" title="Flag for review">
+        <button class="tx-modal__icon-btn" type="button" [title]="'transactions.modal.flagForReview' | translate">
           <mat-icon aria-hidden="true">flag</mat-icon>
         </button>
-        <button class="tx-modal__icon-btn" type="button" title="Close" (click)="closed.emit()">
+        <button class="tx-modal__icon-btn" type="button" [title]="'common.close' | translate" (click)="closed.emit()">
           <mat-icon aria-hidden="true">close</mat-icon>
         </button>
       </div>
@@ -49,10 +49,10 @@
               @if (transaction.reviewed) {
                 <span class="tx-modal__reviewed-tag">
                   <mat-icon aria-hidden="true">check</mat-icon>
-                  Reviewed
+                  {{ 'transactions.review.reviewed' | translate }}
                 </span>
               } @else {
-                <span class="tx-modal__unreviewed-tag">Unreviewed</span>
+                <span class="tx-modal__unreviewed-tag">{{ 'transactions.review.unreviewed' | translate }}</span>
               }
             </div>
             @if (transaction.wording) {
@@ -61,7 +61,7 @@
             <p class="tx-modal__date">
               {{ transaction.date | date: 'EEEE, d MMMM yyyy' }}
               @if (transaction.applicationDate) {
-                · Applied {{ transaction.applicationDate | date: 'd MMM yyyy' }}
+                · {{ 'transactions.modal.appliedDate' | translate:{ date: (transaction.applicationDate | date: 'd MMM yyyy') } }}
               }
             </p>
           </div>
@@ -75,7 +75,7 @@
           </div>
         </section>
 
-        <section class="tx-modal__actions" aria-label="Transaction actions">
+        <section class="tx-modal__actions" [attr.aria-label]="'transactions.modal.actions' | translate">
           <button
             class="tx-modal__action-btn"
             type="button"
@@ -84,7 +84,7 @@
             (click)="reviewedToggled.emit()"
           >
             <mat-icon aria-hidden="true">check</mat-icon>
-            {{ transaction.reviewed ? 'Reviewed' : 'Mark reviewed' }}
+            {{ (transaction.reviewed ? 'transactions.review.reviewed' : 'transactions.review.markReviewed') | translate }}
           </button>
           <div class="tx-modal__category-menu">
             <button
@@ -93,7 +93,7 @@
               [disabled]="saving()"
               [attr.aria-expanded]="categoryMenuOpen()"
               aria-haspopup="listbox"
-              aria-label="Recategorize transaction"
+              [attr.aria-label]="'transactions.modal.recategorize' | translate"
               (click)="toggleCategoryMenu()"
             >
               <span
@@ -105,7 +105,7 @@
               <mat-icon aria-hidden="true">expand_more</mat-icon>
             </button>
             @if (categoryMenuOpen()) {
-              <div class="tx-modal__select-menu" role="listbox" aria-label="Transaction category">
+              <div class="tx-modal__select-menu" role="listbox" [attr.aria-label]="'transactions.modal.category' | translate">
                 @for (cat of categories(); track cat) {
                   <button
                     class="tx-modal__select-option"
@@ -140,30 +140,30 @@
             <mat-icon aria-hidden="true">
               {{ transaction.internalTransfer ? 'sync_alt' : 'sync_disabled' }}
             </mat-icon>
-            {{ transaction.internalTransfer ? 'Internal transfer' : 'Mark internal' }}
+            {{ (transaction.internalTransfer ? 'transactions.transfer.internalTransfer' : 'transactions.transfer.markInternal') | translate }}
           </button>
           <button class="tx-modal__action-btn" type="button">
             <mat-icon aria-hidden="true">description</mat-icon>
-            Add note
+            {{ 'transactions.modal.addNote' | translate }}
           </button>
           <button class="tx-modal__action-btn" type="button">
             <mat-icon aria-hidden="true">repeat</mat-icon>
-            Mark recurring
+            {{ 'transactions.modal.markRecurring' | translate }}
           </button>
         </section>
 
         <section class="tx-modal__section">
-          <div class="tx-modal__section-label">Transaction details</div>
+          <div class="tx-modal__section-label">{{ 'transactions.modal.transactionDetails' | translate }}</div>
           <dl class="tx-modal__kv-grid">
             <div class="tx-modal__kv">
-              <dt>Account</dt>
+              <dt>{{ 'transactions.filters.account' | translate }}</dt>
               <dd>
                 <span class="tx-modal__dot"></span>
-                <span>{{ transaction.accountName ?? 'Connected account' }}</span>
+                <span>{{ transaction.accountName ?? ('transactions.connectedAccount' | translate) }}</span>
               </dd>
             </div>
             <div class="tx-modal__kv">
-              <dt>Category</dt>
+              <dt>{{ 'transactions.filters.category' | translate }}</dt>
               <dd>
                 <span
                   class="tx-modal__dot"
@@ -173,42 +173,42 @@
               </dd>
             </div>
             <div class="tx-modal__kv">
-              <dt>Reference</dt>
+              <dt>{{ 'transactions.modal.reference' | translate }}</dt>
               <dd class="tx-modal__mono">{{ transactionReference(transaction) }}</dd>
             </div>
             <div class="tx-modal__kv">
-              <dt>Method</dt>
+              <dt>{{ 'transactions.modal.method' | translate }}</dt>
               <dd>{{ transactionMethod(transaction) }}</dd>
             </div>
             <div class="tx-modal__kv">
-              <dt>Posted</dt>
+              <dt>{{ 'transactions.modal.posted' | translate }}</dt>
               <dd class="tx-modal__mono">{{ transaction.date }}</dd>
             </div>
             <div class="tx-modal__kv">
-              <dt>Status</dt>
+              <dt>{{ 'transactions.filters.status' | translate }}</dt>
               <dd>
                 <span class="tx-modal__status-dot"></span>
-                <span>Cleared</span>
+                <span>{{ 'transactions.status.cleared' | translate }}</span>
               </dd>
             </div>
             <div class="tx-modal__kv">
-              <dt>Counterparty</dt>
+              <dt>{{ 'transactions.modal.counterparty' | translate }}</dt>
               <dd>{{ transaction.counterpartyLabel ?? transaction.label }}</dd>
             </div>
             <div class="tx-modal__kv">
-              <dt>Type</dt>
+              <dt>{{ 'transactions.modal.type' | translate }}</dt>
               <dd>{{ transactionDirection(transaction) }}</dd>
             </div>
             <div class="tx-modal__kv">
-              <dt>Internal transfer</dt>
+              <dt>{{ 'transactions.transfer.internalTransfer' | translate }}</dt>
               <dd>
                 <span
                   class="tx-modal__status-dot"
                   [class.tx-modal__status-dot--muted]="!transaction.internalTransfer"
                 ></span>
-                <span>{{ transaction.internalTransfer ? 'Yes' : 'No' }}</span>
+                <span>{{ (transaction.internalTransfer ? 'common.yes' : 'common.no') | translate }}</span>
                 @if (transaction.internalTransferOverridden) {
-                  <span class="tx-modal__muted">Manually set</span>
+                  <span class="tx-modal__muted">{{ 'transactions.modal.manuallySet' | translate }}</span>
                 }
               </dd>
             </div>
@@ -216,16 +216,16 @@
         </section>
 
         <section class="tx-modal__section">
-          <div class="tx-modal__section-label">Your notes</div>
+          <div class="tx-modal__section-label">{{ 'transactions.modal.yourNotes' | translate }}</div>
           <div class="tx-modal__notes">
             <mat-icon aria-hidden="true">description</mat-icon>
-            <span>No notes yet. Add a private note for your own tracking.</span>
+            <span>{{ 'transactions.modal.noNotes' | translate }}</span>
           </div>
         </section>
 
         @if (transaction.originalWording) {
           <section class="tx-modal__section">
-            <div class="tx-modal__section-label">Original wording</div>
+            <div class="tx-modal__section-label">{{ 'transactions.modal.originalWording' | translate }}</div>
             <div class="tx-modal__notes">
               <mat-icon aria-hidden="true">tag</mat-icon>
               <span>{{ transaction.originalWording }}</span>
@@ -240,7 +240,7 @@
         <div class="tx-modal__readonly">
           <mat-icon aria-hidden="true">shield</mat-icon>
           <span>
-            This transaction is read-only. Nexioo cannot modify or refund payments; contact your bank directly to dispute.
+            {{ 'transactions.modal.readOnlyNotice' | translate }}
           </span>
         </div>
       </div>

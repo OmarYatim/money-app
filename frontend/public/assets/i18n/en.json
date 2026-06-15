@@ -89,12 +89,18 @@
   "common": {
     "breadcrumb": "Breadcrumb",
     "cancel": "Cancel",
+    "apply": "Apply",
+    "close": "Close",
     "comingSoon": "Coming soon",
     "details": "Details",
     "dismiss": "Dismiss",
+    "next": "Next",
+    "no": "No",
+    "previous": "Previous",
     "refresh": "Refresh",
     "retry": "Retry",
-    "viewAll": "View all"
+    "viewAll": "View all",
+    "yes": "Yes"
   },
   "dashboard": {
     "cashFlow": {
@@ -191,11 +197,136 @@
     "reconnecting": "Reconnecting…"
   },
   "time": {
-    "thisMonth": "this month"
+    "thisMonth": "this month",
+    "today": "Today",
+    "yesterday": "Yesterday"
   },
   "transactions": {
+    "archivedAccount": "Archived account",
+    "connectedAccount": "Connected account",
+    "direction": {
+      "credit": "Credit (incoming)",
+      "debit": "Debit (outgoing)"
+    },
+    "empty": {
+      "title": "No transactions found",
+      "subtitle": "Try clearing some filters or expanding the period."
+    },
+    "errors": {
+      "loadFullDetails": "Unable to load full transaction details.",
+      "loadTransaction": "Unable to load transaction.",
+      "loadTransactions": "Unable to load transactions.",
+      "markAllReviewed": "Unable to mark all loaded transactions as reviewed.",
+      "updateCategory": "Unable to update category.",
+      "updateInternalTransfer": "Unable to update internal transfer state.",
+      "updateReviewed": "Unable to update reviewed state."
+    },
+    "filters": {
+      "account": "Account",
+      "accountFilter": "Account filter",
+      "all": "All",
+      "allCategories": "All categories",
+      "bank": "Bank",
+      "category": "Category",
+      "categoryFilter": "Category filter",
+      "clear": "Clear filters",
+      "date": "Date",
+      "groupBy": "Group by",
+      "groupTransactionsBy": "Group transactions by",
+      "internalTransferFilter": "Internal transfer filter",
+      "rows": "Rows",
+      "rowsPerPage": "Rows per page",
+      "sort": "Sort",
+      "sortTransactions": "Sort transactions",
+      "status": "Status",
+      "statusFilter": "Status filter",
+      "transfer": "Transfer"
+    },
+    "method": {
+      "bankTransaction": "Bank transaction",
+      "bankTransfer": "Bank transfer",
+      "card": "Card",
+      "sepaDebit": "SEPA Direct Debit"
+    },
+    "modal": {
+      "actions": "Transaction actions",
+      "addNote": "Add note",
+      "appliedDate": "Applied {{date}}",
+      "breadcrumb": "Transaction detail breadcrumb",
+      "category": "Transaction category",
+      "changeCategory": "Change category",
+      "closeDetail": "Close transaction detail",
+      "copyReference": "Copy reference",
+      "counterparty": "Counterparty",
+      "detail": "Detail",
+      "flagForReview": "Flag for review",
+      "manuallySet": "Manually set",
+      "markRecurring": "Mark recurring",
+      "method": "Method",
+      "noNotes": "No notes yet. Add a private note for your own tracking.",
+      "originalWording": "Original wording",
+      "posted": "Posted",
+      "readOnlyNotice": "This transaction is read-only. Nexioo cannot modify or refund payments; contact your bank directly to dispute.",
+      "recategorize": "Recategorize transaction",
+      "reference": "Reference",
+      "selectedCategory": "Selected category",
+      "transactionDetails": "Transaction details",
+      "type": "Type",
+      "yourNotes": "Your notes"
+    },
+    "pagination": {
+      "ariaLabel": "Transaction pages",
+      "summary": "Page {{page}} of {{total}}"
+    },
+    "period": {
+      "7d": "7D",
+      "30d": "30D",
+      "ariaLabel": "Time period",
+      "custom": "Custom",
+      "from": "From",
+      "fromDate": "From {{date}}",
+      "future": "Future",
+      "month": "This month",
+      "selectDateRange": "Select date range",
+      "to": "To",
+      "toDate": "To {{date}}",
+      "year": "This year"
+    },
     "review": {
+      "markAllReviewed": "Mark all reviewed",
+      "markReviewed": "Mark reviewed",
+      "markTransactionReviewed": "Mark transaction reviewed",
+      "markTransactionUnreviewed": "Mark transaction unreviewed",
+      "markUnreviewed": "Mark unreviewed",
+      "reviewed": "Reviewed",
+      "reviewing": "Reviewing…",
       "unreviewed": "Unreviewed"
+    },
+    "search": {
+      "ariaLabel": "Search transactions",
+      "placeholder": "Search merchants, descriptions…"
+    },
+    "sort": {
+      "largest": "Largest amount",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "smallest": "Smallest amount"
+    },
+    "status": {
+      "cleared": "Cleared"
+    },
+    "summary": {
+      "count": "{{count}} transactions",
+      "needReview": "{{count}} need review",
+      "net": "Net",
+      "txnCount": "{{count}} txn(s)",
+      "unreviewed": "{{count}} unreviewed"
+    },
+    "transfer": {
+      "excludeInternal": "Exclude internal",
+      "internalOnly": "Internal only",
+      "internalTransfer": "Internal transfer",
+      "markInternal": "Mark internal"
     }
   }
 }

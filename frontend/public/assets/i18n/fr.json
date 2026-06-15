@@ -89,12 +89,18 @@
   "common": {
     "breadcrumb": "Fil d'Ariane",
     "cancel": "Annuler",
+    "apply": "Appliquer",
+    "close": "Fermer",
     "comingSoon": "Bientôt disponible",
     "details": "Détails",
     "dismiss": "Fermer",
+    "next": "Suivant",
+    "no": "Non",
+    "previous": "Précédent",
     "refresh": "Actualiser",
     "retry": "Réessayer",
-    "viewAll": "Tout voir"
+    "viewAll": "Tout voir",
+    "yes": "Oui"
   },
   "dashboard": {
     "cashFlow": {
@@ -191,11 +197,136 @@
     "reconnecting": "Reconnexion…"
   },
   "time": {
-    "thisMonth": "ce mois-ci"
+    "thisMonth": "ce mois-ci",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier"
   },
   "transactions": {
+    "archivedAccount": "Compte archivé",
+    "connectedAccount": "Compte connecté",
+    "direction": {
+      "credit": "Crédit (entrant)",
+      "debit": "Débit (sortant)"
+    },
+    "empty": {
+      "title": "Aucune transaction trouvée",
+      "subtitle": "Essayez de retirer des filtres ou d'élargir la période."
+    },
+    "errors": {
+      "loadFullDetails": "Impossible de charger les détails complets de la transaction.",
+      "loadTransaction": "Impossible de charger la transaction.",
+      "loadTransactions": "Impossible de charger les transactions.",
+      "markAllReviewed": "Impossible de marquer toutes les transactions chargées comme vérifiées.",
+      "updateCategory": "Impossible de mettre à jour la catégorie.",
+      "updateInternalTransfer": "Impossible de mettre à jour l'état de virement interne.",
+      "updateReviewed": "Impossible de mettre à jour l'état de vérification."
+    },
+    "filters": {
+      "account": "Compte",
+      "accountFilter": "Filtre de compte",
+      "all": "Tous",
+      "allCategories": "Toutes les catégories",
+      "bank": "Banque",
+      "category": "Catégorie",
+      "categoryFilter": "Filtre de catégorie",
+      "clear": "Effacer les filtres",
+      "date": "Date",
+      "groupBy": "Grouper par",
+      "groupTransactionsBy": "Grouper les transactions par",
+      "internalTransferFilter": "Filtre de virement interne",
+      "rows": "Lignes",
+      "rowsPerPage": "Lignes par page",
+      "sort": "Trier",
+      "sortTransactions": "Trier les transactions",
+      "status": "Statut",
+      "statusFilter": "Filtre de statut",
+      "transfer": "Virement"
+    },
+    "method": {
+      "bankTransaction": "Transaction bancaire",
+      "bankTransfer": "Virement bancaire",
+      "card": "Carte",
+      "sepaDebit": "Prélèvement SEPA"
+    },
+    "modal": {
+      "actions": "Actions de transaction",
+      "addNote": "Ajouter une note",
+      "appliedDate": "Appliqué le {{date}}",
+      "breadcrumb": "Fil d'Ariane du détail de transaction",
+      "category": "Catégorie de transaction",
+      "changeCategory": "Changer de catégorie",
+      "closeDetail": "Fermer le détail de transaction",
+      "copyReference": "Copier la référence",
+      "counterparty": "Contrepartie",
+      "detail": "Détail",
+      "flagForReview": "Marquer pour vérification",
+      "manuallySet": "Défini manuellement",
+      "markRecurring": "Marquer comme récurrent",
+      "method": "Méthode",
+      "noNotes": "Aucune note pour le moment. Ajoutez une note privée pour votre suivi.",
+      "originalWording": "Libellé original",
+      "posted": "Comptabilisé",
+      "readOnlyNotice": "Cette transaction est en lecture seule. Nexioo ne peut ni modifier ni rembourser les paiements ; contactez directement votre banque en cas de litige.",
+      "recategorize": "Recatégoriser la transaction",
+      "reference": "Référence",
+      "selectedCategory": "Catégorie sélectionnée",
+      "transactionDetails": "Détails de la transaction",
+      "type": "Type",
+      "yourNotes": "Vos notes"
+    },
+    "pagination": {
+      "ariaLabel": "Pages des transactions",
+      "summary": "Page {{page}} sur {{total}}"
+    },
+    "period": {
+      "7d": "7 j",
+      "30d": "30 j",
+      "ariaLabel": "Période",
+      "custom": "Personnalisé",
+      "from": "Du",
+      "fromDate": "Du {{date}}",
+      "future": "Futur",
+      "month": "Ce mois-ci",
+      "selectDateRange": "Sélectionner une plage de dates",
+      "to": "Au",
+      "toDate": "Au {{date}}",
+      "year": "Cette année"
+    },
     "review": {
+      "markAllReviewed": "Tout marquer comme vérifié",
+      "markReviewed": "Marquer comme vérifiée",
+      "markTransactionReviewed": "Marquer la transaction comme vérifiée",
+      "markTransactionUnreviewed": "Marquer la transaction comme non vérifiée",
+      "markUnreviewed": "Marquer comme non vérifiée",
+      "reviewed": "Vérifiée",
+      "reviewing": "Vérification…",
       "unreviewed": "Non vérifiée"
+    },
+    "search": {
+      "ariaLabel": "Rechercher des transactions",
+      "placeholder": "Rechercher marchands, descriptions…"
+    },
+    "sort": {
+      "largest": "Montant le plus élevé",
+      "newest": "Plus récentes",
+      "oldest": "Plus anciennes",
+      "smallest": "Montant le plus faible"
+    },
+    "status": {
+      "cleared": "Comptabilisée"
+    },
+    "summary": {
+      "count": "{{count}} transactions",
+      "needReview": "{{count}} à vérifier",
+      "net": "Net",
+      "txnCount": "{{count}} transaction(s)",
+      "unreviewed": "{{count}} non vérifiées"
+    },
+    "transfer": {
+      "excludeInternal": "Exclure les internes",
+      "internalOnly": "Internes uniquement",
+      "internalTransfer": "Virement interne",
+      "markInternal": "Marquer comme interne"
     }
   }
 }

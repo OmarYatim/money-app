@@ -9,8 +9,8 @@
   <button
     class="tx-row__review-btn"
     type="button"
-    [attr.aria-label]="transaction().reviewed ? 'Mark transaction unreviewed' : 'Mark transaction reviewed'"
-    [title]="transaction().reviewed ? 'Mark unreviewed' : 'Mark reviewed'"
+    [attr.aria-label]="(transaction().reviewed ? 'transactions.review.markTransactionUnreviewed' : 'transactions.review.markTransactionReviewed') | translate"
+    [title]="(transaction().reviewed ? 'transactions.review.markUnreviewed' : 'transactions.review.markReviewed') | translate"
     (click)="toggleReviewed($event)"
   >
     <mat-icon
@@ -33,7 +33,11 @@
     <div class="tx-row__label">
       {{ transaction().label }}
       @if (!transaction().reviewed) {
-        <span class="tx-row__new-dot" title="Unreviewed" aria-label="Unreviewed"></span>
+        <span
+          class="tx-row__new-dot"
+          [title]="'transactions.review.unreviewed' | translate"
+          [attr.aria-label]="'transactions.review.unreviewed' | translate"
+        ></span>
       }
     </div>
     @if (transaction().wording) {

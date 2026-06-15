@@ -1,18 +1,23 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
+import { LanguageService } from '../../../core/i18n/language.service';
 import type { Transaction } from '../../../shared/models/transaction.model';
 import { CategoryColorPipe } from '../../../shared/pipes/category-color.pipe';
 
 @Component({
   selector: 'app-transaction-row',
-  imports: [CurrencyPipe, DatePipe, MatIconModule, CategoryColorPipe],
+  imports: [CurrencyPipe, DatePipe, MatIconModule, CategoryColorPipe, TranslatePipe],
   templateUrl: './transaction-row.component.html',
   styleUrl: './transaction-row.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TransactionRowComponent {
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
+
   readonly transaction = input.required<Transaction>();
 
   readonly selected = output<Transaction>();
@@ -33,11 +38,8 @@ export class TransactionRowComponent {
   }
 
   protected categoryLabel(category: string): string {
-    return category
-      .toLowerCase()
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    this.languageService.currentLang();
+    return this.translate.instant(`categories.${category.toLowerCase()}`);
   }
 
   protected categoryIcon(category: string): string {

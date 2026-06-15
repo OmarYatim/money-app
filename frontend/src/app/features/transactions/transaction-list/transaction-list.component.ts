@@ -11,12 +11,14 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 
 import type { Account } from '../../../shared/models/account.model';
 import { CATEGORY_TYPES, type CategoryType } from '../../../shared/models/category.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
 import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
+import { LanguageService } from '../../../core/i18n/language.service';
 import { AccountService } from '../../accounts/account.service';
 import { TransactionService, type TransactionQuery } from '../transaction.service';
 import { UnreviewedTransactionCountService } from '../unreviewed-transaction-count.service';
@@ -64,7 +66,7 @@ type SortFilter = 'newest' | 'oldest' | 'largest' | 'smallest';
 
 interface Option<T extends string> {
   value: T;
-  label: string;
+  labelKey: string;
 }
 
 @Component({
@@ -74,6 +76,7 @@ interface Option<T extends string> {
     ReactiveFormsModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    TranslatePipe,
     PageActionsComponent,
     TransactionModalComponent,
     TransactionRowComponent,
@@ -87,6 +90,8 @@ export class TransactionListComponent {
   private readonly transactionService = inject(TransactionService);
   private readonly unreviewedTransactionCountService = inject(UnreviewedTransactionCountService);
   private readonly route = inject(ActivatedRoute);
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
 
   protected readonly categories = CATEGORY_TYPES;
   protected readonly accounts = signal<Account[]>([]);
@@ -97,35 +102,35 @@ export class TransactionListComponent {
   protected readonly groupBy = signal<GroupByFilter>('date');
   protected readonly sortBy = signal<SortFilter>('newest');
   protected readonly statusOptions: Option<StatusFilter>[] = [
-    { value: 'all', label: 'All' },
-    { value: 'reviewed', label: 'Reviewed' },
-    { value: 'unreviewed', label: 'Unreviewed' },
+    { value: 'all', labelKey: 'transactions.filters.all' },
+    { value: 'reviewed', labelKey: 'transactions.review.reviewed' },
+    { value: 'unreviewed', labelKey: 'transactions.review.unreviewed' },
   ];
   protected readonly groupOptions: Option<GroupByFilter>[] = [
-    { value: 'date', label: 'Date' },
-    { value: 'bank', label: 'Bank' },
-    { value: 'category', label: 'Category' },
+    { value: 'date', labelKey: 'transactions.filters.date' },
+    { value: 'bank', labelKey: 'transactions.filters.bank' },
+    { value: 'category', labelKey: 'transactions.filters.category' },
   ];
   protected readonly sortOptions: Option<SortFilter>[] = [
-    { value: 'newest', label: 'Newest' },
-    { value: 'oldest', label: 'Oldest' },
-    { value: 'largest', label: 'Largest amount' },
-    { value: 'smallest', label: 'Smallest amount' },
+    { value: 'newest', labelKey: 'transactions.sort.newest' },
+    { value: 'oldest', labelKey: 'transactions.sort.oldest' },
+    { value: 'largest', labelKey: 'transactions.sort.largest' },
+    { value: 'smallest', labelKey: 'transactions.sort.smallest' },
   ];
   protected readonly transferOptions: Option<TransferFilter>[] = [
-    { value: 'all', label: 'All' },
-    { value: 'internal', label: 'Internal only' },
-    { value: 'regular', label: 'Exclude internal' },
+    { value: 'all', labelKey: 'transactions.filters.all' },
+    { value: 'internal', labelKey: 'transactions.transfer.internalOnly' },
+    { value: 'regular', labelKey: 'transactions.transfer.excludeInternal' },
   ];
   protected readonly selectedPeriod = signal<string>('all');
   protected readonly periodTabs = [
-    { id: '7d', label: '7D' },
-    { id: '30d', label: '30D' },
-    { id: 'month', label: 'This month' },
-    { id: 'year', label: 'This year' },
-    { id: 'future', label: 'Future' },
-    { id: 'all', label: 'All' },
-    { id: 'custom', label: 'Custom' },
+    { id: '7d', labelKey: 'transactions.period.7d' },
+    { id: '30d', labelKey: 'transactions.period.30d' },
+    { id: 'month', labelKey: 'transactions.period.month' },
+    { id: 'year', labelKey: 'transactions.period.year' },
+    { id: 'future', labelKey: 'transactions.period.future' },
+    { id: 'all', labelKey: 'transactions.filters.all' },
+    { id: 'custom', labelKey: 'transactions.period.custom' },
   ];
   protected readonly customDateOpen = signal(false);
   protected readonly customMinDate = signal('');
@@ -135,10 +140,10 @@ export class TransactionListComponent {
     const max = this.customMaxDate();
     if (!min && !max) return null;
     const fmt = (d: string) =>
-      new Date(d).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      new Date(d).toLocaleDateString(this.dateLocale(), { day: 'numeric', month: 'short' });
     if (min && max) return `${fmt(min)} – ${fmt(max)}`;
-    if (min) return `From ${fmt(min)}`;
-    return `To ${fmt(max)}`;
+    if (min) return this.t('transactions.period.fromDate', { date: fmt(min) });
+    return this.t('transactions.period.toDate', { date: fmt(max) });
   });
   protected readonly activeFilterCount = signal(0);
   protected readonly reviewingAll = signal(false);
@@ -205,15 +210,15 @@ export class TransactionListComponent {
   });
   protected selectedAccountLabel(): string {
     const selectedAccountId = this.filterForm.controls.accountId.value;
-    if (selectedAccountId === null) return 'All accounts';
+    if (selectedAccountId === null) return this.t('accounts.filters.allAccounts');
 
     const account = this.accounts().find((item) => item.id === selectedAccountId);
-    return account ? this.accountLabel(account) : 'All accounts';
+    return account ? this.accountLabel(account) : this.t('accounts.filters.allAccounts');
   }
 
   protected selectedCategoryLabel(): string {
     const category = this.filterForm.controls.category.value;
-    return category ? this.categoryLabel(category) : 'All categories';
+    return category ? this.categoryLabel(category) : this.t('transactions.filters.allCategories');
   }
 
   protected selectedStatusLabel(): string {
@@ -361,11 +366,8 @@ export class TransactionListComponent {
   }
 
   protected categoryLabel(category: string): string {
-    return category
-      .toLowerCase()
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    this.languageService.currentLang();
+    return this.t(`categories.${category.toLowerCase()}`);
   }
 
   protected categoryIconColor(category: string): string {
@@ -384,9 +386,10 @@ export class TransactionListComponent {
     const d = new Date(dateStr);
     d.setHours(0, 0, 0, 0);
     const diffDays = Math.round((now.getTime() - d.getTime()) / 86400000);
-    if (diffDays === 0) return 'Today';
-    if (diffDays === 1) return 'Yesterday';
-    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+    this.languageService.currentLang();
+    if (diffDays === 0) return this.t('time.today');
+    if (diffDays === 1) return this.t('time.yesterday');
+    return d.toLocaleDateString(this.dateLocale(), { day: 'numeric', month: 'short' });
   }
 
   protected setPeriod(period: string): void {
@@ -479,7 +482,7 @@ export class TransactionListComponent {
         transaction,
         loading: false,
         saving: false,
-        error: 'Unable to load full transaction details.',
+        error: this.t('transactions.errors.loadFullDetails'),
       });
     }
   }
@@ -514,7 +517,7 @@ export class TransactionListComponent {
     } catch {
       this.detailState.update((current) => ({
         ...current,
-        error: 'Unable to update reviewed state.',
+        error: this.t('transactions.errors.updateReviewed'),
       }));
     }
   }
@@ -560,7 +563,7 @@ export class TransactionListComponent {
     } catch {
       this.state.update((current) => ({
         ...current,
-        error: 'Unable to mark all loaded transactions as reviewed.',
+        error: this.t('transactions.errors.markAllReviewed'),
       }));
     } finally {
       this.reviewingAll.set(false);
@@ -614,7 +617,7 @@ export class TransactionListComponent {
       this.detailState.update((current) => ({
         ...current,
         saving: false,
-        error: 'Unable to update reviewed state.',
+        error: this.t('transactions.errors.updateReviewed'),
       }));
     }
   }
@@ -640,7 +643,7 @@ export class TransactionListComponent {
       this.detailState.update((current) => ({
         ...current,
         saving: false,
-        error: 'Unable to update category.',
+        error: this.t('transactions.errors.updateCategory'),
       }));
     }
   }
@@ -669,7 +672,7 @@ export class TransactionListComponent {
       this.detailState.update((current) => ({
         ...current,
         saving: false,
-        error: 'Unable to update internal transfer state.',
+        error: this.t('transactions.errors.updateInternalTransfer'),
       }));
     }
   }
@@ -739,7 +742,7 @@ export class TransactionListComponent {
       this.state.update((current) => ({
         ...current,
         loadingInitial: false,
-        error: 'Unable to load transactions.',
+        error: this.t('transactions.errors.loadTransactions'),
       }));
     }
   }
@@ -795,7 +798,12 @@ export class TransactionListComponent {
       const transaction = await firstValueFrom(this.transactionService.getTransaction(id));
       this.detailState.set({ transaction, loading: false, saving: false, error: null });
     } catch {
-      this.detailState.set({ transaction: null, loading: false, saving: false, error: 'Unable to load transaction.' });
+      this.detailState.set({
+        transaction: null,
+        loading: false,
+        saving: false,
+        error: this.t('transactions.errors.loadTransaction'),
+      });
     }
   }
 
@@ -822,7 +830,7 @@ export class TransactionListComponent {
         id: transaction.accountId,
         connectionId: null,
         institutionName: null,
-        name: transaction.accountName ?? 'Archived account',
+        name: transaction.accountName ?? this.t('transactions.archivedAccount'),
         type: null,
         accountNumberLastFour: null,
         balance: 0,
@@ -836,7 +844,7 @@ export class TransactionListComponent {
   }
 
   private groupKey(transaction: Transaction): string {
-    if (this.groupBy() === 'bank') return transaction.accountName ?? 'Connected account';
+    if (this.groupBy() === 'bank') return transaction.accountName ?? this.t('transactions.connectedAccount');
     if (this.groupBy() === 'category') return transaction.category;
     return transaction.date;
   }
@@ -848,7 +856,8 @@ export class TransactionListComponent {
   }
 
   private optionLabel<T extends string>(options: Option<T>[], value: T): string {
-    return options.find((option) => option.value === value)?.label ?? value;
+    const option = options.find((item) => item.value === value);
+    return option ? this.t(option.labelKey) : value;
   }
 
   private transactionTime(transaction: Transaction): number {
@@ -861,6 +870,14 @@ export class TransactionListComponent {
       String(date.getMonth() + 1).padStart(2, '0'),
       String(date.getDate()).padStart(2, '0'),
     ].join('-');
+  }
+
+  private dateLocale(): string {
+    return this.languageService.currentLang() === 'en' ? 'en-GB' : this.languageService.currentLang();
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params);
   }
 
   private isCategoryType(value: string): value is CategoryType {

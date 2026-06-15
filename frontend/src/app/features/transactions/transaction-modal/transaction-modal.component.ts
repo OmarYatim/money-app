@@ -2,24 +2,30 @@ import { CurrencyPipe, DatePipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   input,
   output,
   signal,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 
+import { LanguageService } from '../../../core/i18n/language.service';
 import type { CategoryType } from '../../../shared/models/category.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
 
 @Component({
   selector: 'app-transaction-modal',
-  imports: [CurrencyPipe, DatePipe, MatIconModule, MatProgressSpinnerModule],
+  imports: [CurrencyPipe, DatePipe, MatIconModule, MatProgressSpinnerModule, TranslatePipe],
   templateUrl: './transaction-modal.component.html',
   styleUrl: './transaction-modal.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TransactionModalComponent {
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
+
   readonly transaction = input<Transaction | null>(null);
   readonly loading = input(false);
   readonly saving = input(false);
@@ -44,11 +50,8 @@ export class TransactionModalComponent {
   }
 
   protected categoryLabel(category: string): string {
-    return category
-      .toLowerCase()
-      .split('_')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
+    this.languageService.currentLang();
+    return this.translate.instant(`categories.${category.toLowerCase()}`);
   }
 
   protected categoryIcon(category: string): string {
@@ -99,13 +102,20 @@ export class TransactionModalComponent {
 
   protected transactionMethod(transaction: Transaction): string {
     const type = transaction.type?.toLowerCase() ?? '';
-    if (type.includes('card')) return 'Card';
-    if (type.includes('transfer')) return 'Bank transfer';
-    if (type.includes('debit')) return 'SEPA Direct Debit';
-    return transaction.type ? this.categoryLabel(transaction.type) : 'Bank transaction';
+    if (type.includes('card')) return this.t('transactions.method.card');
+    if (type.includes('transfer')) return this.t('transactions.method.bankTransfer');
+    if (type.includes('debit')) return this.t('transactions.method.sepaDebit');
+    return transaction.type ? this.categoryLabel(transaction.type) : this.t('transactions.method.bankTransaction');
   }
 
   protected transactionDirection(transaction: Transaction): string {
-    return transaction.value >= 0 ? 'Credit (incoming)' : 'Debit (outgoing)';
+    return transaction.value >= 0
+      ? this.t('transactions.direction.credit')
+      : this.t('transactions.direction.debit');
+  }
+
+  private t(key: string): string {
+    this.languageService.currentLang();
+    return this.translate.instant(key);
   }
 }

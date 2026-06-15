@@ -89,12 +89,18 @@
   "common": {
     "breadcrumb": "Breadcrumb",
     "cancel": "Abbrechen",
+    "apply": "Anwenden",
+    "close": "Schließen",
     "comingSoon": "Demnächst",
     "details": "Details",
     "dismiss": "Schließen",
+    "next": "Weiter",
+    "no": "Nein",
+    "previous": "Zurück",
     "refresh": "Aktualisieren",
     "retry": "Erneut versuchen",
-    "viewAll": "Alle anzeigen"
+    "viewAll": "Alle anzeigen",
+    "yes": "Ja"
   },
   "dashboard": {
     "cashFlow": {
@@ -191,11 +197,136 @@
     "reconnecting": "Verbindung wird wiederhergestellt…"
   },
   "time": {
-    "thisMonth": "diesen Monat"
+    "thisMonth": "diesen Monat",
+    "today": "Heute",
+    "yesterday": "Gestern"
   },
   "transactions": {
+    "archivedAccount": "Archiviertes Konto",
+    "connectedAccount": "Verbundenes Konto",
+    "direction": {
+      "credit": "Gutschrift (eingehend)",
+      "debit": "Belastung (ausgehend)"
+    },
+    "empty": {
+      "title": "Keine Transaktionen gefunden",
+      "subtitle": "Entfernen Sie Filter oder erweitern Sie den Zeitraum."
+    },
+    "errors": {
+      "loadFullDetails": "Vollständige Transaktionsdetails konnten nicht geladen werden.",
+      "loadTransaction": "Transaktion konnte nicht geladen werden.",
+      "loadTransactions": "Transaktionen konnten nicht geladen werden.",
+      "markAllReviewed": "Geladene Transaktionen konnten nicht alle als geprüft markiert werden.",
+      "updateCategory": "Kategorie konnte nicht aktualisiert werden.",
+      "updateInternalTransfer": "Status der internen Überweisung konnte nicht aktualisiert werden.",
+      "updateReviewed": "Prüfstatus konnte nicht aktualisiert werden."
+    },
+    "filters": {
+      "account": "Konto",
+      "accountFilter": "Kontofilter",
+      "all": "Alle",
+      "allCategories": "Alle Kategorien",
+      "bank": "Bank",
+      "category": "Kategorie",
+      "categoryFilter": "Kategoriefilter",
+      "clear": "Filter löschen",
+      "date": "Datum",
+      "groupBy": "Gruppieren nach",
+      "groupTransactionsBy": "Transaktionen gruppieren nach",
+      "internalTransferFilter": "Filter für interne Überweisungen",
+      "rows": "Zeilen",
+      "rowsPerPage": "Zeilen pro Seite",
+      "sort": "Sortieren",
+      "sortTransactions": "Transaktionen sortieren",
+      "status": "Status",
+      "statusFilter": "Statusfilter",
+      "transfer": "Überweisung"
+    },
+    "method": {
+      "bankTransaction": "Banktransaktion",
+      "bankTransfer": "Banküberweisung",
+      "card": "Karte",
+      "sepaDebit": "SEPA-Lastschrift"
+    },
+    "modal": {
+      "actions": "Transaktionsaktionen",
+      "addNote": "Notiz hinzufügen",
+      "appliedDate": "Angewendet am {{date}}",
+      "breadcrumb": "Breadcrumb für Transaktionsdetail",
+      "category": "Transaktionskategorie",
+      "changeCategory": "Kategorie ändern",
+      "closeDetail": "Transaktionsdetail schließen",
+      "copyReference": "Referenz kopieren",
+      "counterparty": "Gegenpartei",
+      "detail": "Detail",
+      "flagForReview": "Zur Prüfung markieren",
+      "manuallySet": "Manuell gesetzt",
+      "markRecurring": "Als wiederkehrend markieren",
+      "method": "Methode",
+      "noNotes": "Noch keine Notizen. Fügen Sie eine private Notiz für Ihre Nachverfolgung hinzu.",
+      "originalWording": "Originaler Wortlaut",
+      "posted": "Gebucht",
+      "readOnlyNotice": "Diese Transaktion ist schreibgeschützt. Nexioo kann Zahlungen nicht ändern oder erstatten; wenden Sie sich bei Reklamationen direkt an Ihre Bank.",
+      "recategorize": "Transaktion neu kategorisieren",
+      "reference": "Referenz",
+      "selectedCategory": "Ausgewählte Kategorie",
+      "transactionDetails": "Transaktionsdetails",
+      "type": "Typ",
+      "yourNotes": "Ihre Notizen"
+    },
+    "pagination": {
+      "ariaLabel": "Transaktionsseiten",
+      "summary": "Seite {{page}} von {{total}}"
+    },
+    "period": {
+      "7d": "7 T",
+      "30d": "30 T",
+      "ariaLabel": "Zeitraum",
+      "custom": "Benutzerdefiniert",
+      "from": "Von",
+      "fromDate": "Von {{date}}",
+      "future": "Zukunft",
+      "month": "Diesen Monat",
+      "selectDateRange": "Datumsbereich auswählen",
+      "to": "Bis",
+      "toDate": "Bis {{date}}",
+      "year": "Dieses Jahr"
+    },
     "review": {
+      "markAllReviewed": "Alle als geprüft markieren",
+      "markReviewed": "Als geprüft markieren",
+      "markTransactionReviewed": "Transaktion als geprüft markieren",
+      "markTransactionUnreviewed": "Transaktion als ungeprüft markieren",
+      "markUnreviewed": "Als ungeprüft markieren",
+      "reviewed": "Geprüft",
+      "reviewing": "Wird geprüft…",
       "unreviewed": "Ungeprüft"
+    },
+    "search": {
+      "ariaLabel": "Transaktionen suchen",
+      "placeholder": "Händler, Beschreibungen suchen…"
+    },
+    "sort": {
+      "largest": "Höchster Betrag",
+      "newest": "Neueste",
+      "oldest": "Älteste",
+      "smallest": "Niedrigster Betrag"
+    },
+    "status": {
+      "cleared": "Gebucht"
+    },
+    "summary": {
+      "count": "{{count}} Transaktionen",
+      "needReview": "{{count}} zu prüfen",
+      "net": "Netto",
+      "txnCount": "{{count}} Transaktion(en)",
+      "unreviewed": "{{count}} ungeprüft"
+    },
+    "transfer": {
+      "excludeInternal": "Interne ausschließen",
+      "internalOnly": "Nur interne",
+      "internalTransfer": "Interne Überweisung",
+      "markInternal": "Als intern markieren"
     }
   }
 }

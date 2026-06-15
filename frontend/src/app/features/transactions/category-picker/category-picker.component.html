@@ -1,5 +1,5 @@
 <section class="category-picker" aria-labelledby="category-picker-title">
-  <h2 id="category-picker-title" class="category-picker__title">Change category</h2>
+  <h2 id="category-picker-title" class="category-picker__title">{{ 'transactions.modal.changeCategory' | translate }}</h2>
 
   <mat-action-list>
     @for (category of categories; track category) {
@@ -8,7 +8,7 @@
           {{ categoryLabel(category) }}
         </span>
         @if (category === data.selectedCategory) {
-          <mat-icon matListItemMeta aria-label="Selected category">check</mat-icon>
+          <mat-icon matListItemMeta [attr.aria-label]="'transactions.modal.selectedCategory' | translate">check</mat-icon>
         }
       </button>
     }
