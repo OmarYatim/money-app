@@ -183,6 +183,9 @@
     "reports": "Rapports",
     "unreviewedTransactions": "{{count}} transactions non vérifiées"
   },
+  "pageActions": {
+    "notifications": "Notifications, {{count}} transactions non vérifiées"
+  },
   "profile": {
     "planStatus": "Offre gratuite · espace sécurisé",
     "yourProfile": "Votre profil",

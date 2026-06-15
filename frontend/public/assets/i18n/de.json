@@ -183,6 +183,9 @@
     "reports": "Berichte",
     "unreviewedTransactions": "{{count}} ungeprüfte Transaktionen"
   },
+  "pageActions": {
+    "notifications": "Benachrichtigungen, {{count}} ungeprüfte Transaktionen"
+  },
   "profile": {
     "planStatus": "Kostenloser Tarif · sicherer Arbeitsbereich",
     "yourProfile": "Ihr Profil",

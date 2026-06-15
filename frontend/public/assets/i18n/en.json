@@ -183,6 +183,9 @@
     "reports": "Reports",
     "unreviewedTransactions": "{{count}} unreviewed transactions"
   },
+  "pageActions": {
+    "notifications": "Notifications, {{count}} unreviewed transactions"
+  },
   "profile": {
     "planStatus": "Free plan · secure workspace",
     "yourProfile": "Your profile",

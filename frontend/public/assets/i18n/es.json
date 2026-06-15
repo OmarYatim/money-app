@@ -183,6 +183,9 @@
     "reports": "Informes",
     "unreviewedTransactions": "{{count}} transacciones sin revisar"
   },
+  "pageActions": {
+    "notifications": "Notificaciones, {{count}} transacciones sin revisar"
+  },
   "profile": {
     "planStatus": "Plan gratuito · espacio seguro",
     "yourProfile": "Tu perfil",
