@@ -19,15 +19,36 @@ public class SseEmitterService {
 
   public SseEmitter register(Long userId) {
     SseEmitter emitter = new SseEmitter(STREAM_TIMEOUT_MS);
-    emittersByUser.computeIfAbsent(userId, ignored -> ConcurrentHashMap.newKeySet()).add(emitter);
+    Set<SseEmitter> emitters =
+        emittersByUser.computeIfAbsent(userId, ignored -> ConcurrentHashMap.newKeySet());
+    emitters.add(emitter);
+    log.info("SSE stream registered for userId={} activeEmitters={}", userId, emitters.size());
 
-    emitter.onCompletion(() -> removeEmitter(userId, emitter));
+    emitter.onCompletion(
+        () -> {
+          removeEmitter(userId, emitter);
+          log.info(
+              "SSE stream completed for userId={} activeEmitters={}",
+              userId,
+              activeEmitterCount(userId));
+        });
     emitter.onTimeout(
         () -> {
           removeEmitter(userId, emitter);
+          log.info(
+              "SSE stream timed out for userId={} activeEmitters={}",
+              userId,
+              activeEmitterCount(userId));
           emitter.complete();
         });
-    emitter.onError(error -> removeEmitter(userId, emitter));
+    emitter.onError(
+        error -> {
+          removeEmitter(userId, emitter);
+          log.warn(
+              "SSE stream failed for userId={} activeEmitters={}",
+              userId,
+              activeEmitterCount(userId));
+        });
 
     sendOrRemove(userId, emitter, StreamEventType.CONNECTED, "connected");
     return emitter;
@@ -41,9 +62,15 @@ public class SseEmitterService {
   void emit(Long userId, StreamEventType eventType) {
     Set<SseEmitter> emitters = emittersByUser.get(userId);
     if (emitters == null || emitters.isEmpty()) {
+      log.info("SSE event={} skipped for userId={} activeEmitters=0", eventType, userId);
       return;
     }
 
+    log.info(
+        "SSE event={} emitting for userId={} activeEmitters={}",
+        eventType,
+        userId,
+        emitters.size());
     emitters.forEach(emitter -> sendOrRemove(userId, emitter, eventType, Instant.now().toString()));
   }
 
