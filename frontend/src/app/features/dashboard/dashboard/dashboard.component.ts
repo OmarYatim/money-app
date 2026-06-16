@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { RouterLink } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { catchError, concat, exhaustMap, firstValueFrom, map, merge, of, startWith, Subject, switchMap, timer } from 'rxjs';
 import type { Observable } from 'rxjs';
 
@@ -12,6 +13,7 @@ import type { DashboardSummary } from '../../../shared/models/dashboard.model';
 import type { SyncStatus } from '../../../shared/models/sync-status.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
 import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
+import { LanguageService } from '../../../core/i18n/language.service';
 import { AccountService } from '../../accounts/account.service';
 import { DashboardService } from '../dashboard.service';
 import { TransactionService } from '../../transactions/transaction.service';
@@ -41,6 +43,7 @@ const EMPTY_SYNC_STATUS: SyncStatus = {
     MatIconModule,
     MatProgressSpinnerModule,
     RouterLink,
+    TranslatePipe,
     PageActionsComponent,
   ],
   templateUrl: './dashboard.component.html',
@@ -51,6 +54,8 @@ export class DashboardComponent {
   private readonly dashboardService = inject(DashboardService);
   private readonly transactionService = inject(TransactionService);
   private readonly accountService = inject(AccountService);
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
   private readonly refreshSummary$ = new Subject<boolean>();
 
   protected readonly selectedChartPeriod = signal('1Y');
@@ -65,7 +70,7 @@ export class DashboardComponent {
           of({ summary: null, loading: true, error: null }),
           this.loadSummary(syncFirst).pipe(
             map((summary): DashboardState => ({ summary, loading: false, error: null })),
-            catchError(() => of({ summary: null, loading: false, error: 'Unable to refresh dashboard summary.' })),
+            catchError(() => of({ summary: null, loading: false, error: this.t('dashboard.errors.refreshSummary') })),
           ),
         ),
       ),
@@ -109,25 +114,31 @@ export class DashboardComponent {
 
   protected readonly lastSyncedLabel = computed(() => {
     const lastSyncedAt = this.syncStatus().lastSyncedAt ?? this.state().summary?.lastSyncedAt;
-    if (!lastSyncedAt) return 'Never synced';
+    this.languageService.currentLang();
+    if (!lastSyncedAt) return this.t('dashboard.sync.never');
     const elapsedMinutes = Math.floor((Date.now() - new Date(lastSyncedAt).getTime()) / 60000);
-    if (elapsedMinutes <= 0) return 'just now';
-    if (elapsedMinutes < 60) return `${elapsedMinutes} min ago`;
+    if (elapsedMinutes <= 0) return this.t('dashboard.sync.justNow');
+    if (elapsedMinutes < 60) {
+      return this.t('dashboard.sync.minutesAgo', { count: elapsedMinutes });
+    }
     const elapsedHours = Math.floor(elapsedMinutes / 60);
-    return elapsedHours === 1 ? '1 hour ago' : `${elapsedHours} hours ago`;
+    return elapsedHours === 1
+      ? this.t('dashboard.sync.oneHourAgo')
+      : this.t('dashboard.sync.hoursAgo', { count: elapsedHours });
   });
   protected readonly hasSyncAlert = computed(
     () => this.syncStatus().hasSyncError || this.syncStatus().connectionsRequiringAction.length > 0,
   );
   protected readonly syncBannerText = computed(() => {
     const actionCount = this.syncStatus().connectionsRequiringAction.length;
+    this.languageService.currentLang();
     if (actionCount > 0) {
       return actionCount === 1
-        ? 'One bank connection needs attention. Click to re-authenticate.'
-        : `${actionCount} bank connections need attention. Click to re-authenticate.`;
+        ? this.t('dashboard.sync.oneConnectionNeedsAction')
+        : this.t('dashboard.sync.connectionsNeedAction', { count: actionCount });
     }
 
-    return 'The last bank sync failed. Click to reconnect and refresh your data.';
+    return this.t('dashboard.sync.lastSyncFailed');
   });
 
   protected readonly emptySummary = computed(() => {
@@ -210,7 +221,7 @@ export class DashboardComponent {
       const response = await firstValueFrom(this.accountService.connectBank());
       window.location.href = response.webviewUrl;
     } catch {
-      this.syncActionError.set('Unable to open bank re-authentication.');
+      this.syncActionError.set(this.t('dashboard.errors.openReauth'));
     }
   }
 
@@ -244,8 +255,8 @@ export class DashboardComponent {
   }
 
   protected categoryLabel(category: string): string {
-    return category.toLowerCase().split('_')
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    this.languageService.currentLang();
+    return this.t(`categories.${category.toLowerCase()}`);
   }
 
   private loadSummary(syncFirst: boolean): Observable<DashboardSummary> {
@@ -270,7 +281,7 @@ export class DashboardComponent {
         .filter((transaction) => new Date(transaction.date) >= nextMonth)
         .reduce((sum, transaction) => sum + transaction.value, 0);
       return {
-        month: pointDate.toLocaleDateString('en-GB', { month: 'short' }),
+        month: pointDate.toLocaleDateString(this.dateLocale(), { month: 'short' }),
         value: currentNetWorth - laterTransactionValue,
       };
     });
@@ -360,5 +371,13 @@ export class DashboardComponent {
       String(date.getMonth() + 1).padStart(2, '0'),
       String(date.getDate()).padStart(2, '0'),
     ].join('-');
+  }
+
+  private dateLocale(): string {
+    return this.languageService.currentLang() === 'en' ? 'en-GB' : this.languageService.currentLang();
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params);
   }
 }

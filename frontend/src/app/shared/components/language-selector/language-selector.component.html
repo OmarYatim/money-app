@@ -1,0 +1,13 @@
+<label class="language-selector">
+  <span class="language-selector__label">{{ 'language.selectorLabel' | translate }}</span>
+  <select
+    class="language-selector__control"
+    [value]="currentLang()"
+    [attr.aria-label]="'language.selectorLabel' | translate"
+    (change)="switchLanguage($event)"
+  >
+    @for (option of options; track option.code) {
+      <option [value]="option.code">{{ option.nameKey | translate }}</option>
+    }
+  </select>
+</label>

@@ -1,5 +1,5 @@
 @if (data().length === 0) {
-  <div class="chart-empty">No spending data for this period.</div>
+  <div class="chart-empty">{{ 'reports.noSpendingData' | translate }}</div>
 } @else {
   <div class="spending-chart">
     <div class="spending-chart__donut">
@@ -9,10 +9,10 @@
         [data]="chartData()"
         [options]="chartOptions"
         (chartClick)="selectSegment($event)"
-        aria-label="Spending by category chart"
+        [attr.aria-label]="'reports.spendingByCategoryChart' | translate"
       ></canvas>
       <div class="spending-chart__center" aria-hidden="true">
-        <span>Total spent</span>
+        <span>{{ 'reports.totalSpent' | translate }}</span>
         <strong>{{ total() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
       </div>
     </div>

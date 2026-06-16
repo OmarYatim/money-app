@@ -10,7 +10,10 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AuthService } from '../../../core/auth/auth.service';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { LanguageSelectorComponent } from '../../../shared/components/language-selector/language-selector.component';
 import type {
   ApiErrorResponse,
   ValidationErrorResponse,
@@ -32,7 +35,7 @@ interface PhoneCountry {
 @Component({
   selector: 'app-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule],
+  imports: [LanguageSelectorComponent, ReactiveFormsModule, TranslatePipe],
   templateUrl: './login.component.html',
   styleUrl: './login.component.scss',
 })
@@ -40,6 +43,8 @@ export class LoginComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
 
   readonly mode = signal<AuthMode>('login');
   readonly step = signal<LoginStep>('credentials');
@@ -137,12 +142,13 @@ export class LoginComponent {
   });
   readonly phoneHint = computed(() => {
     const country = this.selectedPhoneCountry();
+    this.languageService.currentLang();
     if (this.phoneNationalDigits().length === 0) {
-      return `${country.name}: ${country.hint}`;
+      return this.t('auth.phoneHint.empty', { country: country.name, hint: country.hint });
     }
     return this.phoneValid()
       ? `${country.dialCode}${this.phoneNationalDigits()}`
-      : `${country.name} numbers should use ${country.hint}.`;
+      : this.t('auth.phoneHint.invalid', { country: country.name, hint: country.hint });
   });
   readonly isFormValid = computed(() => {
     this.formValue();
@@ -178,21 +184,22 @@ export class LoginComponent {
   });
   readonly passwordHint = computed(() =>
     this.mode() === 'register' && !this.passwordStrong()
-      ? 'Use 12+ characters and at least 3 of: uppercase, lowercase, number, symbol.'
+      ? this.t('auth.passwordHint')
       : null,
   );
   readonly submitLabel = computed(() => {
+    this.languageService.currentLang();
     if (this.loading()) {
-      return this.mode() === 'login' ? 'Signing in…' : 'Creating account…';
+      return this.mode() === 'login' ? this.t('auth.signingIn') : this.t('auth.creatingAccount');
     }
     if (this.loginRateLimited()) {
-      return 'Try again soon';
+      return this.t('auth.tryAgainSoon');
     }
-    return this.mode() === 'login' ? 'Sign in' : 'Create account';
+    return this.mode() === 'login' ? this.t('auth.login') : this.t('auth.register');
   });
-  readonly mfaSubmitLabel = computed(() => (this.loading() ? 'Verifying…' : 'Verify code'));
+  readonly mfaSubmitLabel = computed(() => (this.loading() ? this.t('auth.verifying') : this.t('auth.verifyCode')));
   readonly registerCodeSubmitLabel = computed(() =>
-    this.loading() ? 'Confirming…' : 'Confirm account',
+    this.loading() ? this.t('auth.confirming') : this.t('auth.confirmAccount'),
   );
 
   constructor() {
@@ -289,7 +296,7 @@ export class LoginComponent {
         next: () => this.router.navigate(['/accounts']),
         error: () => {
           this.loading.set(false);
-          this.errorMessage.set('Invalid or expired code. Request a new code and try again.');
+          this.errorMessage.set(this.t('auth.errors.invalidRegisterCode'));
         },
       });
   }
@@ -309,7 +316,7 @@ export class LoginComponent {
         next: () => this.router.navigate(['/accounts']),
         error: () => {
           this.loading.set(false);
-          this.errorMessage.set('Invalid or expired code. Sign in again if the code keeps failing.');
+          this.errorMessage.set(this.t('auth.errors.invalidMfaCode'));
         },
       });
   }
@@ -330,7 +337,7 @@ export class LoginComponent {
       if (this.isRateLimitError(error)) {
         return this.resolveRateLimitError(error);
       }
-      return error.status === 401 ? 'Invalid email or password.' : 'Login failed. Please try again.';
+      return error.status === 401 ? this.t('auth.errors.invalidCredentials') : this.t('auth.errors.loginFailed');
     }
     if (error.status === 400) {
       return this.resolveRegistrationValidationError(error.error);
@@ -339,8 +346,8 @@ export class LoginComponent {
       return this.formatValidationMessage(error.error.message);
     }
     return error.status === 409
-      ? 'An account with this email already exists.'
-      : 'Registration failed. Please try again.';
+      ? this.t('auth.errors.accountExists')
+      : this.t('auth.errors.registrationFailed');
   }
 
   private resolveRegistrationValidationError(errorBody: unknown): string {
@@ -351,7 +358,7 @@ export class LoginComponent {
         return this.formatValidationMessage(message);
       }
     }
-    return 'Check the signup fields and try again.';
+    return this.t('auth.errors.checkSignupFields');
   }
 
   private isValidationErrorResponse(errorBody: unknown): errorBody is ValidationErrorResponse {
@@ -387,12 +394,12 @@ export class LoginComponent {
     const retrySeconds = this.retryAfterSeconds(error);
     if (retrySeconds !== null) {
       this.startRateLimitCountdown(retrySeconds);
-      return `Too many requests. Please try again in ${this.formatRetryAfter(retrySeconds)}.`;
+      return this.t('auth.errors.tooManyRequestsRetry', { time: this.formatRetryAfter(retrySeconds) });
     }
     this.clearRateLimitCountdown();
     return this.isApiErrorResponse(error.error) && error.error.message
       ? this.formatValidationMessage(error.error.message)
-      : 'Too many requests. Please try again later.';
+      : this.t('auth.errors.tooManyRequestsLater');
   }
 
   private retryAfterSeconds(error: HttpErrorResponse): number | null {
@@ -417,7 +424,7 @@ export class LoginComponent {
       const nextRemaining = remaining - 1;
       this.rateLimitRetrySeconds.set(nextRemaining);
       this.errorMessage.set(
-        `Too many requests. Please try again in ${this.formatRetryAfter(nextRemaining)}.`,
+        this.t('auth.errors.tooManyRequestsRetry', { time: this.formatRetryAfter(nextRemaining) }),
       );
     }, 1000);
   }
@@ -432,10 +439,10 @@ export class LoginComponent {
 
   private formatRetryAfter(seconds: number): string {
     if (seconds < 60) {
-      return `${seconds} ${seconds === 1 ? 'second' : 'seconds'}`;
+      return this.t(seconds === 1 ? 'time.second' : 'time.seconds', { count: seconds });
     }
     const minutes = Math.ceil(seconds / 60);
-    return `${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`;
+    return this.t(minutes === 1 ? 'time.minute' : 'time.minutes', { count: minutes });
   }
 
   private formatValidationMessage(message: string): string {
@@ -444,15 +451,15 @@ export class LoginComponent {
 
   private resolveValidationError(): string {
     if (this.mode() === 'login') {
-      return 'Enter a valid email and password.';
+      return this.t('auth.errors.enterEmailPassword');
     }
     if (!this.phoneValid()) {
-      return 'Enter a valid phone number for the selected country.';
+      return this.t('auth.errors.enterValidPhone');
     }
     if (!this.passwordStrong()) {
-      return 'Use a stronger password before creating the account.';
+      return this.t('auth.errors.useStrongerPassword');
     }
-    return 'Complete all required fields before creating the account.';
+    return this.t('auth.errors.completeRequiredFields');
   }
 
   private passwordStrong(): boolean {
@@ -464,5 +471,9 @@ export class LoginComponent {
     const digits = this.phoneNationalValue().replace(/\D/g, '');
     const dialDigits = this.selectedPhoneCountry().dialCode.replace(/\D/g, '');
     return digits.startsWith(dialDigits) ? digits.slice(dialDigits.length) : digits;
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params);
   }
 }

@@ -15,16 +15,16 @@
           <span class="material-icons">{{ form.controls.icon.value }}</span>
         </span>
         <div>
-          <p>{{ goal() ? 'Edit savings plan' : 'Create savings plan' }}</p>
+          <p>{{ (goal() ? 'goals.form.editSavingsPlan' : 'goals.form.createSavingsPlan') | translate }}</p>
           <h2>{{ heading() }}</h2>
         </div>
       </div>
-      <button class="goal-modal__icon" type="button" aria-label="Close form" (click)="formClosed.emit()">
+      <button class="goal-modal__icon" type="button" [attr.aria-label]="'goals.form.closeForm' | translate" (click)="formClosed.emit()">
         <span class="material-icons">close</span>
       </button>
     </header>
 
-    <div class="goal-modal__tabs" role="tablist" aria-label="Goal form sections">
+    <div class="goal-modal__tabs" role="tablist" [attr.aria-label]="'goals.form.sections' | translate">
       <button
         type="button"
         role="tab"
@@ -33,8 +33,8 @@
         (click)="selectTab('details')"
       >
         <span>1</span>
-        <strong>Details</strong>
-        <small>Name and target</small>
+        <strong>{{ 'goals.form.details' | translate }}</strong>
+        <small>{{ 'goals.form.nameAndTarget' | translate }}</small>
       </button>
       <button
         type="button"
@@ -44,20 +44,20 @@
         (click)="selectTab('funding')"
       >
         <span>2</span>
-        <strong>Funding</strong>
-        <small>Account and schedule</small>
+        <strong>{{ 'goals.form.funding' | translate }}</strong>
+        <small>{{ 'goals.form.accountAndSchedule' | translate }}</small>
       </button>
     </div>
 
     <div class="goal-modal__body">
       @if (activeTab() === 'details') {
         <label class="goal-modal__field goal-modal__field--wide">
-          <span>Goal name</span>
-          <input formControlName="name" type="text" placeholder="Emergency fund" />
+          <span>{{ 'goals.form.goalName' | translate }}</span>
+          <input formControlName="name" type="text" [placeholder]="'goals.form.goalNamePlaceholder' | translate" />
         </label>
 
         <div class="goal-modal__field goal-modal__field--wide">
-          <span>Icon</span>
+          <span>{{ 'goals.form.icon' | translate }}</span>
           <div class="goal-modal__icon-grid">
             @for (option of iconChoices; track option.value) {
               <button
@@ -65,7 +65,7 @@
                 [class.goal-modal__choice--active]="form.controls.icon.value === option.value"
                 [style.border-color]="form.controls.icon.value === option.value ? selectedColor() : null"
                 [style.color]="form.controls.icon.value === option.value ? selectedColor() : null"
-                [attr.aria-label]="option.label"
+                [attr.aria-label]="option.labelKey | translate"
                 (click)="chooseIcon(option.value)"
               >
                 <span class="material-icons">{{ option.value }}</span>
@@ -75,7 +75,7 @@
         </div>
 
         <div class="goal-modal__field goal-modal__field--wide">
-          <span>Color</span>
+          <span>{{ 'goals.form.color' | translate }}</span>
           <div class="goal-modal__swatches">
             @for (option of colorChoices; track option.value) {
               <button
@@ -83,7 +83,7 @@
                 [class.goal-modal__swatch--active]="form.controls.color.value === option.value"
                 [style.background]="option.swatch"
                 [style.--swatch-color]="option.swatch"
-                [attr.aria-label]="option.label"
+                [attr.aria-label]="option.labelKey | translate"
                 (click)="chooseColor(option.value)"
               ></button>
             }
@@ -91,16 +91,16 @@
         </div>
 
         <label class="goal-modal__field">
-          <span>Category</span>
+          <span>{{ 'transactions.filters.category' | translate }}</span>
           <select formControlName="category">
             @for (category of categoryChoices; track category) {
-              <option [value]="category">{{ category }}</option>
+              <option [value]="category">{{ goalCategoryLabel(category) }}</option>
             }
           </select>
         </label>
 
         <div class="goal-modal__field">
-          <span>Priority</span>
+          <span>{{ 'goals.priority.label' | translate }}</span>
           <div class="goal-modal__pills">
             @for (priority of priorityChoices; track priority) {
               <button
@@ -111,14 +111,14 @@
                 [style.color]="form.controls.priority.value === priority ? 'white' : null"
                 (click)="choosePriority(priority)"
               >
-                {{ priority }}
+                {{ priorityLabel(priority) }}
               </button>
             }
           </div>
         </div>
 
         <label class="goal-modal__field goal-modal__field--wide">
-          <span>Target amount</span>
+          <span>{{ 'goals.form.targetAmount' | translate }}</span>
           <div class="goal-modal__amount">
             <span>€</span>
             <input
@@ -147,14 +147,14 @@
         </label>
 
         <label class="goal-modal__field goal-modal__field--wide">
-          <span>Note</span>
-          <textarea formControlName="note" rows="3" placeholder="A private reminder of why this goal matters."></textarea>
+          <span>{{ 'goals.form.note' | translate }}</span>
+          <textarea formControlName="note" rows="3" [placeholder]="'goals.form.notePlaceholder' | translate"></textarea>
         </label>
       } @else {
         <label class="goal-modal__field goal-modal__field--wide">
-          <span>Source account</span>
+          <span>{{ 'goals.form.sourceAccount' | translate }}</span>
           <select formControlName="linkedAccountId">
-            <option [ngValue]="null">Manual contributions</option>
+            <option [ngValue]="null">{{ 'goals.manualContributions' | translate }}</option>
             @for (account of accounts(); track account.id) {
               <option [ngValue]="account.id">{{ account.name }}</option>
             }
@@ -162,8 +162,8 @@
         </label>
 
         <label class="goal-modal__field goal-modal__field--wide">
-          <span>Auto-save monthly</span>
-          <small class="goal-modal__hint">Set to €0 to fund manually. This schedules the monthly amount in the plan.</small>
+          <span>{{ 'goals.form.autoSaveMonthly' | translate }}</span>
+          <small class="goal-modal__hint">{{ 'goals.form.autoSaveHint' | translate }}</small>
           <div class="goal-modal__amount">
             <span>€</span>
             <input
@@ -173,7 +173,7 @@
               step="10"
               (input)="updateMonthlyAmount($any($event.target).value)"
             />
-            <small>/ month</small>
+            <small>{{ 'goals.perMonth' | translate }}</small>
           </div>
           <input
             [value]="monthlyAmount()"
@@ -192,30 +192,30 @@
         </label>
 
         <label class="goal-modal__field goal-modal__field--wide">
-          <span>Target month</span>
+          <span>{{ 'goals.form.targetMonth' | translate }}</span>
           <input formControlName="targetMonth" type="month" />
         </label>
 
-        <section class="goal-modal__forecast" aria-label="Funding forecast">
+        <section class="goal-modal__forecast" [attr.aria-label]="'goals.form.fundingForecast' | translate">
           <div class="goal-modal__forecast-header">
-            <span>Forecast</span>
-            <small>auto-calculated</small>
+            <span>{{ 'goals.forecastLabel' | translate }}</span>
+            <small>{{ 'goals.form.autoCalculated' | translate }}</small>
           </div>
           <div class="goal-modal__forecast-grid">
             <div>
-              <span>Progress</span>
+              <span>{{ 'goals.form.progress' | translate }}</span>
               <strong [style.color]="selectedColor()">{{ previewProgress() }}%</strong>
             </div>
             <div>
-              <span>Remaining</span>
+              <span>{{ 'goals.remaining' | translate }}</span>
               <strong>{{ remainingAmount() | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
             </div>
             <div>
-              <span>Months at plan</span>
+              <span>{{ 'goals.form.monthsAtPlan' | translate }}</span>
               <strong>{{ forecastMonths() ?? '∞' }}</strong>
             </div>
             <div>
-              <span>Reach by</span>
+              <span>{{ 'goals.form.reachBy' | translate }}</span>
               <strong>{{ forecastLabel() }}</strong>
             </div>
           </div>
@@ -226,7 +226,7 @@
           @if (monthlyAmount() === 0) {
             <p class="goal-modal__warning">
               <span class="material-icons">flag</span>
-              No monthly auto-save amount. Add funds manually or set a monthly plan.
+              {{ 'goals.form.noMonthlyWarning' | translate }}
             </p>
           }
         </section>
@@ -234,11 +234,11 @@
     </div>
 
     @if (form.invalid && form.touched) {
-      <p class="goal-modal__error">Name and a positive target amount are required.</p>
+      <p class="goal-modal__error">{{ 'goals.form.requiredError' | translate }}</p>
     }
 
     <footer class="goal-modal__actions">
-      <button class="goal-modal__secondary" type="button" (click)="formClosed.emit()">Cancel</button>
+      <button class="goal-modal__secondary" type="button" (click)="formClosed.emit()">{{ 'common.cancel' | translate }}</button>
       <button class="goal-modal__primary" type="submit" [disabled]="saving()">{{ submitLabel() }}</button>
     </footer>
   </form>

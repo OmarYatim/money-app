@@ -1,0 +1,756 @@
+{
+  "app": {
+    "tagline": "Persönliche Finanzen"
+  },
+  "accountTypes": {
+    "account": "Konto",
+    "checking": "Girokonto",
+    "savings": "Sparkonto",
+    "credit": "Kredit",
+    "investment": "Investments"
+  },
+  "accountSettings": {
+    "accountId": "Konto-ID",
+    "backToDashboard": "Zurück zum Dashboard",
+    "breadcrumb": {
+      "account": "Konto",
+      "workspace": "Arbeitsbereich"
+    },
+    "delete": {
+      "beforeCopy": "Sie können Ihre Daten zuerst exportieren. Die Löschung erfolgt sofort und kann nicht rückgängig gemacht werden.",
+      "beforeTitle": "Vor dem Löschen",
+      "confirmation": "Ich verstehe, dass diese Aktion sofort und unwiderruflich ist.",
+      "deleteAccount": "Konto löschen",
+      "deletePermanently": "Endgültig löschen",
+      "deleting": "Wird gelöscht…",
+      "modalCopyEnd": ", einschließlich Konten, Transaktionen, Ziele, Berichte und Login-Tokens.",
+      "modalCopyStart": "Dadurch wird Ihre Bankdatenverbindung widerrufen und das Konto dauerhaft gelöscht für",
+      "modalTitle": "Konto endgültig löschen?",
+      "subtitle": "Dadurch werden Ihr Nexioo-Konto und Ihre Finanzdaten dauerhaft gelöscht.",
+      "title": "Konto löschen"
+    },
+    "email": {
+      "confirmPassword": "Mit Passwort bestätigen",
+      "confirmPasswordHint": "Erforderlich, um die für die Anmeldung verwendete Adresse zu ändern.",
+      "currentEmail": "Aktuelle E-Mail",
+      "newEmail": "Neue E-Mail",
+      "newEmailHint": "Wir senden vor der Umstellung einen Bestätigungslink.",
+      "sendVerification": "Bestätigung senden",
+      "subtitle": "Wird für Anmeldung, Kontoauszüge und Sicherheitswarnungen verwendet.",
+      "title": "E-Mail-Adresse",
+      "verified": "Bestätigt"
+    },
+    "errors": {
+      "deleteExpired": "Ihre Sitzung ist abgelaufen. Melden Sie sich erneut an, bevor Sie Ihr Konto löschen.",
+      "deleteFailed": "Das Konto konnte nicht gelöscht werden. Versuchen Sie es erneut oder kontaktieren Sie den Support.",
+      "invalidCode": "Ungültiger oder abgelaufener Code.",
+      "mfaLoad": "MFA-Status konnte nicht geladen werden.",
+      "mfaStart": "MFA-Einrichtung konnte nicht gestartet werden."
+    },
+    "memberSince": "Mitglied seit März 2024",
+    "messages": {
+      "mfaDisabled": "Zwei-Faktor-Authentifizierung deaktiviert.",
+      "mfaEnabled": "Zwei-Faktor-Authentifizierung aktiviert.",
+      "passwordUpdated": "Passwort aktualisiert.",
+      "profileSaved": "Profil gespeichert.",
+      "rectificationOpened": "Berichtigungsanfrage geöffnet.",
+      "verificationSent": "Bestätigungs-E-Mail an {{email}} gesendet."
+    },
+    "privacy": {
+      "analytics": "Anonyme Analysen",
+      "analyticsHint": "Hilft uns, das Produkt zu verbessern. Keine personenbezogenen Daten.",
+      "bannerCopy": "Nach der EU-DSGVO können Sie jederzeit auf Ihre personenbezogenen Daten zugreifen, sie berichtigen, übertragen und löschen.",
+      "bannerTitle": "Ihre Daten, Ihre Regeln",
+      "consentSubtitle": "Feingranulare Kontrolle darüber, wie Nexioo Ihre Daten verwendet.",
+      "consentTitle": "Einwilligung",
+      "dataRights": {
+        "openRequest": "Anfrage öffnen",
+        "rectify": "Meine Daten berichtigen",
+        "rectifyHint": "Öffnen Sie eine Anfrage zur Korrektur personenbezogener Informationen.",
+        "subtitle": "Üben Sie diese Rechte kostenlos aus.",
+        "title": "Ihre Datenrechte"
+      },
+      "marketing": "Marketing-Kommunikation",
+      "marketingHint": "Produktupdates, Tipps und gelegentliche Angebote.",
+      "profiling": "Automatisiertes Profiling",
+      "profilingHint": "Insights anhand Ihrer Ausgabemuster personalisieren.",
+      "retention": {
+        "options": {
+          "24m": {
+            "hint": "Empfohlen für Steuerjahresdaten",
+            "label": "24 Monate"
+          },
+          "60m": {
+            "hint": "Vollständiger gesetzlicher Zeitraum für Prüfungen",
+            "label": "5 Jahre"
+          },
+          "6m": {
+            "hint": "Gesetzliche Mindestaufbewahrung für Finanzunterlagen",
+            "label": "6 Monate"
+          }
+        },
+        "subtitle": "Wie lange Nexioo Ihren Transaktionsverlauf nach der Schließung aufbewahrt.",
+        "title": "Datenaufbewahrung"
+      },
+      "thirdParty": "Drittanbieter-Integrationen",
+      "thirdPartyHint": "Kategorisierung durch Partnerdienste zur Anreicherung erlauben."
+    },
+    "profile": {
+      "countries": {
+        "belgium": "Belgien",
+        "france": "Frankreich",
+        "germany": "Deutschland",
+        "ireland": "Irland",
+        "italy": "Italien",
+        "netherlands": "Niederlande",
+        "portugal": "Portugal",
+        "spain": "Spanien"
+      },
+      "country": "Land",
+      "currency": "Standardwährung",
+      "displayName": "Anzeigename",
+      "displayNameHint": "Wird in Begrüßungen und Berichten angezeigt.",
+      "phone": "Telefonnummer",
+      "phoneHint": "Nur für SMS-Verifizierung. Wird nie geteilt.",
+      "saveChanges": "Änderungen speichern",
+      "subtitle": "Wird in Ihrem Dashboard, Exporten und Kontoauszügen verwendet.",
+      "title": "Persönliche Informationen",
+      "username": "Benutzername",
+      "usernameHint": "Kleinbuchstaben, Zahlen und Punkte."
+    },
+    "sectionsLabel": "Abschnitte der Kontoeinstellungen",
+    "security": {
+      "changePassword": "Passwort ändern",
+      "confirmPassword": "Neues Passwort bestätigen",
+      "currentPassword": "Aktuelles Passwort",
+      "loginMethods": "Anmeldemethoden",
+      "loginMethodsHint": "Wählen Sie, wie Sie sich bei Nexioo anmelden.",
+      "mfa": {
+        "checking": "Prüfung",
+        "disable": "MFA deaktivieren",
+        "disableHint": "Geben Sie Ihren aktuellen Authenticator-Code ein, um MFA auszuschalten.",
+        "enable": "MFA aktivieren",
+        "enabled": "Aktiviert",
+        "manualKey": "Manueller Einrichtungsschlüssel",
+        "off": "Aus",
+        "qrAlt": "QR-Code zur Einrichtung der Authenticator-App",
+        "setup": "Authenticator einrichten",
+        "subtitle": "Authenticator-App (TOTP).",
+        "title": "Zwei-Faktor-Authentifizierung",
+        "verificationCode": "Bestätigungscode",
+        "verificationHint": "Geben Sie den 6-stelligen Code aus Ihrer App ein."
+      },
+      "newPassword": "Neues Passwort",
+      "passwordHint": "Verwenden Sie 12+ Zeichen mit Groß- und Kleinbuchstaben, Zahlen und Symbolen.",
+      "showPasswords": "Passwörter anzeigen",
+      "updatePassword": "Passwort aktualisieren"
+    },
+    "subtitle": "Verwalten Sie Profil, Anmeldemethoden, Datenschutz und Daten",
+    "tabs": {
+      "delete": "Konto löschen",
+      "email": "E-Mail",
+      "privacy": "Datenschutz (DSGVO)",
+      "profile": "Profil",
+      "security": "Anmeldung und Sicherheit"
+    },
+    "title": "Kontoeinstellungen"
+  },
+  "accounts": {
+    "accountOptions": "Kontooptionen",
+    "bank": "Bank",
+    "connectAnotherBank": "Weitere Bank verbinden",
+    "connectBank": "Bank verbinden",
+    "connectedCount": "{{count}} verbunden",
+    "connecting": "Verbindung wird hergestellt…",
+    "connectionNeedsAttention": "Eine Ihrer Bankverbindungen benötigt Aufmerksamkeit. Klicken Sie, um sich erneut zu authentifizieren.",
+    "currencyAccount": "{{currency}}-Konto",
+    "disconnect": "Trennen",
+    "disconnecting": "Wird getrennt…",
+    "disconnectInstitution": "{{institution}} trennen",
+    "ending": "endet auf {{lastFour}}",
+    "renameAccount": "Konto umbenennen",
+    "synced": "Synchronisiert",
+    "viewActivity": "Aktivität anzeigen",
+    "viewTransactions": "Transaktionen anzeigen",
+    "connectedBanks": {
+      "title": "Verbundene Banken",
+      "subtitle": "{{count}} Bank(en) verbunden · jederzeit trennbar",
+      "accountCountSynced": "{{count}} Konto/Konten · synchronisiert"
+    },
+    "disconnectDialog": {
+      "title": "{{institution}} trennen?",
+      "copy": "Wählen Sie, was mit den lokalen Daten dieser Bankverbindung geschehen soll.",
+      "keepHistoryTitle": "Transaktionshistorie behalten",
+      "keepHistoryCopy": "Vergangene Transaktionen bleiben sichtbar, werden aber nicht mehr aktualisiert.",
+      "deleteDataTitle": "Alle zugehörigen Daten löschen",
+      "deleteDataCopy": "Konten und alle Transaktionen dieser Bank werden dauerhaft gelöscht."
+    },
+    "empty": {
+      "noConnectedAccounts": "Noch keine Konten verbunden. Verbinden Sie Ihre erste Bank, um zu beginnen."
+    },
+    "errors": {
+      "disconnect": "Diese Bankverbindung konnte nicht getrennt werden.",
+      "loadConnected": "Verbundene Konten konnten nicht geladen werden.",
+      "openConnection": "Bankverbindung konnte nicht geöffnet werden.",
+      "rename": "Dieses Konto konnte nicht umbenannt werden.",
+      "startConnection": "Bankverbindung konnte nicht gestartet werden."
+    },
+    "filters": {
+      "allAccounts": "Alle Konten"
+    },
+    "messages": {
+      "disconnected": "Bankverbindung getrennt.",
+      "refreshed": "Konten aktualisiert.",
+      "renamed": "Konto umbenannt.",
+      "useConnectToReauth": "Nutzen Sie Bank verbinden, um die Verbindung erneut zu authentifizieren."
+    },
+    "summary": {
+      "connections": "Verbindungen",
+      "healthyCount": "{{healthy}}/{{total}} fehlerfrei",
+      "netWorth": "Nettovermögen",
+      "totalAssets": "Gesamtvermögen",
+      "totalLiabilities": "Gesamtverbindlichkeiten"
+    }
+  },
+  "auth": {
+    "authenticatorCode": "Authenticator-Code",
+    "confirmAccount": "Konto bestätigen",
+    "confirming": "Wird bestätigt…",
+    "creatingAccount": "Konto wird erstellt…",
+    "editSignupDetails": "Registrierungsdaten bearbeiten",
+    "email": "E-Mail",
+    "emailConfirmationCode": "E-Mail-Bestätigungscode",
+    "firstName": "Vorname",
+    "lastName": "Nachname",
+    "legal": "Bankübliche Verschlüsselung · DSGVO · ISO 27001",
+    "login": "Anmelden",
+    "password": "Passwort",
+    "passwordHint": "Verwenden Sie 12+ Zeichen und mindestens 3 aus: Großbuchstaben, Kleinbuchstaben, Zahl, Symbol.",
+    "phone": "Telefon",
+    "phoneCountry": "Telefonland",
+    "phoneNumber": "Telefonnummer",
+    "register": "Konto erstellen",
+    "signOut": "Abmelden",
+    "signingIn": "Anmeldung…",
+    "tryAgainSoon": "Bald erneut versuchen",
+    "useDifferentAccount": "Anderes Konto verwenden",
+    "verifying": "Wird geprüft…",
+    "verifyCode": "Code prüfen",
+    "errors": {
+      "accountExists": "Mit dieser E-Mail existiert bereits ein Konto.",
+      "checkSignupFields": "Prüfen Sie die Registrierungsfelder und versuchen Sie es erneut.",
+      "completeRequiredFields": "Füllen Sie alle Pflichtfelder aus, bevor Sie das Konto erstellen.",
+      "enterEmailPassword": "Geben Sie eine gültige E-Mail und ein Passwort ein.",
+      "enterValidPhone": "Geben Sie eine gültige Telefonnummer für das ausgewählte Land ein.",
+      "invalidCredentials": "E-Mail oder Passwort ungültig.",
+      "invalidMfaCode": "Code ungültig oder abgelaufen. Melden Sie sich erneut an, falls es weiter fehlschlägt.",
+      "invalidRegisterCode": "Code ungültig oder abgelaufen. Fordern Sie einen neuen Code an und versuchen Sie es erneut.",
+      "loginFailed": "Anmeldung fehlgeschlagen. Bitte erneut versuchen.",
+      "registrationFailed": "Registrierung fehlgeschlagen. Bitte erneut versuchen.",
+      "tooManyRequestsLater": "Zu viele Anfragen. Bitte später erneut versuchen.",
+      "tooManyRequestsRetry": "Zu viele Anfragen. Bitte in {{time}} erneut versuchen.",
+      "useStrongerPassword": "Verwenden Sie ein stärkeres Passwort, bevor Sie das Konto erstellen."
+    },
+    "hero": {
+      "copy": "Ein ruhiges Dashboard für jedes Konto, jede Transaktion und jedes Ziel. Wir berühren nie Ihre Zugangsdaten und bewegen nie Geld. Nur Klarheit.",
+      "eyebrow": "Schreibgeschützt · Ende-zu-Ende verschlüsselt",
+      "titleStart": "Ihr Geld,",
+      "titleEm": "ruhig",
+      "titleEnd": "in Ordnung.",
+      "features": {
+        "connect": { "title": "Konten verbinden", "copy": "200+ Banken, ein sicherer Link" },
+        "categorize": { "title": "Automatisch kategorisieren", "copy": "Jede Transaktion sofort sortiert" },
+        "netWorth": { "title": "Nettovermögen verfolgen", "copy": "Sehen Sie täglich, wo Sie stehen" },
+        "readOnly": { "title": "Schreibgeschützt konzipiert", "copy": "Wir können buchstäblich kein Geld bewegen" }
+      }
+    },
+    "phoneHint": {
+      "empty": "{{country}}: {{hint}}",
+      "invalid": "Nummern aus {{country}} sollten {{hint}} verwenden."
+    },
+    "placeholders": {
+      "email": "sie@email.com"
+    },
+    "subtitles": {
+      "confirmEmail": "Wir haben einen 6-stelligen Bestätigungscode an {{email}} gesendet.",
+      "login": "Melden Sie sich an, um Ihr vollständiges Finanzbild zu sehen.",
+      "mfa": "Verwenden Sie den 6-stelligen Code aus Ihrer Authenticator-App für {{email}}.",
+      "register": "Zwei Minuten Einrichtung. Keine Karte erforderlich."
+    },
+    "titles": {
+      "confirmEmail": "Bestätigen Sie Ihre E-Mail.",
+      "mfa": "Geben Sie Ihren Code ein.",
+      "startFreeAccount": "Starten Sie Ihr kostenloses Konto.",
+      "welcomeBack": "Willkommen zurück."
+    }
+  },
+  "categories": {
+    "groceries": "Lebensmittel",
+    "dining": "Restaurants",
+    "transport": "Transport",
+    "utilities": "Nebenkosten",
+    "rent": "Miete",
+    "health": "Gesundheit",
+    "entertainment": "Unterhaltung",
+    "shopping": "Shopping",
+    "travel": "Reisen",
+    "education": "Bildung",
+    "income": "Einnahmen",
+    "transfer": "Überweisung",
+    "savings": "Ersparnisse",
+    "subscription": "Abo",
+    "other": "Sonstiges"
+  },
+  "common": {
+    "add": "Hinzufügen",
+    "breadcrumb": "Breadcrumb",
+    "cancel": "Abbrechen",
+    "apply": "Anwenden",
+    "close": "Schließen",
+    "comingSoon": "Demnächst",
+    "details": "Details",
+    "dismiss": "Schließen",
+    "next": "Weiter",
+    "no": "Nein",
+    "previous": "Zurück",
+    "refresh": "Aktualisieren",
+    "retry": "Erneut versuchen",
+    "viewAll": "Alle anzeigen",
+    "yes": "Ja"
+  },
+  "dashboard": {
+    "cashFlow": {
+      "title": "Cashflow",
+      "subtitle": "Letzte 30 Tage · tägliche Ein-/Ausgänge",
+      "in": "Ein",
+      "out": "Aus"
+    },
+    "empty": {
+      "connectFirstBank": "Verbinden Sie Ihr erstes Bankkonto, um zu beginnen.",
+      "goToAccounts": "Zu Konten"
+    },
+    "errors": {
+      "openReauth": "Bank-Neuauthentifizierung konnte nicht geöffnet werden.",
+      "refreshSummary": "Dashboard-Zusammenfassung konnte nicht aktualisiert werden."
+    },
+    "goalsSoon": {
+      "copy": "Verfolgen Sie Sparziele, Zielbeträge und Fortschritt im Zeitverlauf."
+    },
+    "hero": {
+      "netWorthLive": "Nettovermögen · live",
+      "twelveMonthEvolution": "12-Monats-Entwicklung"
+    },
+    "kpi": {
+      "cashAvailable": "Verfügbares Bargeld",
+      "currentBalancesOnly": "Nur aktuelle Salden",
+      "futureBalance": "Künftiger Saldo",
+      "afterScheduledDebits": "Nach geplanten Abbuchungen · 30 T",
+      "incomeThisMonth": "Einnahmen · diesen Monat",
+      "upVsLastMonth": "↑ ggü. letztem Monat",
+      "expensesThisMonth": "Ausgaben · diesen Monat",
+      "downVsLastMonth": "↓ ggü. letztem Monat",
+      "todaySpending": "Heutige Ausgaben",
+      "todayTransactions": "Heutige Transaktionen",
+      "savingsRate": "Sparquote",
+      "incomeKeptThisMonth": "Diesen Monat behaltenes Einkommen"
+    },
+    "recent": {
+      "title": "Aktuelle Aktivität",
+      "subtitle": "Neueste Transaktionen",
+      "seeAllTransactions": "Alle Transaktionen ansehen",
+      "empty": "Keine aktuellen Transaktionen"
+    },
+    "spending": {
+      "title": "Ausgabenaufschlüsselung",
+      "subtitle": "Diesen Monat · {{total}} gesamt",
+      "empty": "Diesen Monat keine Ausgaben erfasst"
+    },
+    "sync": {
+      "lastSynced": "Zuletzt synchronisiert {{time}}",
+      "never": "Nie synchronisiert",
+      "justNow": "gerade eben",
+      "minutesAgo": "vor {{count}} Min.",
+      "oneHourAgo": "vor 1 Stunde",
+      "hoursAgo": "vor {{count}} Stunden",
+      "oneConnectionNeedsAction": "Eine Bankverbindung benötigt Aufmerksamkeit. Klicken Sie, um sich erneut zu authentifizieren.",
+      "connectionsNeedAction": "{{count}} Bankverbindungen benötigen Aufmerksamkeit. Klicken Sie, um sich erneut zu authentifizieren.",
+      "lastSyncFailed": "Die letzte Banksynchronisierung ist fehlgeschlagen. Klicken Sie, um sich erneut zu verbinden und Ihre Daten zu aktualisieren."
+    }
+  },
+  "goals": {
+    "active": "aktiv",
+    "addContribution": "Beitrag hinzufügen",
+    "addFunds": "Geld hinzufügen",
+    "adjustPlan": "Plan anpassen",
+    "allGoals": "Alle Ziele",
+    "allGoalsSub": "Karte anklicken zum Hervorheben · ziehen zum Sortieren",
+    "amount": "Betrag",
+    "archiveGoal": "Ziel archivieren",
+    "autoSave": "Auto-Sparen",
+    "autoSaveAmount": "Auto-Sparen · {{amount}}/Monat",
+    "autoSavePlan": "Auto-Sparplan {{amount}}/Monat",
+    "behindTarget": "Hinter dem Ziel",
+    "closeContributionForm": "Beitragsformular schließen",
+    "contributionAmountRequired": "Ein positiver Beitragsbetrag ist erforderlich.",
+    "contributionChart": "Beitragsdiagramm",
+    "contributionHistory": "Beitragshistorie",
+    "contributionNotePlaceholder": "Geburtstagsgeld",
+    "contributions": "Beiträge",
+    "createNewGoal": "Neues Ziel erstellen",
+    "createNewGoalSub": "Ziel setzen, Konto wählen, monatlich automatisch sparen",
+    "defaultNote": "Halten Sie diesen Plan mit monatlichem Auto-Sparen und manuellen Einzahlungen finanziert.",
+    "editGoal": "Ziel bearbeiten",
+    "entries": "{{count}} Einträge",
+    "forecast": "Prognose: {{date}}",
+    "forecastLabel": "Prognose",
+    "funded": "finanziert",
+    "fundedFrom": "Finanziert von",
+    "goalContribution": "Zielbeitrag",
+    "last30Days": "Letzte 30 Tage",
+    "linkedTo": "Verknüpft mit {{account}}",
+    "loading": "Ziele werden geladen...",
+    "manual": "Manuell",
+    "manualContributions": "Manuelle Beiträge",
+    "manualHistory": "Manuelle Historie für dieses Ziel",
+    "metrics": "Zielmetriken",
+    "monthStreak": "{{count}}-Monats-Serie",
+    "monthlyLeft": "{{amount}}/Monat · {{months}} M übrig",
+    "monthsToGo": "{{count}} Monate übrig",
+    "newGoal": "Neues Ziel",
+    "nextDebit": "Nächste Abbuchung",
+    "noContributions": "Noch keine Beiträge.",
+    "noDeadline": "Keine Frist",
+    "noGoalsYet": "Noch keine Ziele",
+    "noManualContributions": "Noch keine manuellen Beiträge.",
+    "noProjection": "Noch keine Prognose",
+    "noTargetDate": "Kein Zieldatum",
+    "ofAmount": "von {{amount}}",
+    "perMonth": "/ Monat",
+    "priorityFilters": "Prioritätsfilter",
+    "progress": "Zielfortschritt",
+    "remaining": "Restbetrag",
+    "savedOf": "gespart von {{amount}}",
+    "savingsGoal": "Sparziel",
+    "savingsGoals": "Sparziele",
+    "selectGoal": "Wählen Sie ein Ziel, um den Fortschritt zu sehen.",
+    "spotlight": "Hervorgehobenes Ziel",
+    "subtitle": "{{count}} aktiv · spart {{amount}}/Monat",
+    "targetDate": "Ziel {{date}}",
+    "category": {
+      "safetynet": "Sicherheitsnetz",
+      "travel": "Reisen",
+      "tech": "Technik",
+      "family": "Familie",
+      "longterm": "Langfristig",
+      "transport": "Transport",
+      "health": "Gesundheit",
+      "education": "Bildung",
+      "other": "Sonstiges"
+    },
+    "colors": {
+      "indigo": "Indigo",
+      "deepIndigo": "Dunkles Indigo",
+      "green": "Grün",
+      "amber": "Bernstein",
+      "rose": "Rose",
+      "slate": "Schiefer",
+      "ink": "Tinte"
+    },
+    "detail": {
+      "ariaLabel": "Zieldetail",
+      "monthlyRate": "Monatsrate",
+      "projectedDate": "Prognosedatum"
+    },
+    "errors": {
+      "addContribution": "Beitrag konnte nicht hinzugefügt werden.",
+      "archive": "Ziel konnte nicht archiviert werden.",
+      "load": "Ziele konnten nicht geladen werden.",
+      "save": "Ziel konnte nicht gespeichert werden."
+    },
+    "form": {
+      "accountAndSchedule": "Konto und Zeitplan",
+      "autoCalculated": "automatisch berechnet",
+      "autoSaveHint": "Setzen Sie 0 €, um manuell zu finanzieren. Dies plant den monatlichen Betrag.",
+      "autoSaveMonthly": "Monatliches Auto-Sparen",
+      "closeForm": "Formular schließen",
+      "color": "Farbe",
+      "createGoal": "Ziel erstellen",
+      "createSavingsPlan": "Sparplan erstellen",
+      "details": "Details",
+      "editGoal": "Ziel bearbeiten",
+      "editSavingsPlan": "Sparplan bearbeiten",
+      "forecast": "Prognose",
+      "funding": "Finanzierung",
+      "fundingForecast": "Finanzierungsprognose",
+      "goalName": "Zielname",
+      "goalNamePlaceholder": "Notfallfonds",
+      "icon": "Symbol",
+      "monthsAtPlan": "Monate im Plan",
+      "nameAndTarget": "Name und Ziel",
+      "newGoal": "Neues Ziel",
+      "noMonthlyWarning": "Kein monatlicher Auto-Sparbetrag. Fügen Sie manuell Geld hinzu oder legen Sie einen Monatsplan fest.",
+      "note": "Notiz",
+      "notePlaceholder": "Eine private Erinnerung, warum dieses Ziel wichtig ist.",
+      "progress": "Fortschritt",
+      "reachBy": "Erreichen bis",
+      "requiredError": "Name und ein positiver Zielbetrag sind erforderlich.",
+      "saveGoal": "Ziel speichern",
+      "sections": "Abschnitte des Zielformulars",
+      "sourceAccount": "Quellkonto",
+      "targetAmount": "Zielbetrag",
+      "targetMonth": "Zielmonat"
+    },
+    "icons": {
+      "car": "Auto",
+      "event": "Ereignis",
+      "flag": "Flagge",
+      "home": "Haus",
+      "savings": "Sparen",
+      "shield": "Schild",
+      "tech": "Technik",
+      "travel": "Reise"
+    },
+    "kpi": {
+      "avgStreak": "Ø Serie",
+      "byEndOfYear": "Bis Ende 2026 bei aktuellem Tempo",
+      "goalsActive": "{{active}} von {{total}} Zielen aktiv",
+      "longestStreak": "Längste: {{name}} · {{count}} M",
+      "monthCount": "{{count}} Monate",
+      "monthlyAutoSave": "Monatliches Auto-Sparen",
+      "noStreak": "Noch keine Serie",
+      "onPace": "Auf Kurs für 2027",
+      "onTrack": "Im Plan",
+      "overallProgress": "Gesamtfortschritt",
+      "projectedReach": "Prognostiziert erreicht",
+      "totalSaved": "Insgesamt gespart",
+      "totalSavedSub": "von {{target}} über {{count}} Ziele",
+      "trackSub": "{{ahead}} voraus · {{lagging}} zurück"
+    },
+    "priority": {
+      "all": "Alle",
+      "essential": "Wesentlich",
+      "high": "Hoch",
+      "label": "Priorität",
+      "low": "Niedrig",
+      "medium": "Mittel"
+    }
+  },
+  "language": {
+    "selectorLabel": "Sprache",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "german": "Deutsch"
+  },
+  "mfa": {
+    "warningTitle": "Schützen Sie Ihr Konto mit MFA",
+    "warningCopy": "Richten Sie eine Authenticator-App für eine zweite Anmeldeprüfung ein.",
+    "enable": "MFA aktivieren",
+    "dismissReminder": "MFA-Erinnerung schließen"
+  },
+  "nav": {
+    "workspace": "Arbeitsbereich",
+    "dashboard": "Dashboard",
+    "accounts": "Konten",
+    "transactions": "Transaktionen",
+    "goals": "Ziele",
+    "reports": "Berichte",
+    "unreviewedTransactions": "{{count}} ungeprüfte Transaktionen"
+  },
+  "pageActions": {
+    "notifications": "Benachrichtigungen, {{count}} ungeprüfte Transaktionen"
+  },
+  "profile": {
+    "planStatus": "Kostenloser Tarif · sicherer Arbeitsbereich",
+    "yourProfile": "Ihr Profil",
+    "viewEditDetails": "Details ansehen und bearbeiten",
+    "accountSettings": "Kontoeinstellungen",
+    "preferencesPrivacy": "Einstellungen, Datenschutz",
+    "security": "Sicherheit",
+    "passwordSessions": "Passwort und Sitzungen",
+    "endSession": "Diese Sitzung beenden"
+  },
+  "reports": {
+    "acrossCategories": "{{total}} über {{count}} Kategorien",
+    "categorised": "{{total}} kategorisiert",
+    "dateRange": "Berichtszeitraum",
+    "errors": { "load": "Berichte konnten nicht geladen werden." },
+    "fixedFlexible": {
+      "fixedCosts": "Fixkosten",
+      "flexibleSpend": "Flexible Ausgaben",
+      "recurringSubs": "Wiederkehrende Abos"
+    },
+    "fixedVsFlexible": "Fix vs flexibel",
+    "fixedVsFlexibleSub": "Wiederkehrende Verpflichtungen im Vergleich zu variablen Ausgaben",
+    "highestSpend": "Höchste Ausgaben in diesem Zeitraum",
+    "incomeKept": "Behaltenes Einkommen",
+    "incomeMinusSpending": "Einnahmen minus Ausgaben",
+    "incomeVersusSpendingChart": "Diagramm Einnahmen gegen Ausgaben",
+    "incomeVsSpending": "Einnahmen vs Ausgaben",
+    "monthlyCashFlow": "Monatlicher Cashflow",
+    "netFlow": "Nettofluss",
+    "netKept": "Netto behalten",
+    "netLineIncluded": "Nettolinie enthalten",
+    "noCashFlowData": "Keine Cashflow-Daten für diesen Zeitraum.",
+    "noMerchantSpend": "Keine Händlerausgaben in diesem Zeitraum.",
+    "noSpendingData": "Keine Ausgabendaten für diesen Zeitraum.",
+    "percentOfSpending": "{{percent}} % der Ausgaben",
+    "periodSummary": "Zeitraumübersicht",
+    "pointsVsTarget": "{{points}} Pkt. ggü. Ziel",
+    "ranges": {
+      "month": "Dieser Monat",
+      "quarter": "Letzte 3 Monate",
+      "sixMonths": "Letzte 6 Monate",
+      "ytd": "Jahr bis heute",
+      "year": "Jahr"
+    },
+    "selectedAccount": "Ausgewähltes Konto",
+    "selectedPeriod": "Ausgewählter Zeitraum",
+    "spending": "Ausgaben",
+    "spendingByCategoryChart": "Diagramm Ausgaben nach Kategorie",
+    "topMerchants": "Top-Händler",
+    "totalSpent": "Gesamt ausgegeben",
+    "vsGoal": "ggü. Ziel · {{goal}}",
+    "whereItGoes": "Wohin es geht"
+  },
+  "status": {
+    "reconnecting": "Verbindung wird wiederhergestellt…"
+  },
+  "time": {
+    "minute": "{{count}} Minute",
+    "minutes": "{{count}} Minuten",
+    "second": "{{count}} Sekunde",
+    "seconds": "{{count}} Sekunden",
+    "thisMonth": "diesen Monat",
+    "today": "Heute",
+    "yesterday": "Gestern"
+  },
+  "transactions": {
+    "archivedAccount": "Archiviertes Konto",
+    "connectedAccount": "Verbundenes Konto",
+    "direction": {
+      "credit": "Gutschrift (eingehend)",
+      "debit": "Belastung (ausgehend)"
+    },
+    "empty": {
+      "title": "Keine Transaktionen gefunden",
+      "subtitle": "Entfernen Sie Filter oder erweitern Sie den Zeitraum."
+    },
+    "errors": {
+      "loadFullDetails": "Vollständige Transaktionsdetails konnten nicht geladen werden.",
+      "loadTransaction": "Transaktion konnte nicht geladen werden.",
+      "loadTransactions": "Transaktionen konnten nicht geladen werden.",
+      "markAllReviewed": "Geladene Transaktionen konnten nicht alle als geprüft markiert werden.",
+      "updateCategory": "Kategorie konnte nicht aktualisiert werden.",
+      "updateInternalTransfer": "Status der internen Überweisung konnte nicht aktualisiert werden.",
+      "updateReviewed": "Prüfstatus konnte nicht aktualisiert werden."
+    },
+    "filters": {
+      "account": "Konto",
+      "accountFilter": "Kontofilter",
+      "all": "Alle",
+      "allCategories": "Alle Kategorien",
+      "bank": "Bank",
+      "category": "Kategorie",
+      "categoryFilter": "Kategoriefilter",
+      "clear": "Filter löschen",
+      "date": "Datum",
+      "groupBy": "Gruppieren nach",
+      "groupTransactionsBy": "Transaktionen gruppieren nach",
+      "internalTransferFilter": "Filter für interne Überweisungen",
+      "rows": "Zeilen",
+      "rowsPerPage": "Zeilen pro Seite",
+      "sort": "Sortieren",
+      "sortTransactions": "Transaktionen sortieren",
+      "status": "Status",
+      "statusFilter": "Statusfilter",
+      "transfer": "Überweisung"
+    },
+    "method": {
+      "bankTransaction": "Banktransaktion",
+      "bankTransfer": "Banküberweisung",
+      "card": "Karte",
+      "sepaDebit": "SEPA-Lastschrift"
+    },
+    "modal": {
+      "actions": "Transaktionsaktionen",
+      "addNote": "Notiz hinzufügen",
+      "appliedDate": "Angewendet am {{date}}",
+      "breadcrumb": "Breadcrumb für Transaktionsdetail",
+      "category": "Transaktionskategorie",
+      "changeCategory": "Kategorie ändern",
+      "closeDetail": "Transaktionsdetail schließen",
+      "copyReference": "Referenz kopieren",
+      "counterparty": "Gegenpartei",
+      "detail": "Detail",
+      "flagForReview": "Zur Prüfung markieren",
+      "manuallySet": "Manuell gesetzt",
+      "markRecurring": "Als wiederkehrend markieren",
+      "method": "Methode",
+      "noNotes": "Noch keine Notizen. Fügen Sie eine private Notiz für Ihre Nachverfolgung hinzu.",
+      "originalWording": "Originaler Wortlaut",
+      "posted": "Gebucht",
+      "readOnlyNotice": "Diese Transaktion ist schreibgeschützt. Nexioo kann Zahlungen nicht ändern oder erstatten; wenden Sie sich bei Reklamationen direkt an Ihre Bank.",
+      "recategorize": "Transaktion neu kategorisieren",
+      "reference": "Referenz",
+      "selectedCategory": "Ausgewählte Kategorie",
+      "transactionDetails": "Transaktionsdetails",
+      "type": "Typ",
+      "yourNotes": "Ihre Notizen"
+    },
+    "pagination": {
+      "ariaLabel": "Transaktionsseiten",
+      "summary": "Seite {{page}} von {{total}}"
+    },
+    "period": {
+      "7d": "7 T",
+      "30d": "30 T",
+      "ariaLabel": "Zeitraum",
+      "custom": "Benutzerdefiniert",
+      "from": "Von",
+      "fromDate": "Von {{date}}",
+      "future": "Zukunft",
+      "month": "Diesen Monat",
+      "selectDateRange": "Datumsbereich auswählen",
+      "to": "Bis",
+      "toDate": "Bis {{date}}",
+      "year": "Dieses Jahr"
+    },
+    "review": {
+      "markAllReviewed": "Alle als geprüft markieren",
+      "markReviewed": "Als geprüft markieren",
+      "markTransactionReviewed": "Transaktion als geprüft markieren",
+      "markTransactionUnreviewed": "Transaktion als ungeprüft markieren",
+      "markUnreviewed": "Als ungeprüft markieren",
+      "reviewed": "Geprüft",
+      "reviewing": "Wird geprüft…",
+      "unreviewed": "Ungeprüft"
+    },
+    "search": {
+      "ariaLabel": "Transaktionen suchen",
+      "placeholder": "Händler, Beschreibungen suchen…"
+    },
+    "sort": {
+      "largest": "Höchster Betrag",
+      "newest": "Neueste",
+      "oldest": "Älteste",
+      "smallest": "Niedrigster Betrag"
+    },
+    "status": {
+      "cleared": "Gebucht"
+    },
+    "summary": {
+      "count": "{{count}} Transaktionen",
+      "needReview": "{{count}} zu prüfen",
+      "net": "Netto",
+      "txnCount": "{{count}} Transaktion(en)",
+      "unreviewed": "{{count}} ungeprüft"
+    },
+    "transfer": {
+      "excludeInternal": "Interne ausschließen",
+      "internalOnly": "Nur interne",
+      "internalTransfer": "Interne Überweisung",
+      "markInternal": "Als intern markieren"
+    }
+  }
+}

@@ -2,15 +2,25 @@ import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@a
 import { toSignal } from '@angular/core/rxjs-interop';
 import { MatIconModule } from '@angular/material/icon';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { catchError, filter, map, of, startWith, switchMap } from 'rxjs';
 
 import { AuthService } from './core/auth/auth.service';
+import { LanguageService } from './core/i18n/language.service';
 import { SseService } from './core/sse/sse.service';
 import { UnreviewedTransactionCountService } from './features/transactions/unreviewed-transaction-count.service';
+import { LanguageSelectorComponent } from './shared/components/language-selector/language-selector.component';
 
 @Component({
   selector: 'app-root',
-  imports: [MatIconModule, RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [
+    LanguageSelectorComponent,
+    MatIconModule,
+    RouterLink,
+    RouterLinkActive,
+    RouterOutlet,
+    TranslatePipe,
+  ],
   templateUrl: './app.html',
   styleUrl: './app.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,6 +28,7 @@ import { UnreviewedTransactionCountService } from './features/transactions/unrev
 export class App {
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
+  private readonly languageService = inject(LanguageService);
   private readonly sseService = inject(SseService);
   private readonly unreviewedTransactionCountService = inject(UnreviewedTransactionCountService);
   protected readonly profileMenuOpen = signal(false);

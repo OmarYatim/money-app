@@ -1,7 +1,7 @@
 <a
   class="page-actions__notification"
   routerLink="/transactions"
-  [attr.aria-label]="'Notifications, ' + unreviewedCount() + ' unreviewed transactions'"
+  [attr.aria-label]="'pageActions.notifications' | translate:{ count: unreviewedCount() }"
 >
   <mat-icon aria-hidden="true">notifications</mat-icon>
   @if (unreviewedCount() > 0) {
@@ -11,5 +11,5 @@
 
 <div class="page-actions__date">
   <mat-icon aria-hidden="true">calendar_today</mat-icon>
-  <span>{{ todayLabel }}</span>
+  <span>{{ todayLabel() }}</span>
 </div>

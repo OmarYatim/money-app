@@ -4,8 +4,10 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { firstValueFrom } from 'rxjs';
 
+import { LanguageService } from '../../core/i18n/language.service';
 import { PageActionsComponent } from '../../shared/components/page-actions/page-actions.component';
 import type { Account } from '../../shared/models/account.model';
 import type { IncomeExpenses, SpendingByCategory, TopMerchant } from '../../shared/models/report.model';
@@ -26,13 +28,13 @@ interface ReportsState {
 
 interface ReportRangeOption {
   value: ReportRange;
-  label: string;
+  labelKey: string;
   months: number;
 }
 
 interface FixedFlexibleGroup {
   key: string;
-  label: string;
+  labelKey: string;
   icon: string;
   totalAmount: number;
   percentage: number;
@@ -40,11 +42,11 @@ interface FixedFlexibleGroup {
 }
 
 const RANGE_OPTIONS: ReportRangeOption[] = [
-  { value: 'month', label: 'This Month', months: 1 },
-  { value: 'quarter', label: 'Last 3 Months', months: 3 },
-  { value: 'sixMonths', label: 'Last 6 Months', months: 6 },
-  { value: 'ytd', label: 'YTD', months: new Date().getMonth() + 1 },
-  { value: 'year', label: 'Year', months: 12 },
+  { value: 'month', labelKey: 'reports.ranges.month', months: 1 },
+  { value: 'quarter', labelKey: 'reports.ranges.quarter', months: 3 },
+  { value: 'sixMonths', labelKey: 'reports.ranges.sixMonths', months: 6 },
+  { value: 'ytd', labelKey: 'reports.ranges.ytd', months: new Date().getMonth() + 1 },
+  { value: 'year', labelKey: 'reports.ranges.year', months: 12 },
 ];
 
 const EMPTY_STATE: ReportsState = {
@@ -75,28 +77,28 @@ const CATEGORY_COLORS: Record<string, string> = {
 
 const FIXED_FLEXIBLE_CATEGORY_GROUPS: readonly {
   key: string;
-  label: string;
+  labelKey: string;
   icon: string;
   color: string;
   categories: readonly string[];
 }[] = [
   {
     key: 'fixed',
-    label: 'Fixed costs',
+    labelKey: 'reports.fixedFlexible.fixedCosts',
     icon: 'home',
     color: '#5b5fef',
     categories: ['RENT', 'UTILITIES', 'TRANSPORT'],
   },
   {
     key: 'subscriptions',
-    label: 'Recurring subs',
+    labelKey: 'reports.fixedFlexible.recurringSubs',
     icon: 'sync',
     color: '#7c80f5',
     categories: ['SUBSCRIPTION'],
   },
   {
     key: 'flexible',
-    label: 'Flexible spend',
+    labelKey: 'reports.fixedFlexible.flexibleSpend',
     icon: 'tune',
     color: '#d99838',
     categories: [
@@ -119,6 +121,7 @@ const FIXED_FLEXIBLE_CATEGORY_GROUPS: readonly {
     MatButtonToggleModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    TranslatePipe,
     PageActionsComponent,
     IncomeExpensesChartComponent,
     SpendingChartComponent,
@@ -131,6 +134,8 @@ export class ReportsComponent {
   private readonly accountService = inject(AccountService);
   private readonly reportsService = inject(ReportsService);
   private readonly router = inject(Router);
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
 
   protected readonly rangeOptions = RANGE_OPTIONS;
   protected readonly selectedRange = signal<ReportRange>('month');
@@ -234,7 +239,7 @@ export class ReportsComponent {
       this.state.set({
         ...this.state(),
         loading: false,
-        error: 'Unable to load reports.',
+        error: this.t('reports.errors.load'),
       });
     }
   }
@@ -253,11 +258,11 @@ export class ReportsComponent {
   protected selectedAccountLabel(): string {
     const accountId = this.selectedAccountId();
     if (accountId === null) {
-      return 'All accounts';
+      return this.t('accounts.filters.allAccounts');
     }
 
     const account = this.accounts().find((item) => item.id === accountId);
-    return account ? this.accountLabel(account) : 'Selected account';
+    return account ? this.accountLabel(account) : this.t('reports.selectedAccount');
   }
 
   protected accountLabel(account: Account): string {
@@ -270,11 +275,8 @@ export class ReportsComponent {
   }
 
   protected categoryLabel(category: string): string {
-    return category
-      .toLowerCase()
-      .split('_')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' ');
+    this.languageService.currentLang();
+    return this.t(`categories.${category.toLowerCase()}`);
   }
 
   protected periodLabel(): string {
@@ -306,7 +308,7 @@ export class ReportsComponent {
   }
 
   private formatShortDate(date: string): string {
-    return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(
+    return new Intl.DateTimeFormat(this.dateLocale(), { month: 'short', day: 'numeric' }).format(
       new Date(`${date}T00:00:00`),
     );
   }
@@ -336,12 +338,28 @@ export class ReportsComponent {
 
       return {
         key: group.key,
-        label: group.label,
+        labelKey: group.labelKey,
         icon: group.icon,
         totalAmount,
         percentage: total > 0 ? Math.round((totalAmount / total) * 100) : 0,
         color: group.color,
       };
     });
+  }
+
+  protected rangeLabel(option: ReportRangeOption): string {
+    return this.t(option.labelKey);
+  }
+
+  protected fixedFlexibleLabel(group: FixedFlexibleGroup): string {
+    return this.t(group.labelKey);
+  }
+
+  private dateLocale(): string {
+    return this.languageService.currentLang() === 'en' ? 'en-GB' : this.languageService.currentLang();
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params);
   }
 }

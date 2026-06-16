@@ -1,9 +1,11 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { startWith } from 'rxjs';
 
+import { LanguageService } from '../../../core/i18n/language.service';
 import type { Account } from '../../../shared/models/account.model';
 import type { Goal, GoalPayload } from '../../../shared/models/goal.model';
 
@@ -25,7 +27,7 @@ type GoalFormTab = 'details' | 'funding';
 
 interface Choice {
   value: string;
-  label: string;
+  labelKey: string;
 }
 
 interface ColorChoice extends Choice {
@@ -33,24 +35,24 @@ interface ColorChoice extends Choice {
 }
 
 const ICON_CHOICES: Choice[] = [
-  { value: 'shield', label: 'Shield' },
-  { value: 'flight', label: 'Travel' },
-  { value: 'computer', label: 'Tech' },
-  { value: 'home', label: 'Home' },
-  { value: 'directions_car', label: 'Car' },
-  { value: 'celebration', label: 'Event' },
-  { value: 'savings', label: 'Savings' },
-  { value: 'flag', label: 'Flag' },
+  { value: 'shield', labelKey: 'goals.icons.shield' },
+  { value: 'flight', labelKey: 'goals.icons.travel' },
+  { value: 'computer', labelKey: 'goals.icons.tech' },
+  { value: 'home', labelKey: 'goals.icons.home' },
+  { value: 'directions_car', labelKey: 'goals.icons.car' },
+  { value: 'celebration', labelKey: 'goals.icons.event' },
+  { value: 'savings', labelKey: 'goals.icons.savings' },
+  { value: 'flag', labelKey: 'goals.icons.flag' },
 ];
 
 const COLOR_CHOICES: ColorChoice[] = [
-  { value: '#5b5fef', label: 'Indigo', swatch: '#5b5fef' },
-  { value: '#4f52e0', label: 'Deep indigo', swatch: '#4f52e0' },
-  { value: '#2cad6a', label: 'Green', swatch: '#2cad6a' },
-  { value: '#d99838', label: 'Amber', swatch: '#d99838' },
-  { value: '#e04a62', label: 'Rose', swatch: '#e04a62' },
-  { value: '#9396a8', label: 'Slate', swatch: '#9396a8' },
-  { value: '#14163a', label: 'Ink', swatch: '#14163a' },
+  { value: '#5b5fef', labelKey: 'goals.colors.indigo', swatch: '#5b5fef' },
+  { value: '#4f52e0', labelKey: 'goals.colors.deepIndigo', swatch: '#4f52e0' },
+  { value: '#2cad6a', labelKey: 'goals.colors.green', swatch: '#2cad6a' },
+  { value: '#d99838', labelKey: 'goals.colors.amber', swatch: '#d99838' },
+  { value: '#e04a62', labelKey: 'goals.colors.rose', swatch: '#e04a62' },
+  { value: '#9396a8', labelKey: 'goals.colors.slate', swatch: '#9396a8' },
+  { value: '#14163a', labelKey: 'goals.colors.ink', swatch: '#14163a' },
 ];
 
 const CATEGORY_CHOICES = ['Safety net', 'Travel', 'Tech', 'Family', 'Long-term', 'Transport', 'Health', 'Education', 'Other'];
@@ -58,12 +60,15 @@ const PRIORITY_CHOICES = ['Essential', 'High', 'Medium', 'Low'];
 
 @Component({
   selector: 'app-goal-form',
-  imports: [CurrencyPipe, ReactiveFormsModule],
+  imports: [CurrencyPipe, ReactiveFormsModule, TranslatePipe],
   templateUrl: './goal-form.component.html',
   styleUrl: './goal-form.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GoalFormComponent {
+  private readonly languageService = inject(LanguageService);
+  private readonly translate = inject(TranslateService);
+
   goal = input<Goal | null>(null);
   accounts = input<Account[]>([]);
   saving = input(false);
@@ -75,8 +80,8 @@ export class GoalFormComponent {
   protected readonly colorChoices = COLOR_CHOICES;
   protected readonly categoryChoices = CATEGORY_CHOICES;
   protected readonly priorityChoices = PRIORITY_CHOICES;
-  protected readonly heading = computed(() => (this.goal() ? 'Edit goal' : 'New goal'));
-  protected readonly submitLabel = computed(() => (this.goal() ? 'Save goal' : 'Create goal'));
+  protected readonly heading = computed(() => (this.goal() ? this.t('goals.form.editGoal') : this.t('goals.form.newGoal')));
+  protected readonly submitLabel = computed(() => (this.goal() ? this.t('goals.form.saveGoal') : this.t('goals.form.createGoal')));
   protected readonly form = new FormGroup<GoalFormValue>({
     name: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     icon: new FormControl('flag', { nonNullable: true }),
@@ -114,12 +119,12 @@ export class GoalFormComponent {
   protected readonly forecastLabel = computed(() => {
     const months = this.forecastMonths();
     if (months === null) {
-      return 'No projection';
+      return this.t('goals.noProjection');
     }
 
     const date = new Date();
     date.setMonth(date.getMonth() + months);
-    return date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric' });
+    return date.toLocaleDateString(this.dateLocale(), { month: 'short', year: 'numeric' });
   });
 
   constructor() {
@@ -160,6 +165,14 @@ export class GoalFormComponent {
 
   protected choosePriority(priority: string): void {
     this.form.controls.priority.setValue(priority);
+  }
+
+  protected goalCategoryLabel(category: string): string {
+    return this.t(`goals.category.${this.key(category)}`);
+  }
+
+  protected priorityLabel(priority: string): string {
+    return this.t(`goals.priority.${priority.toLowerCase()}`);
   }
 
   protected updateTargetAmount(value: string): void {
@@ -228,5 +241,17 @@ export class GoalFormComponent {
       .padStart(2, '0');
 
     return `#${normalized}${alpha}`;
+  }
+
+  private dateLocale(): string {
+    return this.languageService.currentLang() === 'en' ? 'en-GB' : this.languageService.currentLang();
+  }
+
+  private key(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+  }
+
+  private t(key: string, params?: Record<string, unknown>): string {
+    return this.translate.instant(key, params);
   }
 }

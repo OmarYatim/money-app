@@ -1,0 +1,756 @@
+{
+  "app": {
+    "tagline": "Personal Finance"
+  },
+  "accountTypes": {
+    "account": "account",
+    "checking": "Checking",
+    "savings": "Savings",
+    "credit": "Credit",
+    "investment": "Investments"
+  },
+  "accountSettings": {
+    "accountId": "Account ID",
+    "backToDashboard": "Back to dashboard",
+    "breadcrumb": {
+      "account": "Account",
+      "workspace": "Workspace"
+    },
+    "delete": {
+      "beforeCopy": "You can export your data first. Deletion is immediate and cannot be undone.",
+      "beforeTitle": "Before deleting",
+      "confirmation": "I understand this action is immediate and irreversible.",
+      "deleteAccount": "Delete account",
+      "deletePermanently": "Delete permanently",
+      "deleting": "Deleting…",
+      "modalCopyEnd": ", including accounts, transactions, goals, reports and login tokens.",
+      "modalCopyStart": "This will revoke your bank data connection and permanently erase the account for",
+      "modalTitle": "Delete account permanently?",
+      "subtitle": "This permanently erases your Nexioo account and financial data.",
+      "title": "Delete account"
+    },
+    "email": {
+      "confirmPassword": "Confirm with password",
+      "confirmPasswordHint": "Required to change the address used for sign-in.",
+      "currentEmail": "Current email",
+      "newEmail": "New email",
+      "newEmailHint": "We will send a verification link before switching.",
+      "sendVerification": "Send verification",
+      "subtitle": "Used for sign-in, statements and security alerts.",
+      "title": "Email address",
+      "verified": "Verified"
+    },
+    "errors": {
+      "deleteExpired": "Your session expired. Sign in again before deleting your account.",
+      "deleteFailed": "Could not delete the account. Try again or contact support.",
+      "invalidCode": "Invalid or expired code.",
+      "mfaLoad": "Could not load MFA status.",
+      "mfaStart": "Could not start MFA setup."
+    },
+    "memberSince": "Member since March 2024",
+    "messages": {
+      "mfaDisabled": "Two-factor authentication disabled.",
+      "mfaEnabled": "Two-factor authentication enabled.",
+      "passwordUpdated": "Password updated.",
+      "profileSaved": "Profile saved.",
+      "rectificationOpened": "Rectification request opened.",
+      "verificationSent": "Verification email sent to {{email}}."
+    },
+    "privacy": {
+      "analytics": "Anonymous analytics",
+      "analyticsHint": "Helps us improve the product. No personal data.",
+      "bannerCopy": "Under EU GDPR you can access, rectify, port and erase your personal data at any time.",
+      "bannerTitle": "Your data, your rules",
+      "consentSubtitle": "Granular control over how Nexioo uses your data.",
+      "consentTitle": "Consent",
+      "dataRights": {
+        "openRequest": "Open request",
+        "rectify": "Rectify my data",
+        "rectifyHint": "Open a request to correct personal information.",
+        "subtitle": "Exercise any of these at no cost.",
+        "title": "Your data rights"
+      },
+      "marketing": "Marketing communications",
+      "marketingHint": "Product updates, tips, occasional offers.",
+      "profiling": "Automated profiling",
+      "profilingHint": "Personalise insights based on your spending patterns.",
+      "retention": {
+        "options": {
+          "24m": {
+            "hint": "Recommended for tax-year data",
+            "label": "24 months"
+          },
+          "60m": {
+            "hint": "Full statutory window for audits",
+            "label": "5 years"
+          },
+          "6m": {
+            "hint": "Minimum legal retention for financial records",
+            "label": "6 months"
+          }
+        },
+        "subtitle": "How long Nexioo keeps your transaction history after closure.",
+        "title": "Data retention"
+      },
+      "thirdParty": "Third-party integrations",
+      "thirdPartyHint": "Allow categorisation by partner enrichment services."
+    },
+    "profile": {
+      "countries": {
+        "belgium": "Belgium",
+        "france": "France",
+        "germany": "Germany",
+        "ireland": "Ireland",
+        "italy": "Italy",
+        "netherlands": "Netherlands",
+        "portugal": "Portugal",
+        "spain": "Spain"
+      },
+      "country": "Country",
+      "currency": "Default currency",
+      "displayName": "Display name",
+      "displayNameHint": "Shown in greetings and reports.",
+      "phone": "Phone number",
+      "phoneHint": "For SMS verification only. Never shared.",
+      "saveChanges": "Save changes",
+      "subtitle": "Used across your dashboard, exports and statements.",
+      "title": "Personal information",
+      "username": "Username",
+      "usernameHint": "Lowercase letters, numbers and dots."
+    },
+    "sectionsLabel": "Account settings sections",
+    "security": {
+      "changePassword": "Change password",
+      "confirmPassword": "Confirm new password",
+      "currentPassword": "Current password",
+      "loginMethods": "Login methods",
+      "loginMethodsHint": "Choose how you sign in to Nexioo.",
+      "mfa": {
+        "checking": "Checking",
+        "disable": "Disable MFA",
+        "disableHint": "Enter your current authenticator code to turn it off.",
+        "enable": "Enable MFA",
+        "enabled": "Enabled",
+        "manualKey": "Manual setup key",
+        "off": "Off",
+        "qrAlt": "Authenticator app setup QR code",
+        "setup": "Set up authenticator",
+        "subtitle": "Authenticator app (TOTP).",
+        "title": "Two-factor authentication",
+        "verificationCode": "Verification code",
+        "verificationHint": "Enter the 6-digit code generated by your app."
+      },
+      "newPassword": "New password",
+      "passwordHint": "Use 12+ characters with mixed cases, numbers and symbols.",
+      "showPasswords": "Show passwords",
+      "updatePassword": "Update password"
+    },
+    "subtitle": "Manage your profile, login methods, privacy and data",
+    "tabs": {
+      "delete": "Delete account",
+      "email": "Email",
+      "privacy": "Privacy (GDPR)",
+      "profile": "Profile",
+      "security": "Login & security"
+    },
+    "title": "Account settings"
+  },
+  "accounts": {
+    "accountOptions": "Account options",
+    "bank": "Bank",
+    "connectAnotherBank": "Connect another bank",
+    "connectBank": "Connect a bank",
+    "connectedCount": "{{count}} connected",
+    "connecting": "Connecting…",
+    "connectionNeedsAttention": "One of your bank connections needs attention. Click to re-authenticate.",
+    "currencyAccount": "{{currency}} account",
+    "disconnect": "Disconnect",
+    "disconnecting": "Disconnecting…",
+    "disconnectInstitution": "Disconnect {{institution}}",
+    "ending": "ending {{lastFour}}",
+    "renameAccount": "Rename account",
+    "synced": "Synced",
+    "viewActivity": "View activity",
+    "viewTransactions": "View transactions",
+    "connectedBanks": {
+      "title": "Connected banks",
+      "subtitle": "{{count}} bank(s) linked · disconnect any time",
+      "accountCountSynced": "{{count}} account(s) · synced"
+    },
+    "disconnectDialog": {
+      "title": "Disconnect {{institution}}?",
+      "copy": "Choose what should happen to the local data linked to this bank connection.",
+      "keepHistoryTitle": "Keep transaction history",
+      "keepHistoryCopy": "Past transactions will remain visible but will no longer be updated.",
+      "deleteDataTitle": "Delete all associated data",
+      "deleteDataCopy": "Accounts and all transactions from this bank will be permanently deleted."
+    },
+    "empty": {
+      "noConnectedAccounts": "No connected accounts yet. Connect your first bank to get started."
+    },
+    "errors": {
+      "disconnect": "Unable to disconnect this bank connection.",
+      "loadConnected": "Unable to load connected accounts.",
+      "openConnection": "Unable to open bank connection.",
+      "rename": "Unable to rename this account.",
+      "startConnection": "Unable to start bank connection."
+    },
+    "filters": {
+      "allAccounts": "All accounts"
+    },
+    "messages": {
+      "disconnected": "Bank connection disconnected.",
+      "refreshed": "Accounts refreshed.",
+      "renamed": "Account renamed.",
+      "useConnectToReauth": "Use Connect a bank to re-authenticate the connection."
+    },
+    "summary": {
+      "connections": "Connections",
+      "healthyCount": "{{healthy}}/{{total}} healthy",
+      "netWorth": "Net worth",
+      "totalAssets": "Total assets",
+      "totalLiabilities": "Total liabilities"
+    }
+  },
+  "auth": {
+    "authenticatorCode": "Authenticator code",
+    "confirmAccount": "Confirm account",
+    "confirming": "Confirming…",
+    "creatingAccount": "Creating account…",
+    "editSignupDetails": "Edit signup details",
+    "email": "Email",
+    "emailConfirmationCode": "Email confirmation code",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "legal": "Bank-grade encryption · GDPR · ISO 27001",
+    "login": "Sign in",
+    "password": "Password",
+    "passwordHint": "Use 12+ characters and at least 3 of: uppercase, lowercase, number, symbol.",
+    "phone": "Phone",
+    "phoneCountry": "Phone country",
+    "phoneNumber": "Phone number",
+    "register": "Create account",
+    "signOut": "Sign out",
+    "signingIn": "Signing in…",
+    "tryAgainSoon": "Try again soon",
+    "useDifferentAccount": "Use a different account",
+    "verifying": "Verifying…",
+    "verifyCode": "Verify code",
+    "errors": {
+      "accountExists": "An account with this email already exists.",
+      "checkSignupFields": "Check the signup fields and try again.",
+      "completeRequiredFields": "Complete all required fields before creating the account.",
+      "enterEmailPassword": "Enter a valid email and password.",
+      "enterValidPhone": "Enter a valid phone number for the selected country.",
+      "invalidCredentials": "Invalid email or password.",
+      "invalidMfaCode": "Invalid or expired code. Sign in again if the code keeps failing.",
+      "invalidRegisterCode": "Invalid or expired code. Request a new code and try again.",
+      "loginFailed": "Login failed. Please try again.",
+      "registrationFailed": "Registration failed. Please try again.",
+      "tooManyRequestsLater": "Too many requests. Please try again later.",
+      "tooManyRequestsRetry": "Too many requests. Please try again in {{time}}.",
+      "useStrongerPassword": "Use a stronger password before creating the account."
+    },
+    "hero": {
+      "copy": "One calm dashboard for every account, every transaction, every goal. We never touch your credentials, never move money. Just clarity.",
+      "eyebrow": "Read-only · End-to-end encrypted",
+      "titleStart": "Your money,",
+      "titleEm": "quietly",
+      "titleEnd": "in order.",
+      "features": {
+        "connect": { "title": "Connect accounts", "copy": "200+ banks, one secure link" },
+        "categorize": { "title": "Auto-categorize", "copy": "Every transaction sorted instantly" },
+        "netWorth": { "title": "Track net worth", "copy": "See where you stand, daily" },
+        "readOnly": { "title": "Read-only by design", "copy": "We literally cannot move money" }
+      }
+    },
+    "phoneHint": {
+      "empty": "{{country}}: {{hint}}",
+      "invalid": "{{country}} numbers should use {{hint}}."
+    },
+    "placeholders": {
+      "email": "you@email.com"
+    },
+    "subtitles": {
+      "confirmEmail": "We sent a 6-digit confirmation code to {{email}}.",
+      "login": "Sign in to see your full financial picture.",
+      "mfa": "Use the 6-digit code from your authenticator app for {{email}}.",
+      "register": "Two minutes to set up. No card required."
+    },
+    "titles": {
+      "confirmEmail": "Confirm your email.",
+      "mfa": "Enter your code.",
+      "startFreeAccount": "Start your free account.",
+      "welcomeBack": "Welcome back."
+    }
+  },
+  "categories": {
+    "groceries": "Groceries",
+    "dining": "Dining",
+    "transport": "Transport",
+    "utilities": "Utilities",
+    "rent": "Rent",
+    "health": "Health",
+    "entertainment": "Entertainment",
+    "shopping": "Shopping",
+    "travel": "Travel",
+    "education": "Education",
+    "income": "Income",
+    "transfer": "Transfer",
+    "savings": "Savings",
+    "subscription": "Subscription",
+    "other": "Other"
+  },
+  "common": {
+    "add": "Add",
+    "breadcrumb": "Breadcrumb",
+    "cancel": "Cancel",
+    "apply": "Apply",
+    "close": "Close",
+    "comingSoon": "Coming soon",
+    "details": "Details",
+    "dismiss": "Dismiss",
+    "next": "Next",
+    "no": "No",
+    "previous": "Previous",
+    "refresh": "Refresh",
+    "retry": "Retry",
+    "viewAll": "View all",
+    "yes": "Yes"
+  },
+  "dashboard": {
+    "cashFlow": {
+      "title": "Cash flow",
+      "subtitle": "Last 30 days · daily in/out",
+      "in": "In",
+      "out": "Out"
+    },
+    "empty": {
+      "connectFirstBank": "Connect your first bank account to get started.",
+      "goToAccounts": "Go to accounts"
+    },
+    "errors": {
+      "openReauth": "Unable to open bank re-authentication.",
+      "refreshSummary": "Unable to refresh dashboard summary."
+    },
+    "goalsSoon": {
+      "copy": "Track savings goals, target amounts, and progress over time."
+    },
+    "hero": {
+      "netWorthLive": "Net worth · live",
+      "twelveMonthEvolution": "12-month evolution"
+    },
+    "kpi": {
+      "cashAvailable": "Cash available",
+      "currentBalancesOnly": "Current balances only",
+      "futureBalance": "Future balance",
+      "afterScheduledDebits": "After scheduled debits · 30d",
+      "incomeThisMonth": "Income · this month",
+      "upVsLastMonth": "↑ vs last month",
+      "expensesThisMonth": "Expenses · this month",
+      "downVsLastMonth": "↓ vs last month",
+      "todaySpending": "Today's spending",
+      "todayTransactions": "Today's transactions",
+      "savingsRate": "Savings rate",
+      "incomeKeptThisMonth": "Income kept this month"
+    },
+    "recent": {
+      "title": "Recent activity",
+      "subtitle": "Latest transactions",
+      "seeAllTransactions": "See all transactions",
+      "empty": "No recent transactions"
+    },
+    "spending": {
+      "title": "Spending breakdown",
+      "subtitle": "This month · {{total}} total",
+      "empty": "No expenses recorded this month"
+    },
+    "sync": {
+      "lastSynced": "Last synced {{time}}",
+      "never": "Never synced",
+      "justNow": "just now",
+      "minutesAgo": "{{count}} min ago",
+      "oneHourAgo": "1 hour ago",
+      "hoursAgo": "{{count}} hours ago",
+      "oneConnectionNeedsAction": "One bank connection needs attention. Click to re-authenticate.",
+      "connectionsNeedAction": "{{count}} bank connections need attention. Click to re-authenticate.",
+      "lastSyncFailed": "The last bank sync failed. Click to reconnect and refresh your data."
+    }
+  },
+  "goals": {
+    "active": "active",
+    "addContribution": "Add contribution",
+    "addFunds": "Add funds",
+    "adjustPlan": "Adjust plan",
+    "allGoals": "All goals",
+    "allGoalsSub": "Click any card to spotlight · drag to reorder",
+    "amount": "Amount",
+    "archiveGoal": "Archive goal",
+    "autoSave": "Auto-save",
+    "autoSaveAmount": "Auto-save · {{amount}}/mo",
+    "autoSavePlan": "Auto-save plan {{amount}}/mo",
+    "behindTarget": "Behind target",
+    "closeContributionForm": "Close contribution form",
+    "contributionAmountRequired": "A positive contribution amount is required.",
+    "contributionChart": "Contribution chart",
+    "contributionHistory": "Contribution history",
+    "contributionNotePlaceholder": "Birthday money",
+    "contributions": "Contributions",
+    "createNewGoal": "Create new goal",
+    "createNewGoalSub": "Set a target, pick an account, auto-save monthly",
+    "defaultNote": "Keep this plan funded with monthly auto-save and manual top-ups.",
+    "editGoal": "Edit goal",
+    "entries": "{{count}} entries",
+    "forecast": "Forecast: {{date}}",
+    "forecastLabel": "Forecast",
+    "funded": "funded",
+    "fundedFrom": "Funded from",
+    "goalContribution": "Goal contribution",
+    "last30Days": "Last 30 days",
+    "linkedTo": "Linked to {{account}}",
+    "loading": "Loading goals...",
+    "manual": "Manual",
+    "manualContributions": "Manual contributions",
+    "manualHistory": "Manual history for this goal",
+    "metrics": "Goal metrics",
+    "monthStreak": "{{count}}-month streak",
+    "monthlyLeft": "{{amount}}/mo · {{months}}m left",
+    "monthsToGo": "{{count}} months to go",
+    "newGoal": "New goal",
+    "nextDebit": "Next debit",
+    "noContributions": "No contributions yet.",
+    "noDeadline": "No deadline",
+    "noGoalsYet": "No goals yet",
+    "noManualContributions": "No manual contributions yet.",
+    "noProjection": "No projection yet",
+    "noTargetDate": "No target date",
+    "ofAmount": "of {{amount}}",
+    "perMonth": "/ month",
+    "priorityFilters": "Priority filters",
+    "progress": "Goal progress",
+    "remaining": "Remaining",
+    "savedOf": "saved of {{amount}}",
+    "savingsGoal": "Savings goal",
+    "savingsGoals": "Savings goals",
+    "selectGoal": "Select a goal to view progress.",
+    "spotlight": "Spotlight goal",
+    "subtitle": "{{count}} active · saving {{amount}}/month",
+    "targetDate": "target {{date}}",
+    "category": {
+      "safetynet": "Safety net",
+      "travel": "Travel",
+      "tech": "Tech",
+      "family": "Family",
+      "longterm": "Long-term",
+      "transport": "Transport",
+      "health": "Health",
+      "education": "Education",
+      "other": "Other"
+    },
+    "colors": {
+      "indigo": "Indigo",
+      "deepIndigo": "Deep indigo",
+      "green": "Green",
+      "amber": "Amber",
+      "rose": "Rose",
+      "slate": "Slate",
+      "ink": "Ink"
+    },
+    "detail": {
+      "ariaLabel": "Goal detail",
+      "monthlyRate": "Monthly rate",
+      "projectedDate": "Projected date"
+    },
+    "errors": {
+      "addContribution": "Unable to add contribution.",
+      "archive": "Unable to archive goal.",
+      "load": "Unable to load goals.",
+      "save": "Unable to save goal."
+    },
+    "form": {
+      "accountAndSchedule": "Account and schedule",
+      "autoCalculated": "auto-calculated",
+      "autoSaveHint": "Set to €0 to fund manually. This schedules the monthly amount in the plan.",
+      "autoSaveMonthly": "Auto-save monthly",
+      "closeForm": "Close form",
+      "color": "Color",
+      "createGoal": "Create goal",
+      "createSavingsPlan": "Create savings plan",
+      "details": "Details",
+      "editGoal": "Edit goal",
+      "editSavingsPlan": "Edit savings plan",
+      "forecast": "Forecast",
+      "funding": "Funding",
+      "fundingForecast": "Funding forecast",
+      "goalName": "Goal name",
+      "goalNamePlaceholder": "Emergency fund",
+      "icon": "Icon",
+      "monthsAtPlan": "Months at plan",
+      "nameAndTarget": "Name and target",
+      "newGoal": "New goal",
+      "noMonthlyWarning": "No monthly auto-save amount. Add funds manually or set a monthly plan.",
+      "note": "Note",
+      "notePlaceholder": "A private reminder of why this goal matters.",
+      "progress": "Progress",
+      "reachBy": "Reach by",
+      "requiredError": "Name and a positive target amount are required.",
+      "saveGoal": "Save goal",
+      "sections": "Goal form sections",
+      "sourceAccount": "Source account",
+      "targetAmount": "Target amount",
+      "targetMonth": "Target month"
+    },
+    "icons": {
+      "car": "Car",
+      "event": "Event",
+      "flag": "Flag",
+      "home": "Home",
+      "savings": "Savings",
+      "shield": "Shield",
+      "tech": "Tech",
+      "travel": "Travel"
+    },
+    "kpi": {
+      "avgStreak": "Avg streak",
+      "byEndOfYear": "By end of 2026 at current pace",
+      "goalsActive": "{{active}} of {{total}} goals active",
+      "longestStreak": "Longest: {{name}} · {{count}}m",
+      "monthCount": "{{count}} mo",
+      "monthlyAutoSave": "Monthly auto-save",
+      "noStreak": "No streak yet",
+      "onPace": "On pace for 2027",
+      "onTrack": "On track",
+      "overallProgress": "Overall progress",
+      "projectedReach": "Projected reach",
+      "totalSaved": "Total saved",
+      "totalSavedSub": "of {{target}} across {{count}} goals",
+      "trackSub": "{{ahead}} ahead · {{lagging}} lagging"
+    },
+    "priority": {
+      "all": "All",
+      "essential": "Essential",
+      "high": "High",
+      "label": "Priority",
+      "low": "Low",
+      "medium": "Medium"
+    }
+  },
+  "language": {
+    "selectorLabel": "Language",
+    "english": "English",
+    "french": "Français",
+    "spanish": "Español",
+    "german": "Deutsch"
+  },
+  "mfa": {
+    "warningTitle": "Protect your account with MFA",
+    "warningCopy": "Set up an authenticator app to add a second sign-in check.",
+    "enable": "Enable MFA",
+    "dismissReminder": "Dismiss MFA reminder"
+  },
+  "nav": {
+    "workspace": "Workspace",
+    "dashboard": "Dashboard",
+    "accounts": "Accounts",
+    "transactions": "Transactions",
+    "goals": "Goals",
+    "reports": "Reports",
+    "unreviewedTransactions": "{{count}} unreviewed transactions"
+  },
+  "pageActions": {
+    "notifications": "Notifications, {{count}} unreviewed transactions"
+  },
+  "profile": {
+    "planStatus": "Free plan · secure workspace",
+    "yourProfile": "Your profile",
+    "viewEditDetails": "View & edit details",
+    "accountSettings": "Account settings",
+    "preferencesPrivacy": "Preferences, privacy",
+    "security": "Security",
+    "passwordSessions": "Password and sessions",
+    "endSession": "End this session"
+  },
+  "reports": {
+    "acrossCategories": "{{total}} across {{count}} categories",
+    "categorised": "{{total}} categorised",
+    "dateRange": "Report date range",
+    "errors": { "load": "Unable to load reports." },
+    "fixedFlexible": {
+      "fixedCosts": "Fixed costs",
+      "flexibleSpend": "Flexible spend",
+      "recurringSubs": "Recurring subs"
+    },
+    "fixedVsFlexible": "Fixed vs flexible",
+    "fixedVsFlexibleSub": "Recurring commitments compared with variable spend",
+    "highestSpend": "Highest spend in this period",
+    "incomeKept": "Income kept",
+    "incomeMinusSpending": "Income minus spending",
+    "incomeVersusSpendingChart": "Income versus spending chart",
+    "incomeVsSpending": "Income vs spending",
+    "monthlyCashFlow": "Monthly cash flow",
+    "netFlow": "Net flow",
+    "netKept": "Net kept",
+    "netLineIncluded": "net line included",
+    "noCashFlowData": "No cash flow data for this period.",
+    "noMerchantSpend": "No merchant spend in this period.",
+    "noSpendingData": "No spending data for this period.",
+    "percentOfSpending": "{{percent}}% of spending",
+    "periodSummary": "Period summary",
+    "pointsVsTarget": "{{points}} pts vs target",
+    "ranges": {
+      "month": "This Month",
+      "quarter": "Last 3 Months",
+      "sixMonths": "Last 6 Months",
+      "ytd": "YTD",
+      "year": "Year"
+    },
+    "selectedAccount": "Selected account",
+    "selectedPeriod": "Selected period",
+    "spending": "Spending",
+    "spendingByCategoryChart": "Spending by category chart",
+    "topMerchants": "Top merchants",
+    "totalSpent": "Total spent",
+    "vsGoal": "vs goal · {{goal}}",
+    "whereItGoes": "Where it goes"
+  },
+  "status": {
+    "reconnecting": "Reconnecting…"
+  },
+  "time": {
+    "minute": "{{count}} minute",
+    "minutes": "{{count}} minutes",
+    "second": "{{count}} second",
+    "seconds": "{{count}} seconds",
+    "thisMonth": "this month",
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "transactions": {
+    "archivedAccount": "Archived account",
+    "connectedAccount": "Connected account",
+    "direction": {
+      "credit": "Credit (incoming)",
+      "debit": "Debit (outgoing)"
+    },
+    "empty": {
+      "title": "No transactions found",
+      "subtitle": "Try clearing some filters or expanding the period."
+    },
+    "errors": {
+      "loadFullDetails": "Unable to load full transaction details.",
+      "loadTransaction": "Unable to load transaction.",
+      "loadTransactions": "Unable to load transactions.",
+      "markAllReviewed": "Unable to mark all loaded transactions as reviewed.",
+      "updateCategory": "Unable to update category.",
+      "updateInternalTransfer": "Unable to update internal transfer state.",
+      "updateReviewed": "Unable to update reviewed state."
+    },
+    "filters": {
+      "account": "Account",
+      "accountFilter": "Account filter",
+      "all": "All",
+      "allCategories": "All categories",
+      "bank": "Bank",
+      "category": "Category",
+      "categoryFilter": "Category filter",
+      "clear": "Clear filters",
+      "date": "Date",
+      "groupBy": "Group by",
+      "groupTransactionsBy": "Group transactions by",
+      "internalTransferFilter": "Internal transfer filter",
+      "rows": "Rows",
+      "rowsPerPage": "Rows per page",
+      "sort": "Sort",
+      "sortTransactions": "Sort transactions",
+      "status": "Status",
+      "statusFilter": "Status filter",
+      "transfer": "Transfer"
+    },
+    "method": {
+      "bankTransaction": "Bank transaction",
+      "bankTransfer": "Bank transfer",
+      "card": "Card",
+      "sepaDebit": "SEPA Direct Debit"
+    },
+    "modal": {
+      "actions": "Transaction actions",
+      "addNote": "Add note",
+      "appliedDate": "Applied {{date}}",
+      "breadcrumb": "Transaction detail breadcrumb",
+      "category": "Transaction category",
+      "changeCategory": "Change category",
+      "closeDetail": "Close transaction detail",
+      "copyReference": "Copy reference",
+      "counterparty": "Counterparty",
+      "detail": "Detail",
+      "flagForReview": "Flag for review",
+      "manuallySet": "Manually set",
+      "markRecurring": "Mark recurring",
+      "method": "Method",
+      "noNotes": "No notes yet. Add a private note for your own tracking.",
+      "originalWording": "Original wording",
+      "posted": "Posted",
+      "readOnlyNotice": "This transaction is read-only. Nexioo cannot modify or refund payments; contact your bank directly to dispute.",
+      "recategorize": "Recategorize transaction",
+      "reference": "Reference",
+      "selectedCategory": "Selected category",
+      "transactionDetails": "Transaction details",
+      "type": "Type",
+      "yourNotes": "Your notes"
+    },
+    "pagination": {
+      "ariaLabel": "Transaction pages",
+      "summary": "Page {{page}} of {{total}}"
+    },
+    "period": {
+      "7d": "7D",
+      "30d": "30D",
+      "ariaLabel": "Time period",
+      "custom": "Custom",
+      "from": "From",
+      "fromDate": "From {{date}}",
+      "future": "Future",
+      "month": "This month",
+      "selectDateRange": "Select date range",
+      "to": "To",
+      "toDate": "To {{date}}",
+      "year": "This year"
+    },
+    "review": {
+      "markAllReviewed": "Mark all reviewed",
+      "markReviewed": "Mark reviewed",
+      "markTransactionReviewed": "Mark transaction reviewed",
+      "markTransactionUnreviewed": "Mark transaction unreviewed",
+      "markUnreviewed": "Mark unreviewed",
+      "reviewed": "Reviewed",
+      "reviewing": "Reviewing…",
+      "unreviewed": "Unreviewed"
+    },
+    "search": {
+      "ariaLabel": "Search transactions",
+      "placeholder": "Search merchants, descriptions…"
+    },
+    "sort": {
+      "largest": "Largest amount",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "smallest": "Smallest amount"
+    },
+    "status": {
+      "cleared": "Cleared"
+    },
+    "summary": {
+      "count": "{{count}} transactions",
+      "needReview": "{{count}} need review",
+      "net": "Net",
+      "txnCount": "{{count}} txn(s)",
+      "unreviewed": "{{count}} unreviewed"
+    },
+    "transfer": {
+      "excludeInternal": "Exclude internal",
+      "internalOnly": "Internal only",
+      "internalTransfer": "Internal transfer",
+      "markInternal": "Mark internal"
+    }
+  }
+}

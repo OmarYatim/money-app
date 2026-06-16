@@ -1,26 +1,26 @@
 <section class="account-settings">
   <header class="topbar">
     <div class="topbar__left">
-      <nav class="topbar__crumb" aria-label="Breadcrumb">
+      <nav class="topbar__crumb" [attr.aria-label]="'shared.breadcrumb' | translate">
         <mat-icon aria-hidden="true">home</mat-icon>
-        <span>Workspace</span>
+        <span>{{ 'accountSettings.breadcrumb.workspace' | translate }}</span>
         <mat-icon aria-hidden="true">chevron_right</mat-icon>
-        <span class="topbar__crumb-current">Account</span>
+        <span class="topbar__crumb-current">{{ 'accountSettings.breadcrumb.account' | translate }}</span>
       </nav>
-      <h1 class="topbar__title">Account settings</h1>
-      <p class="topbar__subtitle">Manage your profile, login methods, privacy and data</p>
+      <h1 class="topbar__title">{{ 'accountSettings.title' | translate }}</h1>
+      <p class="topbar__subtitle">{{ 'accountSettings.subtitle' | translate }}</p>
     </div>
     <div class="topbar__right">
       <app-page-actions />
       <a class="topbar__action-btn" routerLink="/dashboard">
         <mat-icon aria-hidden="true">arrow_back</mat-icon>
-        <span>Back to dashboard</span>
+        <span>{{ 'accountSettings.backToDashboard' | translate }}</span>
       </a>
     </div>
   </header>
 
   <div class="account-settings__body">
-    <aside class="settings-nav" aria-label="Account settings sections">
+    <aside class="settings-nav" [attr.aria-label]="'accountSettings.sectionsLabel' | translate">
       <div class="settings-nav__head">
         <div class="settings-nav__avatar">{{ initials() }}</div>
         <div class="settings-nav__identity">
@@ -39,7 +39,7 @@
             (click)="setActiveTab(tab.id)"
           >
             <mat-icon aria-hidden="true">{{ tab.icon }}</mat-icon>
-            <span>{{ tab.label }}</span>
+            <span>{{ tab.labelKey | translate }}</span>
             @if (activeTab() === tab.id) {
               <mat-icon class="settings-nav__chevron" aria-hidden="true">chevron_right</mat-icon>
             }
@@ -48,9 +48,9 @@
       </div>
 
       <div class="settings-nav__foot">
-        <div class="settings-nav__foot-label">Account ID</div>
+        <div class="settings-nav__foot-label">{{ 'accountSettings.accountId' | translate }}</div>
         <div class="settings-nav__foot-id">nx_acc_4f29-c81b-aa07</div>
-        <div class="settings-nav__foot-note">Member since March 2024</div>
+        <div class="settings-nav__foot-note">{{ 'accountSettings.memberSince' | translate }}</div>
       </div>
     </aside>
 
@@ -58,22 +58,22 @@
       @if (activeTab() === 'profile') {
         <form class="settings-card" [formGroup]="profileForm" (ngSubmit)="saveProfile()">
           <div class="settings-card__head">
-            <h2>Personal information</h2>
-            <p>Used across your dashboard, exports and statements.</p>
+            <h2>{{ 'accountSettings.profile.title' | translate }}</h2>
+            <p>{{ 'accountSettings.profile.subtitle' | translate }}</p>
           </div>
 
           <label class="settings-row">
             <span>
-              <strong>Display name</strong>
-              <small>Shown in greetings and reports.</small>
+              <strong>{{ 'accountSettings.profile.displayName' | translate }}</strong>
+              <small>{{ 'accountSettings.profile.displayNameHint' | translate }}</small>
             </span>
             <input formControlName="displayName" />
           </label>
 
           <label class="settings-row">
             <span>
-              <strong>Username</strong>
-              <small>Lowercase letters, numbers and dots.</small>
+              <strong>{{ 'accountSettings.profile.username' | translate }}</strong>
+              <small>{{ 'accountSettings.profile.usernameHint' | translate }}</small>
             </span>
             <div class="settings-input-affix">
               <span>nexioo.app/u/</span>
@@ -83,28 +83,23 @@
 
           <label class="settings-row">
             <span>
-              <strong>Phone number</strong>
-              <small>For SMS verification only. Never shared.</small>
+              <strong>{{ 'accountSettings.profile.phone' | translate }}</strong>
+              <small>{{ 'accountSettings.profile.phoneHint' | translate }}</small>
             </span>
             <input formControlName="phone" />
           </label>
 
           <label class="settings-row">
-            <span><strong>Country</strong></span>
+            <span><strong>{{ 'accountSettings.profile.country' | translate }}</strong></span>
             <select formControlName="country">
-              <option>France</option>
-              <option>Spain</option>
-              <option>Germany</option>
-              <option>Italy</option>
-              <option>Portugal</option>
-              <option>Netherlands</option>
-              <option>Belgium</option>
-              <option>Ireland</option>
+              @for (country of countryOptions; track country.value) {
+                <option [value]="country.value">{{ country.labelKey | translate }}</option>
+              }
             </select>
           </label>
 
           <label class="settings-row">
-            <span><strong>Default currency</strong></span>
+            <span><strong>{{ 'accountSettings.profile.currency' | translate }}</strong></span>
             <select formControlName="currency">
               <option>EUR</option>
               <option>GBP</option>
@@ -114,7 +109,9 @@
           </label>
 
           <div class="settings-actions">
-            <button class="settings-actions__primary" type="submit">Save changes</button>
+            <button class="settings-actions__primary" type="submit">
+              {{ 'accountSettings.profile.saveChanges' | translate }}
+            </button>
           </div>
         </form>
       }
@@ -122,17 +119,17 @@
       @if (activeTab() === 'security') {
         <form class="settings-card" [formGroup]="passwordForm" (ngSubmit)="updatePassword()">
           <div class="settings-card__head">
-            <h2>Change password</h2>
-            <p>Use 12+ characters with mixed cases, numbers and symbols.</p>
+            <h2>{{ 'accountSettings.security.changePassword' | translate }}</h2>
+            <p>{{ 'accountSettings.security.passwordHint' | translate }}</p>
           </div>
 
           <label class="settings-row">
-            <span><strong>Current password</strong></span>
+            <span><strong>{{ 'accountSettings.security.currentPassword' | translate }}</strong></span>
             <input formControlName="currentPassword" [type]="showPassword() ? 'text' : 'password'" />
           </label>
 
           <label class="settings-row">
-            <span><strong>New password</strong></span>
+            <span><strong>{{ 'accountSettings.security.newPassword' | translate }}</strong></span>
             <div class="settings-password">
               <input formControlName="newPassword" [type]="showPassword() ? 'text' : 'password'" />
               <div class="settings-password__meter" aria-hidden="true">
@@ -144,32 +141,34 @@
           </label>
 
           <label class="settings-row">
-            <span><strong>Confirm new password</strong></span>
+            <span><strong>{{ 'accountSettings.security.confirmPassword' | translate }}</strong></span>
             <input formControlName="confirmPassword" [type]="showPassword() ? 'text' : 'password'" />
           </label>
 
           <label class="settings-check">
             <input type="checkbox" [checked]="showPassword()" (change)="showPassword.set(!showPassword())" />
-            <span>Show passwords</span>
+            <span>{{ 'accountSettings.security.showPasswords' | translate }}</span>
           </label>
 
           <div class="settings-card__head settings-card__head--nested">
-            <h2>Login methods</h2>
-            <p>Choose how you sign in to Nexioo.</p>
+            <h2>{{ 'accountSettings.security.loginMethods' | translate }}</h2>
+            <p>{{ 'accountSettings.security.loginMethodsHint' | translate }}</p>
           </div>
 
           <div class="mfa-panel">
             <div class="settings-row mfa-panel__status">
               <span>
-                <strong>Two-factor authentication</strong>
-                <small>Authenticator app (TOTP).</small>
+                <strong>{{ 'accountSettings.security.mfa.title' | translate }}</strong>
+                <small>{{ 'accountSettings.security.mfa.subtitle' | translate }}</small>
               </span>
               @if (mfaLoading()) {
-                <span class="settings-tag">Checking</span>
+                <span class="settings-tag">{{ 'accountSettings.security.mfa.checking' | translate }}</span>
               } @else if (mfaEnabled()) {
-                <span class="settings-tag settings-tag--green">Enabled</span>
+                <span class="settings-tag settings-tag--green">
+                  {{ 'accountSettings.security.mfa.enabled' | translate }}
+                </span>
               } @else {
-                <span class="settings-tag">Off</span>
+                <span class="settings-tag">{{ 'accountSettings.security.mfa.off' | translate }}</span>
               }
             </div>
 
@@ -185,7 +184,7 @@
                   [disabled]="mfaLoading()"
                   (click)="startMfaEnrolment()"
                 >
-                  Set up authenticator
+                  {{ 'accountSettings.security.mfa.setup' | translate }}
                 </button>
               </div>
             }
@@ -195,17 +194,17 @@
                 <img
                   class="mfa-setup__qr"
                   [src]="mfaEnrolment()!.qrCodeDataUrl"
-                  alt="Authenticator app setup QR code"
+                  [alt]="'accountSettings.security.mfa.qrAlt' | translate"
                 />
                 <div class="mfa-setup__details">
                   <label class="mfa-secret">
-                    <span>Manual setup key</span>
+                    <span>{{ 'accountSettings.security.mfa.manualKey' | translate }}</span>
                     <input readonly [value]="mfaEnrolment()!.secret" />
                   </label>
                   <label class="settings-row settings-row--compact">
                     <span>
-                      <strong>Verification code</strong>
-                      <small>Enter the 6-digit code generated by your app.</small>
+                      <strong>{{ 'accountSettings.security.mfa.verificationCode' | translate }}</strong>
+                      <small>{{ 'accountSettings.security.mfa.verificationHint' | translate }}</small>
                     </span>
                     <input
                       formControlName="code"
@@ -217,14 +216,14 @@
                   </label>
                   <div class="settings-actions settings-actions--inline">
                     <button class="settings-actions__secondary" type="button" (click)="cancelMfaEnrolment()">
-                      Cancel
+                      {{ 'shared.cancel' | translate }}
                     </button>
                     <button
                       class="settings-actions__primary"
                       type="submit"
                       [disabled]="mfaVerifyForm.invalid || mfaLoading()"
                     >
-                      Enable MFA
+                      {{ 'accountSettings.security.mfa.enable' | translate }}
                     </button>
                   </div>
                 </div>
@@ -235,8 +234,8 @@
               <form class="mfa-disable" [formGroup]="mfaDisableForm" (ngSubmit)="disableMfa()">
                 <label class="settings-row settings-row--compact">
                   <span>
-                    <strong>Disable MFA</strong>
-                    <small>Enter your current authenticator code to turn it off.</small>
+                    <strong>{{ 'accountSettings.security.mfa.disable' | translate }}</strong>
+                    <small>{{ 'accountSettings.security.mfa.disableHint' | translate }}</small>
                   </span>
                   <input
                     formControlName="code"
@@ -252,7 +251,7 @@
                     type="submit"
                     [disabled]="mfaDisableForm.invalid || mfaLoading()"
                   >
-                    Disable MFA
+                    {{ 'accountSettings.security.mfa.disable' | translate }}
                   </button>
                 </div>
               </form>
@@ -260,7 +259,9 @@
           </div>
 
           <div class="settings-actions">
-            <button class="settings-actions__primary" type="submit">Update password</button>
+            <button class="settings-actions__primary" type="submit">
+              {{ 'accountSettings.security.updatePassword' | translate }}
+            </button>
           </div>
         </form>
       }
@@ -268,37 +269,39 @@
       @if (activeTab() === 'email') {
         <form class="settings-card" [formGroup]="emailForm" (ngSubmit)="requestEmailChange()">
           <div class="settings-card__head">
-            <h2>Email address</h2>
-            <p>Used for sign-in, statements and security alerts.</p>
+            <h2>{{ 'accountSettings.email.title' | translate }}</h2>
+            <p>{{ 'accountSettings.email.subtitle' | translate }}</p>
           </div>
 
           <div class="settings-row">
-            <span><strong>Current email</strong></span>
+            <span><strong>{{ 'accountSettings.email.currentEmail' | translate }}</strong></span>
             <div class="settings-readonly">
               <mat-icon aria-hidden="true">mail</mat-icon>
               <span>{{ email() }}</span>
-              <span class="settings-tag settings-tag--green">Verified</span>
+              <span class="settings-tag settings-tag--green">{{ 'accountSettings.email.verified' | translate }}</span>
             </div>
           </div>
 
           <label class="settings-row">
             <span>
-              <strong>New email</strong>
-              <small>We will send a verification link before switching.</small>
+              <strong>{{ 'accountSettings.email.newEmail' | translate }}</strong>
+              <small>{{ 'accountSettings.email.newEmailHint' | translate }}</small>
             </span>
             <input formControlName="newEmail" type="email" placeholder="you@example.com" />
           </label>
 
           <label class="settings-row">
             <span>
-              <strong>Confirm with password</strong>
-              <small>Required to change the address used for sign-in.</small>
+              <strong>{{ 'accountSettings.email.confirmPassword' | translate }}</strong>
+              <small>{{ 'accountSettings.email.confirmPasswordHint' | translate }}</small>
             </span>
             <input formControlName="password" type="password" />
           </label>
 
           <div class="settings-actions">
-            <button class="settings-actions__primary" type="submit">Send verification</button>
+            <button class="settings-actions__primary" type="submit">
+              {{ 'accountSettings.email.sendVerification' | translate }}
+            </button>
           </div>
         </form>
       }
@@ -308,36 +311,48 @@
           <div class="privacy-banner">
             <mat-icon aria-hidden="true">shield</mat-icon>
             <div>
-              <strong>Your data, your rules</strong>
-              <p>Under EU GDPR you can access, rectify, port and erase your personal data at any time.</p>
+              <strong>{{ 'accountSettings.privacy.bannerTitle' | translate }}</strong>
+              <p>{{ 'accountSettings.privacy.bannerCopy' | translate }}</p>
             </div>
           </div>
 
           <div class="settings-card__head">
-            <h2>Consent</h2>
-            <p>Granular control over how Nexioo uses your data.</p>
+            <h2>{{ 'accountSettings.privacy.consentTitle' | translate }}</h2>
+            <p>{{ 'accountSettings.privacy.consentSubtitle' | translate }}</p>
           </div>
 
           <button class="settings-toggle" type="button" (click)="marketingConsent.set(!marketingConsent())">
-            <span><strong>Marketing communications</strong><small>Product updates, tips, occasional offers.</small></span>
+            <span>
+              <strong>{{ 'accountSettings.privacy.marketing' | translate }}</strong>
+              <small>{{ 'accountSettings.privacy.marketingHint' | translate }}</small>
+            </span>
             <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="marketingConsent()"></span>
           </button>
           <button class="settings-toggle" type="button" (click)="analyticsConsent.set(!analyticsConsent())">
-            <span><strong>Anonymous analytics</strong><small>Helps us improve the product. No personal data.</small></span>
+            <span>
+              <strong>{{ 'accountSettings.privacy.analytics' | translate }}</strong>
+              <small>{{ 'accountSettings.privacy.analyticsHint' | translate }}</small>
+            </span>
             <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="analyticsConsent()"></span>
           </button>
           <button class="settings-toggle" type="button" (click)="thirdPartyConsent.set(!thirdPartyConsent())">
-            <span><strong>Third-party integrations</strong><small>Allow categorisation by partner enrichment services.</small></span>
+            <span>
+              <strong>{{ 'accountSettings.privacy.thirdParty' | translate }}</strong>
+              <small>{{ 'accountSettings.privacy.thirdPartyHint' | translate }}</small>
+            </span>
             <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="thirdPartyConsent()"></span>
           </button>
           <button class="settings-toggle" type="button" (click)="profilingConsent.set(!profilingConsent())">
-            <span><strong>Automated profiling</strong><small>Personalise insights based on your spending patterns.</small></span>
+            <span>
+              <strong>{{ 'accountSettings.privacy.profiling' | translate }}</strong>
+              <small>{{ 'accountSettings.privacy.profilingHint' | translate }}</small>
+            </span>
             <span class="settings-toggle__switch" [class.settings-toggle__switch--on]="profilingConsent()"></span>
           </button>
 
           <div class="settings-card__head settings-card__head--nested">
-            <h2>Data retention</h2>
-            <p>How long Nexioo keeps your transaction history after closure.</p>
+            <h2>{{ 'accountSettings.privacy.retention.title' | translate }}</h2>
+            <p>{{ 'accountSettings.privacy.retention.subtitle' | translate }}</p>
           </div>
 
           <div class="settings-radio-group">
@@ -348,22 +363,32 @@
                 [class.settings-radio--active]="retention() === item.value"
                 (click)="retention.set(item.value)"
               >
-                <span><strong>{{ item.label }}</strong><small>{{ item.hint }}</small></span>
+                <span>
+                  <strong>{{ item.labelKey | translate }}</strong>
+                  <small>{{ item.hintKey | translate }}</small>
+                </span>
                 <mat-icon aria-hidden="true">{{ retention() === item.value ? 'radio_button_checked' : 'radio_button_unchecked' }}</mat-icon>
               </button>
             }
           </div>
 
           <div class="settings-card__head settings-card__head--nested">
-            <h2>Your data rights</h2>
-            <p>Exercise any of these at no cost.</p>
+            <h2>{{ 'accountSettings.privacy.dataRights.title' | translate }}</h2>
+            <p>{{ 'accountSettings.privacy.dataRights.subtitle' | translate }}</p>
           </div>
 
           <div class="data-rights">
-            <button class="data-right" type="button" (click)="flash('Rectification request opened.')">
+            <button
+              class="data-right"
+              type="button"
+              (click)="flashKey('accountSettings.messages.rectificationOpened')"
+            >
               <mat-icon aria-hidden="true">description</mat-icon>
-              <span><strong>Rectify my data</strong><small>Open a request to correct personal information.</small></span>
-              <em>Open request</em>
+              <span>
+                <strong>{{ 'accountSettings.privacy.dataRights.rectify' | translate }}</strong>
+                <small>{{ 'accountSettings.privacy.dataRights.rectifyHint' | translate }}</small>
+              </span>
+              <em>{{ 'accountSettings.privacy.dataRights.openRequest' | translate }}</em>
             </button>
           </div>
         </div>
@@ -372,20 +397,22 @@
       @if (activeTab() === 'delete') {
         <div class="settings-card settings-card--danger">
           <div class="settings-card__head">
-            <h2>Delete account</h2>
-            <p>This permanently erases your Nexioo account and financial data.</p>
+            <h2>{{ 'accountSettings.delete.title' | translate }}</h2>
+            <p>{{ 'accountSettings.delete.subtitle' | translate }}</p>
           </div>
 
           <div class="delete-panel">
             <mat-icon aria-hidden="true">warning</mat-icon>
             <div>
-              <strong>Before deleting</strong>
-              <p>You can export your data first. Deletion is immediate and cannot be undone.</p>
+              <strong>{{ 'accountSettings.delete.beforeTitle' | translate }}</strong>
+              <p>{{ 'accountSettings.delete.beforeCopy' | translate }}</p>
             </div>
           </div>
 
           <div class="settings-actions">
-            <button class="settings-actions__danger" type="button" (click)="openDeleteConfirmation()">Delete account</button>
+            <button class="settings-actions__danger" type="button" (click)="openDeleteConfirmation()">
+              {{ 'accountSettings.delete.deleteAccount' | translate }}
+            </button>
           </div>
         </div>
       }
@@ -402,14 +429,14 @@
   @if (confirmDelete()) {
     <div class="settings-modal" role="dialog" aria-modal="true" aria-labelledby="delete-title">
       <div class="settings-modal__card">
-        <h2 id="delete-title">Delete account permanently?</h2>
+        <h2 id="delete-title">{{ 'accountSettings.delete.modalTitle' | translate }}</h2>
         <p>
-          This will revoke your bank data connection and permanently erase the account for
-          <strong>{{ email() }}</strong>, including accounts, transactions, goals, reports and login tokens.
+          {{ 'accountSettings.delete.modalCopyStart' | translate }}
+          <strong>{{ email() }}</strong>{{ 'accountSettings.delete.modalCopyEnd' | translate }}
         </p>
         <label class="settings-check">
           <input type="checkbox" [formControl]="deleteConfirmation" />
-          <span>I understand this action is immediate and irreversible.</span>
+          <span>{{ 'accountSettings.delete.confirmation' | translate }}</span>
         </label>
         @if (deleteError()) {
           <p class="settings-error" role="alert">{{ deleteError() }}</p>
@@ -421,7 +448,7 @@
             [disabled]="deleteLoading()"
             (click)="cancelDelete()"
           >
-            Cancel
+            {{ 'shared.cancel' | translate }}
           </button>
           <button
             class="settings-actions__danger"
@@ -429,7 +456,11 @@
             [disabled]="deleteConfirmation.invalid || deleteLoading()"
             (click)="confirmDeletion()"
           >
-            {{ deleteLoading() ? 'Deleting...' : 'Delete permanently' }}
+            @if (deleteLoading()) {
+              {{ 'accountSettings.delete.deleting' | translate }}
+            } @else {
+              {{ 'accountSettings.delete.deletePermanently' | translate }}
+            }
           </button>
         </div>
       </div>

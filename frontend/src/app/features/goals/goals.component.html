@@ -1,21 +1,21 @@
 <div class="goals">
   <header class="topbar">
     <div class="topbar__left">
-      <nav class="topbar__crumb" aria-label="Breadcrumb">
+      <nav class="topbar__crumb" [attr.aria-label]="'common.breadcrumb' | translate">
         <span class="material-icons">home</span>
-        <span>Workspace</span>
+        <span>{{ 'nav.workspace' | translate }}</span>
         <span class="material-icons">chevron_right</span>
-        <span class="topbar__crumb-current">Goals</span>
+        <span class="topbar__crumb-current">{{ 'nav.goals' | translate }}</span>
       </nav>
-      <h1 class="topbar__title">Goals</h1>
+      <h1 class="topbar__title">{{ 'nav.goals' | translate }}</h1>
       <p class="topbar__subtitle">
-        {{ activeGoals().length }} active · saving {{ monthlyPace() | currency: 'EUR' : 'symbol' : '1.0-0' }}/month
+        {{ 'goals.subtitle' | translate:{ count: activeGoals().length, amount: (monthlyPace() | currency: 'EUR' : 'symbol' : '1.0-0') } }}
       </p>
     </div>
     <div class="topbar__right">
       <button class="topbar__action-btn" type="button" (click)="openCreateForm()">
         <span class="material-icons">add</span>
-        New goal
+        {{ 'goals.newGoal' | translate }}
       </button>
       <app-page-actions />
     </div>
@@ -23,29 +23,29 @@
 
   <main class="goals__body">
     @if (state().loading) {
-      <div class="goals__status">Loading goals...</div>
+      <div class="goals__status">{{ 'goals.loading' | translate }}</div>
     } @else {
       @if (state().error) {
         <div class="goals__status goals__status--error">{{ state().error }}</div>
       }
 
       @if (selectedGoal(); as goal) {
-          <section class="goals__spotlight" aria-label="Spotlight goal">
+          <section class="goals__spotlight" [attr.aria-label]="'goals.spotlight' | translate">
             <div class="goals__spotlight-left">
               <p class="goals__eyebrow">
                 <span></span>
-                Spotlight · {{ goal.category }}
+                {{ 'goals.spotlight' | translate }} · {{ goalCategoryLabel(goal.category) }}
               </p>
               <div class="goals__spotlight-title">
                 <span class="goals__spotlight-icon" [style.background]="goalSoftColor(goal)" [style.color]="goalColor(goal)">
                   <span class="material-icons">{{ goal.icon }}</span>
                 </span>
                 <h2>{{ goal.name }}</h2>
-                <span [class]="priorityClass(goal.priority)">{{ goal.priority }}</span>
+                <span [class]="priorityClass(goal.priority)">{{ priorityLabel(goal.priority) }}</span>
               </div>
               <div class="goals__hero-amount">
                 <strong>{{ goal.currentAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
-                <span>of {{ goal.targetAmount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
+                <span>{{ 'goals.ofAmount' | translate:{ amount: (goal.targetAmount | currency: 'EUR' : 'symbol' : '1.0-0') } }}</span>
               </div>
               <div class="goals__hero-meta">
                 <span [style.color]="goalColor(goal)">
@@ -55,29 +55,29 @@
                 <span>·</span>
                 <span>
                   @if (goal.targetDate) {
-                    target {{ goal.targetDate | date: 'MMM yyyy' }}
+                    {{ 'goals.targetDate' | translate:{ date: (goal.targetDate | date: 'MMM yyyy') } }}
                   } @else {
-                    no target date
+                    {{ 'goals.noTargetDate' | translate }}
                   }
                 </span>
                 <span>·</span>
-                <span>{{ goalStreak(goal) }}-month streak</span>
+                <span>{{ 'goals.monthStreak' | translate:{ count: goalStreak(goal) } }}</span>
               </div>
               <p class="goals__hero-note">
-                {{ goal.note || 'Keep this plan funded with monthly auto-save and manual top-ups.' }}
+                {{ goal.note || ('goals.defaultNote' | translate) }}
               </p>
               <div class="goals__hero-actions">
                 <button class="goals__hero-primary" type="button" (click)="openContributionForm()">
                   <span class="material-icons">add</span>
-                  Add funds
+                  {{ 'goals.addFunds' | translate }}
                 </button>
                 <button class="goals__hero-secondary" type="button" (click)="openEditForm()">
                   <span class="material-icons">settings</span>
-                  Adjust plan
+                  {{ 'goals.adjustPlan' | translate }}
                 </button>
                 <button class="goals__hero-secondary" type="button" (click)="openEditForm()">
                   <span class="material-icons">repeat</span>
-                  Auto-save · {{ monthlyAmount(goal) | currency: 'EUR' : 'symbol' : '1.0-0' }}/mo
+                  {{ 'goals.autoSaveAmount' | translate:{ amount: (monthlyAmount(goal) | currency: 'EUR' : 'symbol' : '1.0-0') } }}
                 </button>
               </div>
             </div>
@@ -88,27 +88,27 @@
                   <strong>{{ goal.progressPercent }}<span>%</span></strong>
                   <small>
                     @if (monthsToTarget(goal) !== null) {
-                      {{ monthsToTarget(goal) }} months to go
+                      {{ 'goals.monthsToGo' | translate:{ count: monthsToTarget(goal) } }}
                     } @else {
-                      No deadline
+                      {{ 'goals.noDeadline' | translate }}
                     }
                   </small>
                   @if (forecastDate(goal); as forecast) {
-                    <em [style.color]="goalColor(goal)">Forecast: {{ forecast | date: 'MMM yyyy' }}</em>
+                    <em [style.color]="goalColor(goal)">{{ 'goals.forecast' | translate:{ date: (forecast | date: 'MMM yyyy') } }}</em>
                   }
                 </div>
               </div>
               <div class="goals__mini-grid">
                 <div>
-                  <span>Remaining</span>
+                  <span>{{ 'goals.remaining' | translate }}</span>
                   <strong>{{ remainingAmount(goal) | currency: 'EUR' : 'symbol' : '1.0-0' }}</strong>
                 </div>
                 <div>
-                  <span>Funded from</span>
-                  <strong>{{ goal.linkedAccountName || 'Manual' }}</strong>
+                  <span>{{ 'goals.fundedFrom' | translate }}</span>
+                  <strong>{{ goal.linkedAccountName || ('goals.manual' | translate) }}</strong>
                 </div>
                 <div>
-                  <span>Next debit</span>
+                  <span>{{ 'goals.nextDebit' | translate }}</span>
                   <strong>
                     @if (goal.autoSaveEnabled) {
                       25 {{ goal.updatedAt | date: 'MMM' }}
@@ -122,7 +122,7 @@
           </section>
       }
 
-      <section class="goals__kpis" aria-label="Goal metrics">
+      <section class="goals__kpis" [attr.aria-label]="'goals.metrics' | translate">
           @for (kpi of kpis(); track kpi.label) {
             <article class="goals__kpi">
               <span class="goals__kpi-icon">
@@ -139,17 +139,17 @@
           <div class="goals__cards-column">
             <div class="goals__section-header">
               <div>
-                <h2>All goals</h2>
-                <p>Click any card to spotlight · drag to reorder</p>
+                <h2>{{ 'goals.allGoals' | translate }}</h2>
+                <p>{{ 'goals.allGoalsSub' | translate }}</p>
               </div>
-              <div class="goals__filters" aria-label="Priority filters">
+              <div class="goals__filters" [attr.aria-label]="'goals.priorityFilters' | translate">
                 @for (filter of priorityFilters; track filter) {
                   <button
                     type="button"
                     [class.goals__filter--active]="priorityFilter() === filter"
                     (click)="selectPriorityFilter(filter)"
                   >
-                    {{ filter }}
+                    {{ priorityFilterLabel(filter) }}
                   </button>
                 }
               </div>
@@ -171,11 +171,11 @@
                       <span>
                         <strong>{{ goal.name }}</strong>
                         <small>
-                          {{ goal.category }} ·
+                          {{ goalCategoryLabel(goal.category) }} ·
                           @if (goal.targetDate) {
                             {{ goal.targetDate | date: 'MMM yyyy' }}
                           } @else {
-                            no deadline
+                            {{ 'goals.noDeadline' | translate }}
                           }
                         </small>
                       </span>
@@ -193,18 +193,18 @@
                     <span class="goals__goal-foot">
                       <span>{{ goal.progressPercent }}%</span>
                       <span>·</span>
-                      <span>{{ monthlyAmount(goal) | currency: 'EUR' : 'symbol' : '1.0-0' }}/mo · {{ monthsLeft(goal) ?? '—' }}m left</span>
+                      <span>{{ 'goals.monthlyLeft' | translate:{ amount: (monthlyAmount(goal) | currency: 'EUR' : 'symbol' : '1.0-0'), months: monthsLeft(goal) ?? '—' } }}</span>
                     </span>
                   </button>
-                  <button class="goals__goal-edit" type="button" aria-label="Edit goal" (click)="selectGoal(goal); openEditForm()">
+                  <button class="goals__goal-edit" type="button" [attr.aria-label]="'goals.editGoal' | translate" (click)="selectGoal(goal); openEditForm()">
                     <span class="material-icons">settings</span>
                   </button>
                 </article>
               } @empty {
                 <button class="goals__add-card" type="button" (click)="openCreateForm()">
                   <span class="material-icons">add</span>
-                  <strong>Create new goal</strong>
-                  <small>Set a target, pick an account, auto-save monthly</small>
+                  <strong>{{ 'goals.createNewGoal' | translate }}</strong>
+                  <small>{{ 'goals.createNewGoalSub' | translate }}</small>
                 </button>
               }
             </div>
@@ -214,23 +214,23 @@
             <article class="goals__side-card">
               <header>
                 <div>
-                  <h2>Contributions</h2>
-                  <p>Last 30 days</p>
+                  <h2>{{ 'goals.contributions' | translate }}</h2>
+                  <p>{{ 'goals.last30Days' | translate }}</p>
                 </div>
-                <button type="button">All <span class="material-icons">arrow_forward</span></button>
+                <button type="button">{{ 'transactions.filters.all' | translate }} <span class="material-icons">arrow_forward</span></button>
               </header>
               <div class="goals__feed">
                 @for (item of contributionFeed(); track item.contributedAt + item.amount) {
                   <div class="goals__feed-row">
                     <span class="goals__feed-dot" [style.background]="item.goal ? goalColor(item.goal) : 'var(--indigo-500)'"></span>
                     <div>
-                      <strong>{{ item.goal?.name || 'Goal contribution' }}</strong>
+                      <strong>{{ item.goal?.name || ('goals.goalContribution' | translate) }}</strong>
                       <small>{{ item.contributedAt | date: 'dd MMM' }} · {{ item.mode }}</small>
                     </div>
                     <span>+{{ item.amount | currency: 'EUR' : 'symbol' : '1.0-0' }}</span>
                   </div>
                 } @empty {
-                  <p class="goals__empty-feed">No contributions yet.</p>
+                  <p class="goals__empty-feed">{{ 'goals.noContributions' | translate }}</p>
                 }
               </div>
             </article>

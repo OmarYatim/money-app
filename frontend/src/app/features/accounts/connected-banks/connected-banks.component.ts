@@ -1,6 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { Account } from '../../../shared/models/account.model';
 
@@ -15,7 +16,7 @@ export interface ConnectedBankGroup {
 
 @Component({
   selector: 'app-connected-banks',
-  imports: [CurrencyPipe, MatIconModule],
+  imports: [CurrencyPipe, MatIconModule, TranslatePipe],
   templateUrl: './connected-banks.component.html',
   styleUrl: './connected-banks.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

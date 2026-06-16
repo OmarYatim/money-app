@@ -10,30 +10,30 @@
         </div>
         <div>
           <div class="sidebar__app-name">Nexioo</div>
-          <div class="sidebar__app-tagline">Personal Finance</div>
+          <div class="sidebar__app-tagline">{{ 'app.tagline' | translate }}</div>
         </div>
       </div>
 
       <div class="sidebar__nav-section">
-        <div class="sidebar__nav-label">Workspace</div>
+        <div class="sidebar__nav-label">{{ 'nav.workspace' | translate }}</div>
         <a routerLink="/dashboard" routerLinkActive="sidebar__nav-item--active"
            class="sidebar__nav-item">
           <mat-icon aria-hidden="true">dashboard</mat-icon>
-          <span>Dashboard</span>
+          <span>{{ 'nav.dashboard' | translate }}</span>
         </a>
         <a routerLink="/accounts" routerLinkActive="sidebar__nav-item--active"
            class="sidebar__nav-item">
           <mat-icon aria-hidden="true">account_balance_wallet</mat-icon>
-          <span>Accounts</span>
+          <span>{{ 'nav.accounts' | translate }}</span>
         </a>
         <a routerLink="/transactions" routerLinkActive="sidebar__nav-item--active"
            class="sidebar__nav-item">
           <mat-icon aria-hidden="true">receipt_long</mat-icon>
-          <span>Transactions</span>
+          <span>{{ 'nav.transactions' | translate }}</span>
           @if (unreviewedCount() > 0) {
             <span
               class="sidebar__nav-badge"
-              [attr.aria-label]="unreviewedCount() + ' unreviewed transactions'"
+              [attr.aria-label]="'nav.unreviewedTransactions' | translate:{ count: unreviewedCount() }"
             >
               {{ unreviewedCountLabel() }}
             </span>
@@ -42,16 +42,17 @@
         <a routerLink="/goals" routerLinkActive="sidebar__nav-item--active"
            class="sidebar__nav-item">
           <mat-icon aria-hidden="true">flag</mat-icon>
-          <span>Goals</span>
+          <span>{{ 'nav.goals' | translate }}</span>
         </a>
         <a routerLink="/reports" routerLinkActive="sidebar__nav-item--active"
            class="sidebar__nav-item">
           <mat-icon aria-hidden="true">bar_chart</mat-icon>
-          <span>Reports</span>
+          <span>{{ 'nav.reports' | translate }}</span>
         </a>
       </div>
 
       <div class="sidebar__spacer"></div>
+      <app-language-selector />
 
       <div class="sidebar__profile">
         @if (profileMenuOpen()) {
@@ -63,7 +64,7 @@
                 <div class="sidebar__profile-email">{{ userEmail() }}</div>
                 <div class="sidebar__profile-status">
                   <span class="sidebar__profile-status-dot"></span>
-                  <span>Free plan · secure workspace</span>
+                  <span>{{ 'profile.planStatus' | translate }}</span>
                 </div>
               </div>
             </div>
@@ -74,8 +75,8 @@
                   <mat-icon aria-hidden="true">person</mat-icon>
                 </span>
                 <span>
-                  <span>Your profile</span>
-                  <small>View & edit details</small>
+                  <span>{{ 'profile.yourProfile' | translate }}</span>
+                  <small>{{ 'profile.viewEditDetails' | translate }}</small>
                 </span>
               </a>
               <a class="sidebar__profile-item" routerLink="/account-settings" (click)="closeProfileMenu()">
@@ -83,8 +84,8 @@
                   <mat-icon aria-hidden="true">settings</mat-icon>
                 </span>
                 <span>
-                  <span>Account settings</span>
-                  <small>Preferences, privacy</small>
+                  <span>{{ 'profile.accountSettings' | translate }}</span>
+                  <small>{{ 'profile.preferencesPrivacy' | translate }}</small>
                 </span>
               </a>
               <a class="sidebar__profile-item" routerLink="/account-settings" [queryParams]="{ tab: 'security' }" (click)="closeProfileMenu()">
@@ -92,8 +93,8 @@
                   <mat-icon aria-hidden="true">shield</mat-icon>
                 </span>
                 <span>
-                  <span>Security</span>
-                  <small>Password and sessions</small>
+                  <span>{{ 'profile.security' | translate }}</span>
+                  <small>{{ 'profile.passwordSessions' | translate }}</small>
                 </span>
               </a>
               <button class="sidebar__profile-item sidebar__profile-item--danger" type="button" (click)="logout()">
@@ -101,8 +102,8 @@
                   <mat-icon aria-hidden="true">logout</mat-icon>
                 </span>
                 <span>
-                  <span>Sign out</span>
-                  <small>End this session</small>
+                  <span>{{ 'auth.signOut' | translate }}</span>
+                  <small>{{ 'profile.endSession' | translate }}</small>
                 </span>
               </button>
             </div>
@@ -131,7 +132,7 @@
           <span class="sse-status__icon">
             <mat-icon aria-hidden="true">sync</mat-icon>
           </span>
-          <span>Reconnecting…</span>
+          <span>{{ 'status.reconnecting' | translate }}</span>
         </div>
       }
       @if (showMfaWarning()) {
@@ -140,20 +141,20 @@
             <mat-icon aria-hidden="true">shield</mat-icon>
           </span>
           <span class="mfa-warning__copy">
-            <strong>Protect your account with MFA</strong>
-            <span>Set up an authenticator app to add a second sign-in check.</span>
+            <strong>{{ 'mfa.warningTitle' | translate }}</strong>
+            <span>{{ 'mfa.warningCopy' | translate }}</span>
           </span>
           <a
             class="mfa-warning__action"
             routerLink="/account-settings"
             [queryParams]="{ tab: 'security' }"
           >
-            Enable MFA
+            {{ 'mfa.enable' | translate }}
           </a>
           <button
             class="mfa-warning__close"
             type="button"
-            aria-label="Dismiss MFA reminder"
+            [attr.aria-label]="'mfa.dismissReminder' | translate"
             (click)="dismissMfaWarning()"
           >
             <mat-icon aria-hidden="true">close</mat-icon>

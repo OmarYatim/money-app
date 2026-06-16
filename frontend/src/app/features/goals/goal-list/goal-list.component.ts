@@ -1,11 +1,12 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { TranslatePipe } from '@ngx-translate/core';
 
 import type { Goal } from '../../../shared/models/goal.model';
 
 @Component({
   selector: 'app-goal-list',
-  imports: [CurrencyPipe, DatePipe],
+  imports: [CurrencyPipe, DatePipe, TranslatePipe],
   templateUrl: './goal-list.component.html',
   styleUrl: './goal-list.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
