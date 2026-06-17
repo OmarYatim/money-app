@@ -2,6 +2,7 @@ package com.moneyapp.backend.transaction.controller;
 
 import com.moneyapp.backend.transaction.dto.TransactionFilter;
 import com.moneyapp.backend.transaction.dto.TransactionResponse;
+import com.moneyapp.backend.transaction.dto.TransactionSummaryResponse;
 import com.moneyapp.backend.transaction.dto.UpdateTransactionCategoryRequest;
 import com.moneyapp.backend.transaction.dto.UpdateTransactionInternalTransferRequest;
 import com.moneyapp.backend.transaction.dto.UpdateTransactionReviewedRequest;
@@ -46,15 +47,54 @@ public class TransactionController {
       @RequestParam(required = false) BigDecimal minAmount,
       @RequestParam(required = false) BigDecimal maxAmount,
       @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) Boolean reviewed,
+      @RequestParam(required = false) Boolean internalTransfer,
+      @RequestParam(defaultValue = "newest") String sort,
       Authentication authentication) {
-    PageRequest pageable =
-        PageRequest.of(page, size, Sort.by(Sort.Order.desc("date"), Sort.Order.desc("id")));
+    PageRequest pageable = PageRequest.of(page, size, sort(sort));
     return ResponseEntity.ok(
         transactionService.findTransactions(
             authenticatedEmail(authentication),
             new TransactionFilter(
-                accountId, category, minDate, maxDate, minAmount, maxAmount, keyword),
+                accountId,
+                category,
+                minDate,
+                maxDate,
+                minAmount,
+                maxAmount,
+                keyword,
+                reviewed,
+                internalTransfer),
             pageable));
+  }
+
+  @GetMapping("/summary")
+  public ResponseEntity<TransactionSummaryResponse> getTransactionSummary(
+      @RequestParam(required = false) Long accountId,
+      @RequestParam(required = false) String category,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate minDate,
+      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate maxDate,
+      @RequestParam(required = false) BigDecimal minAmount,
+      @RequestParam(required = false) BigDecimal maxAmount,
+      @RequestParam(required = false) String keyword,
+      @RequestParam(required = false) Boolean reviewed,
+      @RequestParam(required = false) Boolean internalTransfer,
+      Authentication authentication) {
+    return ResponseEntity.ok(
+        transactionService.summarizeTransactions(
+            authenticatedEmail(authentication),
+            new TransactionFilter(
+                accountId,
+                category,
+                minDate,
+                maxDate,
+                minAmount,
+                maxAmount,
+                keyword,
+                reviewed,
+                internalTransfer)));
   }
 
   @GetMapping("/{id}")
@@ -100,5 +140,14 @@ public class TransactionController {
     }
 
     return authentication.getName();
+  }
+
+  private Sort sort(String sort) {
+    return switch (sort) {
+      case "oldest" -> Sort.by(Sort.Order.asc("date"), Sort.Order.asc("id"));
+      case "largest" -> Sort.by(Sort.Order.desc("value"), Sort.Order.desc("date"));
+      case "smallest" -> Sort.by(Sort.Order.asc("value"), Sort.Order.desc("date"));
+      default -> Sort.by(Sort.Order.desc("date"), Sort.Order.desc("id"));
+    };
   }
 }

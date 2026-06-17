@@ -10,6 +10,7 @@ import com.moneyapp.backend.transaction.dto.PowensTransactionResponse;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
 import com.moneyapp.backend.transaction.dto.TransactionFilter;
 import com.moneyapp.backend.transaction.dto.TransactionResponse;
+import com.moneyapp.backend.transaction.dto.TransactionSummaryResponse;
 import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.enums.CategoryType;
 import com.moneyapp.backend.transaction.mapper.TransactionMapper;
@@ -67,6 +68,32 @@ public class TransactionService {
         transaction ->
             TransactionMapper.toResponse(
                 transaction, accountName(accountsById.get(transaction.getAccountId()))));
+  }
+
+  @Transactional(readOnly = true)
+  public TransactionSummaryResponse summarizeTransactions(String email, TransactionFilter filter) {
+    AppUser appUser = currentAppUserService.resolveExisting(email);
+    TransactionFilter normalizedFilter = normalizeFilter(filter);
+    validateCategory(normalizedFilter.category());
+
+    List<Transaction> transactions =
+        transactionRepository.findAll(
+            TransactionSpecification.forUserWithFilters(appUser.getId(), normalizedFilter));
+    BigDecimal totalIn =
+        transactions.stream()
+            .filter(transaction -> transaction.getValue().compareTo(BigDecimal.ZERO) > 0)
+            .map(Transaction::getValue)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    BigDecimal totalOut =
+        transactions.stream()
+            .filter(transaction -> transaction.getValue().compareTo(BigDecimal.ZERO) < 0)
+            .map(transaction -> transaction.getValue().abs())
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    long unreviewedCount =
+        transactions.stream().filter(transaction -> !transaction.isReviewed()).count();
+
+    return new TransactionSummaryResponse(
+        transactions.size(), unreviewedCount, totalIn, totalOut, totalIn.subtract(totalOut));
   }
 
   @Transactional(readOnly = true)
@@ -252,7 +279,7 @@ public class TransactionService {
 
   private TransactionFilter normalizeFilter(TransactionFilter filter) {
     if (filter == null) {
-      return new TransactionFilter(null, null, null, null, null, null, null);
+      return new TransactionFilter(null, null, null, null, null, null, null, null, null);
     }
 
     return new TransactionFilter(
@@ -262,7 +289,9 @@ public class TransactionService {
         filter.maxDate(),
         filter.minAmount(),
         filter.maxAmount(),
-        normalizeText(filter.keyword()));
+        normalizeText(filter.keyword()),
+        filter.reviewed(),
+        filter.internalTransfer());
   }
 
   private Map<Long, Account> findAccountsById(Long userId, List<Transaction> transactions) {
