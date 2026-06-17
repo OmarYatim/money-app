@@ -11,6 +11,9 @@ const MAX_RECONNECT_ATTEMPTS = 5;
 const INITIAL_RECONNECT_DELAY_MS = 1000;
 const MAX_RECONNECT_DELAY_MS = 16000;
 const HEARTBEAT_TIMEOUT_MS = 45000;
+const JWT_EXPIRY_BUFFER_MS = 5000;
+
+type TokenRefreshHandler = () => Promise<string | null>;
 
 @Injectable({ providedIn: 'root' })
 export class SseService {
@@ -26,10 +29,15 @@ export class SseService {
   private heartbeatTimer: ReturnType<typeof setTimeout> | null = null;
   private reconnectAttempts = 0;
   private activeToken: string | null = null;
+  private tokenRefreshHandler: TokenRefreshHandler | null = null;
 
   readonly connectionStatus = signal<SseConnectionStatus>('idle');
   readonly reconnecting = computed(() => this.connectionStatus() === 'reconnecting');
   readonly events$ = this.eventsSubject.asObservable();
+
+  setTokenRefreshHandler(handler: TokenRefreshHandler): void {
+    this.tokenRefreshHandler = handler;
+  }
 
   connectWithToken(token: string): void {
     if (token === this.activeToken) {
@@ -120,8 +128,45 @@ export class SseService {
     this.reconnectAttempts += 1;
     const token = this.activeToken;
     this.reconnectTimer = setTimeout(() => {
-      this.zone.run(() => this.connect(token, true));
+      void this.reconnect(token);
     }, delay);
+  }
+
+  private async reconnect(token: string): Promise<void> {
+    const nextToken = await this.refreshTokenIfExpired(token);
+    this.zone.run(() => {
+      if (nextToken === null || this.activeToken === null) {
+        this.disconnect();
+        return;
+      }
+
+      if (nextToken === this.activeToken && this.eventSource !== null) {
+        return;
+      }
+
+      this.connect(nextToken, true);
+    });
+  }
+
+  private async refreshTokenIfExpired(token: string): Promise<string | null> {
+    if (!this.isTokenExpired(token)) {
+      return token;
+    }
+
+    return this.tokenRefreshHandler ? this.tokenRefreshHandler() : null;
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(window.atob(token.split('.')[1] ?? '')) as { exp?: number };
+      if (typeof payload.exp !== 'number') {
+        return true;
+      }
+
+      return payload.exp * 1000 <= Date.now() + JWT_EXPIRY_BUFFER_MS;
+    } catch {
+      return true;
+    }
   }
 
   private closeEventSource(): void {

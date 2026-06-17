@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
-import { EMPTY, Observable, catchError, finalize, shareReplay, tap } from 'rxjs';
+import { EMPTY, Observable, catchError, finalize, firstValueFrom, map, of, shareReplay, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   AuthenticatedResponse,
@@ -27,6 +27,10 @@ export class AuthService {
 
   readonly accessToken = signal<string | null>(null);
   readonly currentEmail = signal<string | null>(null);
+
+  constructor() {
+    this.sseService.setTokenRefreshHandler(() => this.refreshAccessTokenForSse());
+  }
 
   get isAuthenticated(): boolean {
     return this.accessToken() !== null;
@@ -130,5 +134,17 @@ export class AuthService {
     this.accessToken.set(res.accessToken);
     this.currentEmail.set(res.email);
     this.sseService.connectWithToken(res.accessToken);
+  }
+
+  private refreshAccessTokenForSse(): Promise<string | null> {
+    return firstValueFrom(
+      this.refresh().pipe(
+        map((res) => res.accessToken),
+        catchError(() => {
+          this.clearSession();
+          return of(null);
+        }),
+      ),
+    );
   }
 }
