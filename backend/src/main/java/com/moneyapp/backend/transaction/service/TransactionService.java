@@ -79,13 +79,15 @@ public class TransactionService {
     List<Transaction> transactions =
         transactionRepository.findAll(
             TransactionSpecification.forUserWithFilters(appUser.getId(), normalizedFilter));
+    List<Transaction> cashFlowTransactions =
+        transactions.stream().filter(transaction -> !transaction.isInternalTransfer()).toList();
     BigDecimal totalIn =
-        transactions.stream()
+        cashFlowTransactions.stream()
             .filter(transaction -> transaction.getValue().compareTo(BigDecimal.ZERO) > 0)
             .map(Transaction::getValue)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
     BigDecimal totalOut =
-        transactions.stream()
+        cashFlowTransactions.stream()
             .filter(transaction -> transaction.getValue().compareTo(BigDecimal.ZERO) < 0)
             .map(transaction -> transaction.getValue().abs())
             .reduce(BigDecimal.ZERO, BigDecimal::add);

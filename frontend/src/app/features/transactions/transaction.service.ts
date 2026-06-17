@@ -6,6 +6,7 @@ import { environment } from '../../../environments/environment';
 import type { CategoryType } from '../../shared/models/category.model';
 import type { Page } from '../../shared/models/page.model';
 import type { Transaction } from '../../shared/models/transaction.model';
+import type { TransactionSummary } from '../../shared/models/transaction-summary.model';
 
 export interface TransactionQuery {
   page?: number;
@@ -17,6 +18,9 @@ export interface TransactionQuery {
   minAmount?: string | null;
   maxAmount?: string | null;
   keyword?: string | null;
+  reviewed?: boolean | null;
+  internalTransfer?: boolean | null;
+  sort?: 'newest' | 'oldest' | 'largest' | 'smallest';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -37,6 +41,14 @@ export class TransactionService {
 
   getTransaction(id: number): Observable<Transaction> {
     return this.http.get<Transaction>(`${this.apiBaseUrl}/api/transactions/${id}`);
+  }
+
+  getTransactionSummary(query: TransactionQuery = {}): Observable<TransactionSummary> {
+    const params = this.queryParams(query, false);
+
+    return this.http.get<TransactionSummary>(`${this.apiBaseUrl}/api/transactions/summary`, {
+      params,
+    });
   }
 
   updateCategory(id: number, category: CategoryType): Observable<Transaction> {
@@ -62,10 +74,11 @@ export class TransactionService {
     this.transactionsUpdatedSubject.next();
   }
 
-  private queryParams(query: TransactionQuery): HttpParams {
-    let params = new HttpParams()
-      .set('page', query.page ?? 0)
-      .set('size', query.size ?? 20);
+  private queryParams(query: TransactionQuery, includePage = true): HttpParams {
+    let params = new HttpParams();
+    if (includePage) {
+      params = params.set('page', query.page ?? 0).set('size', query.size ?? 20);
+    }
 
     if (query.accountId !== undefined && query.accountId !== null) {
       params = params.set('accountId', query.accountId);
@@ -93,6 +106,18 @@ export class TransactionService {
 
     if (query.keyword) {
       params = params.set('keyword', query.keyword);
+    }
+
+    if (query.reviewed !== undefined && query.reviewed !== null) {
+      params = params.set('reviewed', query.reviewed);
+    }
+
+    if (query.internalTransfer !== undefined && query.internalTransfer !== null) {
+      params = params.set('internalTransfer', query.internalTransfer);
+    }
+
+    if (query.sort) {
+      params = params.set('sort', query.sort);
     }
 
     return params;

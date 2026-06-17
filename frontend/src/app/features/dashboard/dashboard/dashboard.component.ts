@@ -265,7 +265,10 @@ export class DashboardComponent {
   }
 
   private loadChartTransactions(): Observable<Transaction[]> {
-    return this.transactionService.getTransactions({ size: 1000 }).pipe(map((page) => page.content));
+    const start = new Date();
+    start.setFullYear(start.getFullYear() - 1);
+    const minDate = this.isoDate(start);
+    return this.transactionService.getTransactions({ minDate, size: 300 }).pipe(map((page) => page.content));
   }
 
   private buildNetWorthData(accounts: Account[], transactions: Transaction[]): NetWorthPoint[] {

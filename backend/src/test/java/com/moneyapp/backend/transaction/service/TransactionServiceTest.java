@@ -267,6 +267,18 @@ class TransactionServiceTest {
             null,
             "-50",
             "GROCERIES"));
+    Transaction internalTransfer =
+        transaction(
+            appUser.getId(),
+            null,
+            4L,
+            LocalDate.of(2026, 4, 3),
+            "Internal transfer",
+            null,
+            "-500",
+            "TRANSFER");
+    internalTransfer.setInternalTransfer(true);
+    transactionRepository.save(internalTransfer);
     transactionRepository.save(
         transaction(
             other.getId(),
@@ -282,8 +294,8 @@ class TransactionServiceTest {
     TransactionSummaryResponse response =
         service.summarizeTransactions(appUser.getEmail(), emptyFilter());
 
-    assertThat(response.totalElements()).isEqualTo(2);
-    assertThat(response.unreviewedCount()).isEqualTo(1);
+    assertThat(response.totalElements()).isEqualTo(3);
+    assertThat(response.unreviewedCount()).isEqualTo(2);
     assertThat(response.totalIn()).isEqualByComparingTo("2000");
     assertThat(response.totalOut()).isEqualByComparingTo("50");
     assertThat(response.net()).isEqualByComparingTo("1950");
