@@ -18,6 +18,7 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
@@ -121,6 +122,9 @@ public class DataSyncService {
   private String safeErrorMessage(RuntimeException exception) {
     if (exception instanceof WebClientResponseException webClientException) {
       return "Powens request failed with HTTP " + webClientException.getStatusCode().value();
+    }
+    if (exception instanceof WebClientRequestException) {
+      return "Powens request failed because the network connection was unavailable";
     }
 
     return exception.getMessage();
