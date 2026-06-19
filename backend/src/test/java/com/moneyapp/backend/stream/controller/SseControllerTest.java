@@ -1,7 +1,6 @@
 package com.moneyapp.backend.stream.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.moneyapp.backend.auth.entity.AppUser;
 import com.moneyapp.backend.auth.repository.AppUserRepository;
@@ -13,7 +12,8 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 class SseControllerTest {
@@ -41,9 +41,11 @@ class SseControllerTest {
             new CurrentAppUserService(appUserRepository(Optional.of(appUser))),
             sseEmitterService);
 
-    SseEmitter emitter = controller.events(jwtService.generateToken(appUser.getEmail()));
+    ResponseEntity<SseEmitter> response =
+        controller.events(jwtService.generateToken(appUser.getEmail()));
 
-    assertThat(emitter).isNotNull();
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    assertThat(response.getBody()).isNotNull();
     assertThat(sseEmitterService.registeredUserId).isEqualTo(42L);
   }
 
@@ -67,9 +69,10 @@ class SseControllerTest {
             new CurrentAppUserService(appUserRepository(Optional.empty())),
             new CapturingSseEmitterService());
 
-    assertThatThrownBy(() -> controller.events("invalid-token"))
-        .isInstanceOf(ResponseStatusException.class)
-        .hasMessageContaining("401");
+    ResponseEntity<SseEmitter> response = controller.events("invalid-token");
+
+    assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+    assertThat(response.getBody()).isNull();
   }
 
   private AppUserRepository appUserRepository(Optional<AppUser> appUser) {

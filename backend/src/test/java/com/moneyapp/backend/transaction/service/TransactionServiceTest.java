@@ -17,6 +17,7 @@ import com.moneyapp.backend.transaction.dto.PowensTransactionResponse;
 import com.moneyapp.backend.transaction.dto.PowensTransactionsResponse;
 import com.moneyapp.backend.transaction.dto.TransactionFilter;
 import com.moneyapp.backend.transaction.dto.TransactionResponse;
+import com.moneyapp.backend.transaction.dto.TransactionSummaryResponse;
 import com.moneyapp.backend.transaction.entity.Transaction;
 import com.moneyapp.backend.transaction.repository.TransactionRepository;
 import java.math.BigDecimal;
@@ -155,7 +156,9 @@ class TransactionServiceTest {
                 LocalDate.of(2026, 4, 30),
                 BigDecimal.valueOf(-100),
                 BigDecimal.valueOf(-50),
-                "amaz"),
+                "amaz",
+                null,
+                null),
             PageRequest.of(0, 20, Sort.by(Sort.Order.desc("date"), Sort.Order.desc("id"))));
 
     assertThat(response.getContent())
@@ -174,7 +177,8 @@ class TransactionServiceTest {
             () ->
                 service.findTransactions(
                     appUser.getEmail(),
-                    new TransactionFilter(null, "INVALID", null, null, null, null, null),
+                    new TransactionFilter(
+                        null, "INVALID", null, null, null, null, null, null, null),
                     PageRequest.of(0, 20)))
         .isInstanceOf(ResponseStatusException.class)
         .hasMessageContaining("INVALID is not a valid category");
@@ -201,6 +205,100 @@ class TransactionServiceTest {
 
     assertThat(response.getContent()).isEmpty();
     assertThat(response.getTotalElements()).isZero();
+  }
+
+  @Test
+  void findTransactionsFiltersByReviewedAndInternalTransfer() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    Transaction reviewedInternal =
+        transactionRepository.save(
+            transaction(
+                appUser.getId(),
+                null,
+                1L,
+                LocalDate.of(2026, 4, 1),
+                "Internal",
+                null,
+                "-80",
+                "TRANSFER"));
+    reviewedInternal.setReviewed(true);
+    reviewedInternal.setInternalTransfer(true);
+    transactionRepository.save(reviewedInternal);
+    transactionRepository.save(
+        transaction(
+            appUser.getId(),
+            null,
+            2L,
+            LocalDate.of(2026, 4, 2),
+            "Regular",
+            null,
+            "-12",
+            "SHOPPING"));
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    Page<TransactionResponse> response =
+        service.findTransactions(
+            appUser.getEmail(),
+            new TransactionFilter(null, null, null, null, null, null, null, true, true),
+            PageRequest.of(0, 20));
+
+    assertThat(response.getContent())
+        .singleElement()
+        .extracting(TransactionResponse::label)
+        .isEqualTo("Internal");
+  }
+
+  @Test
+  void summarizeTransactionsReturnsTotalsForAuthenticatedUserOnly() {
+    AppUser appUser = appUserRepository.save(AppUser.builder().email("person@example.com").build());
+    AppUser other = appUserRepository.save(AppUser.builder().email("other@example.com").build());
+    Transaction reviewedIncome =
+        transaction(
+            appUser.getId(), null, 1L, LocalDate.of(2026, 4, 1), "Salary", null, "2000", "INCOME");
+    reviewedIncome.setReviewed(true);
+    transactionRepository.save(reviewedIncome);
+    transactionRepository.save(
+        transaction(
+            appUser.getId(),
+            null,
+            2L,
+            LocalDate.of(2026, 4, 2),
+            "Market",
+            null,
+            "-50",
+            "GROCERIES"));
+    Transaction internalTransfer =
+        transaction(
+            appUser.getId(),
+            null,
+            4L,
+            LocalDate.of(2026, 4, 3),
+            "Internal transfer",
+            null,
+            "-500",
+            "TRANSFER");
+    internalTransfer.setInternalTransfer(true);
+    transactionRepository.save(internalTransfer);
+    transactionRepository.save(
+        transaction(
+            other.getId(),
+            null,
+            3L,
+            LocalDate.of(2026, 4, 2),
+            "Other salary",
+            null,
+            "5000",
+            "INCOME"));
+    TransactionService service = transactionService(new PowensTransactionsResponse(List.of()));
+
+    TransactionSummaryResponse response =
+        service.summarizeTransactions(appUser.getEmail(), emptyFilter());
+
+    assertThat(response.totalElements()).isEqualTo(3);
+    assertThat(response.unreviewedCount()).isEqualTo(2);
+    assertThat(response.totalIn()).isEqualByComparingTo("2000");
+    assertThat(response.totalOut()).isEqualByComparingTo("50");
+    assertThat(response.net()).isEqualByComparingTo("1950");
   }
 
   @Test
@@ -856,7 +954,7 @@ class TransactionServiceTest {
   }
 
   private TransactionFilter emptyFilter() {
-    return new TransactionFilter(null, null, null, null, null, null, null);
+    return new TransactionFilter(null, null, null, null, null, null, null, null, null);
   }
 
   private Transaction transaction(

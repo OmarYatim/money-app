@@ -9,6 +9,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
@@ -35,6 +36,12 @@ public class GlobalExceptionHandler {
     HttpStatusCode status = exception.getStatusCode();
     return ResponseEntity.status(status)
         .body(new ErrorResponse(errorCode(status), exception.getReason()));
+  }
+
+  @ExceptionHandler(WebClientRequestException.class)
+  ResponseEntity<ErrorResponse> handleWebClientRequest(WebClientRequestException exception) {
+    return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+        .body(new ErrorResponse("SERVICE_UNAVAILABLE", "Powens is temporarily unavailable"));
   }
 
   private String errorCode(HttpStatusCode status) {

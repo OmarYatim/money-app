@@ -17,6 +17,7 @@ import { debounceTime, distinctUntilChanged, firstValueFrom } from 'rxjs';
 import type { Account } from '../../../shared/models/account.model';
 import { CATEGORY_TYPES, type CategoryType } from '../../../shared/models/category.model';
 import type { Transaction } from '../../../shared/models/transaction.model';
+import type { TransactionSummary } from '../../../shared/models/transaction-summary.model';
 import { PageActionsComponent } from '../../../shared/components/page-actions/page-actions.component';
 import { LanguageService } from '../../../core/i18n/language.service';
 import { AccountService } from '../../accounts/account.service';
@@ -26,9 +27,8 @@ import { TransactionModalComponent } from '../transaction-modal/transaction-moda
 import { TransactionRowComponent } from '../transaction-row/transaction-row.component';
 
 interface TransactionListState {
-  sourceTransactions: Transaction[];
-  filteredTransactions: Transaction[];
   transactions: Transaction[];
+  summary: TransactionSummary;
   loadingInitial: boolean;
   error: string | null;
   page: number;
@@ -45,8 +45,14 @@ interface TransactionDetailModalState {
 
 const PAGE_SIZE = 20;
 const REVIEW_ALL_PAGE_SIZE = 100;
-const CLIENT_FETCH_PAGE_SIZE = 100;
 const PAGE_SIZE_OPTIONS = [20, 50, 100] as const;
+const EMPTY_TRANSACTION_SUMMARY: TransactionSummary = {
+  totalElements: 0,
+  unreviewedCount: 0,
+  totalIn: 0,
+  totalOut: 0,
+  net: 0,
+};
 
 interface TransactionFilterForm {
   keyword: FormControl<string>;
@@ -158,9 +164,8 @@ export class TransactionListComponent {
   });
 
   protected readonly state = signal<TransactionListState>({
-    sourceTransactions: [],
-    filteredTransactions: [],
     transactions: [],
+    summary: EMPTY_TRANSACTION_SUMMARY,
     loadingInitial: true,
     error: null,
     page: -1,
@@ -191,15 +196,11 @@ export class TransactionListComponent {
   });
 
   protected readonly totals = computed(() => {
-    const txns = this.state().filteredTransactions.filter((transaction) => !transaction.internalTransfer);
-    const totalIn = txns.filter((t) => t.value > 0).reduce((s, t) => s + t.value, 0);
-    const totalOut = txns.filter((t) => t.value < 0).reduce((s, t) => s + Math.abs(t.value), 0);
-    return { totalIn, totalOut, net: totalIn - totalOut };
+    const summary = this.state().summary;
+    return { totalIn: summary.totalIn, totalOut: summary.totalOut, net: summary.net };
   });
 
-  protected readonly unreviewedCount = computed(
-    () => this.state().filteredTransactions.filter((t) => !t.reviewed).length,
-  );
+  protected readonly unreviewedCount = computed(() => this.state().summary.unreviewedCount);
   protected readonly visiblePages = computed(() => {
     const { page, totalPages } = this.state();
     if (totalPages <= 1) return [];
@@ -285,9 +286,8 @@ export class TransactionListComponent {
   protected async reloadTransactions(): Promise<void> {
     this.activeFilterCount.set(this.countActiveFilters());
     this.state.set({
-      sourceTransactions: [],
-      filteredTransactions: [],
       transactions: [],
+      summary: EMPTY_TRANSACTION_SUMMARY,
       loadingInitial: true,
       error: null,
       page: -1,
@@ -295,7 +295,7 @@ export class TransactionListComponent {
       totalElements: 0,
     });
 
-    await this.loadTransactions();
+    await this.loadTransactions(0);
   }
 
   protected async goToPage(page: number): Promise<void> {
@@ -304,7 +304,7 @@ export class TransactionListComponent {
       return;
     }
 
-    this.applyClientView(page);
+    await this.loadTransactions(page);
   }
 
   protected async goToPreviousPage(): Promise<void> {
@@ -337,21 +337,21 @@ export class TransactionListComponent {
     if (size === this.pageSize()) return;
 
     this.pageSize.set(size);
-    this.applyClientView(0);
+    await this.reloadTransactions();
   }
 
   protected async selectStatus(status: StatusFilter): Promise<void> {
     this.filterMenuOpen.set(null);
     this.statusFilter.set(status);
     this.activeFilterCount.set(this.countActiveFilters());
-    this.applyClientView(0);
+    await this.reloadTransactions();
   }
 
   protected async selectTransfer(transfer: TransferFilter): Promise<void> {
     this.filterMenuOpen.set(null);
     this.transferFilter.set(transfer);
     this.activeFilterCount.set(this.countActiveFilters());
-    this.applyClientView(0);
+    await this.reloadTransactions();
   }
 
   protected selectGroupBy(group: GroupByFilter): void {
@@ -359,10 +359,10 @@ export class TransactionListComponent {
     this.groupBy.set(group);
   }
 
-  protected selectSort(sort: SortFilter): void {
+  protected async selectSort(sort: SortFilter): Promise<void> {
     this.filterMenuOpen.set(null);
     this.sortBy.set(sort);
-    this.applyClientView(0);
+    await this.reloadTransactions();
   }
 
   protected categoryLabel(category: string): string {
@@ -502,7 +502,7 @@ export class TransactionListComponent {
       const updated = await firstValueFrom(
         this.transactionService.updateReviewed(transaction.id, !transaction.reviewed),
       );
-      this.replaceTransaction(updated);
+      await this.replaceTransaction(updated);
       this.unreviewedTransactionCountService.refresh();
 
       const currentDetail = this.detailState().transaction;
@@ -540,11 +540,11 @@ export class TransactionListComponent {
       );
       this.state.update((current) => ({
         ...current,
-        sourceTransactions: current.sourceTransactions.map(
+        transactions: current.transactions.map(
           (transaction) => updatedById.get(transaction.id) ?? transaction,
         ),
       }));
-      this.applyClientView(this.state().page);
+      await this.loadTransactions(this.state().page);
 
       const currentDetail = this.detailState().transaction;
       if (currentDetail) {
@@ -575,6 +575,7 @@ export class TransactionListComponent {
     const firstPage = await firstValueFrom(
       this.transactionService.getTransactions({
         ...query,
+        reviewed: false,
         page: 0,
         size: REVIEW_ALL_PAGE_SIZE,
       }),
@@ -584,6 +585,7 @@ export class TransactionListComponent {
         firstValueFrom(
           this.transactionService.getTransactions({
             ...query,
+            reviewed: false,
             page: index + 1,
             size: REVIEW_ALL_PAGE_SIZE,
           }),
@@ -605,7 +607,7 @@ export class TransactionListComponent {
       const updated = await firstValueFrom(
         this.transactionService.updateReviewed(transaction.id, !transaction.reviewed),
       );
-      this.replaceTransaction(updated);
+      await this.replaceTransaction(updated);
       this.unreviewedTransactionCountService.refresh();
       this.detailState.set({
         transaction: updated,
@@ -632,7 +634,7 @@ export class TransactionListComponent {
       const updated = await firstValueFrom(
         this.transactionService.updateCategory(transaction.id, selectedCategory),
       );
-      this.replaceTransaction(updated);
+      await this.replaceTransaction(updated);
       this.detailState.set({
         transaction: updated,
         loading: false,
@@ -661,7 +663,7 @@ export class TransactionListComponent {
           !transaction.internalTransfer,
         ),
       );
-      this.replaceTransaction(updated);
+      await this.replaceTransaction(updated);
       this.detailState.set({
         transaction: updated,
         loading: false,
@@ -702,7 +704,7 @@ export class TransactionListComponent {
     await this.reloadTransactions();
   }
 
-  private async loadTransactions(): Promise<void> {
+  private async loadTransactions(page: number): Promise<void> {
     this.state.update((current) => ({
       ...current,
       loadingInitial: true,
@@ -711,33 +713,27 @@ export class TransactionListComponent {
 
     try {
       const query = this.currentQuery();
-      const firstPage = await firstValueFrom(
-        this.transactionService.getTransactions({
-          ...query,
-          page: 0,
-          size: CLIENT_FETCH_PAGE_SIZE,
-        }),
-      );
-      const additionalPages = await Promise.all(
-        Array.from({ length: Math.max(firstPage.totalPages - 1, 0) }, (_, index) =>
-          firstValueFrom(
-            this.transactionService.getTransactions({
-              ...query,
-              page: index + 1,
-              size: CLIENT_FETCH_PAGE_SIZE,
-            }),
-          ),
+      const [transactionPage, summary] = await Promise.all([
+        firstValueFrom(
+          this.transactionService.getTransactions({
+            ...query,
+            page,
+            size: this.pageSize(),
+          }),
         ),
-      );
-      const sourceTransactions = [firstPage, ...additionalPages].flatMap((page) => page.content);
-      this.mergeTransactionAccounts(sourceTransactions);
+        firstValueFrom(this.transactionService.getTransactionSummary(query)),
+      ]);
+      this.mergeTransactionAccounts(transactionPage.content);
       this.state.update((current) => ({
         ...current,
-        sourceTransactions,
+        transactions: transactionPage.content,
+        summary,
         loadingInitial: false,
         error: null,
+        page: transactionPage.number,
+        totalPages: transactionPage.totalPages,
+        totalElements: transactionPage.totalElements,
       }));
-      this.applyClientView(0);
     } catch {
       this.state.update((current) => ({
         ...current,
@@ -745,51 +741,6 @@ export class TransactionListComponent {
         error: this.t('transactions.errors.loadTransactions'),
       }));
     }
-  }
-
-  private applyClientView(page: number): void {
-    const filteredTransactions = this.sortTransactions(
-      this.filterByTransfer(this.filterByStatus(this.state().sourceTransactions)),
-    );
-    const totalPages = Math.ceil(filteredTransactions.length / this.pageSize());
-    const safePage = totalPages === 0 ? 0 : Math.min(Math.max(page, 0), totalPages - 1);
-    const start = safePage * this.pageSize();
-
-    this.state.update((current) => ({
-      ...current,
-      filteredTransactions,
-      transactions: filteredTransactions.slice(start, start + this.pageSize()),
-      page: safePage,
-      totalPages,
-      totalElements: filteredTransactions.length,
-    }));
-  }
-
-  private filterByStatus(transactions: Transaction[]): Transaction[] {
-    const status = this.statusFilter();
-    if (status === 'reviewed') return transactions.filter((transaction) => transaction.reviewed);
-    if (status === 'unreviewed') return transactions.filter((transaction) => !transaction.reviewed);
-    return transactions;
-  }
-
-  private filterByTransfer(transactions: Transaction[]): Transaction[] {
-    const transfer = this.transferFilter();
-    if (transfer === 'internal') {
-      return transactions.filter((transaction) => transaction.internalTransfer);
-    }
-    if (transfer === 'regular') {
-      return transactions.filter((transaction) => !transaction.internalTransfer);
-    }
-    return transactions;
-  }
-
-  private sortTransactions(transactions: Transaction[]): Transaction[] {
-    return [...transactions].sort((left, right) => {
-      if (this.sortBy() === 'oldest') return this.transactionTime(left) - this.transactionTime(right);
-      if (this.sortBy() === 'largest') return Math.abs(right.value) - Math.abs(left.value);
-      if (this.sortBy() === 'smallest') return Math.abs(left.value) - Math.abs(right.value);
-      return this.transactionTime(right) - this.transactionTime(left);
-    });
   }
 
   private async openTransactionById(id: number): Promise<void> {
@@ -860,10 +811,6 @@ export class TransactionListComponent {
     return option ? this.t(option.labelKey) : value;
   }
 
-  private transactionTime(transaction: Transaction): number {
-    return new Date(transaction.date).getTime();
-  }
-
   private isoDate(date: Date): string {
     return [
       date.getFullYear(),
@@ -895,6 +842,9 @@ export class TransactionListComponent {
       minAmount: value.minAmount || null,
       maxAmount: value.maxAmount || null,
       keyword: value.keyword.trim() || null,
+      reviewed: this.reviewedFilterValue(),
+      internalTransfer: this.internalTransferFilterValue(),
+      sort: this.sortBy(),
     };
   }
 
@@ -913,13 +863,25 @@ export class TransactionListComponent {
     ].filter(Boolean).length;
   }
 
-  private replaceTransaction(updated: Transaction): void {
+  private async replaceTransaction(updated: Transaction): Promise<void> {
     this.state.update((current) => ({
       ...current,
-      sourceTransactions: current.sourceTransactions.map((transaction) =>
+      transactions: current.transactions.map((transaction) =>
         transaction.id === updated.id ? updated : transaction,
       ),
     }));
-    this.applyClientView(this.state().page);
+    await this.loadTransactions(this.state().page);
+  }
+
+  private reviewedFilterValue(): boolean | null {
+    if (this.statusFilter() === 'reviewed') return true;
+    if (this.statusFilter() === 'unreviewed') return false;
+    return null;
+  }
+
+  private internalTransferFilterValue(): boolean | null {
+    if (this.transferFilter() === 'internal') return true;
+    if (this.transferFilter() === 'regular') return false;
+    return null;
   }
 }

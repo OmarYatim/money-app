@@ -42,6 +42,13 @@ public final class TransactionSpecification {
                 criteriaBuilder.like(criteriaBuilder.lower(root.get("label")), keyword),
                 criteriaBuilder.like(criteriaBuilder.lower(root.get("wording")), keyword)));
       }
+      if (filter.reviewed() != null) {
+        predicates.add(criteriaBuilder.equal(root.get("reviewed"), filter.reviewed()));
+      }
+      if (filter.internalTransfer() != null) {
+        predicates.add(
+            criteriaBuilder.equal(root.get("internalTransfer"), filter.internalTransfer()));
+      }
 
       return criteriaBuilder.and(predicates.toArray(Predicate[]::new));
     };

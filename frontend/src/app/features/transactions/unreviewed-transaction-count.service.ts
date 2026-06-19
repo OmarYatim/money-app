@@ -5,7 +5,6 @@ import { catchError, map, of, startWith, Subject, switchMap } from 'rxjs';
 import { TransactionService } from './transaction.service';
 
 const BADGE_COUNT_LIMIT = 99;
-const BADGE_FETCH_SIZE = 1000;
 
 @Injectable({ providedIn: 'root' })
 export class UnreviewedTransactionCountService {
@@ -16,8 +15,8 @@ export class UnreviewedTransactionCountService {
     this.refresh$.pipe(
       startWith(undefined),
       switchMap(() =>
-        this.transactionService.getTransactions({ size: BADGE_FETCH_SIZE }).pipe(
-          map((page) => page.content.filter((transaction) => !transaction.reviewed).length),
+        this.transactionService.getTransactionSummary({ reviewed: false }).pipe(
+          map((summary) => summary.totalElements),
           catchError(() => of(0)),
         ),
       ),

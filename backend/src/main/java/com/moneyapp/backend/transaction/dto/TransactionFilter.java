@@ -10,4 +10,6 @@ public record TransactionFilter(
     LocalDate maxDate,
     BigDecimal minAmount,
     BigDecimal maxAmount,
-    String keyword) {}
+    String keyword,
+    Boolean reviewed,
+    Boolean internalTransfer) {}
